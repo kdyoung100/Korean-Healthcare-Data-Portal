@@ -1,0 +1,2871 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>보건의료데이터 중개 포털 — MDP</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap');
+
+/* ═══════════════════════════════════════
+   v3 원본 디자인 토큰 100% 유지
+═══════════════════════════════════════ */
+:root {
+  --navy:#0D2B55; --navy-dk:#071A38; --navy-md:#1A3F72;
+  --teal:#00897B; --teal-dk:#00695C; --teal-lt:#E0F2F0;
+  --sky:#1565C0; --sky-lt:#E3EDF9;
+  --amber:#E65100; --amber-lt:#FFF3E0;
+  --purple:#4527A0; --purple-lt:#EDE7F6;
+  --green:#2E7D32; --green-lt:#E8F5E9;
+  --rose:#AD1457; --rose-lt:#FCE4EC;
+  --g90:#1C1C2E; --g70:#3D3D5C; --g50:#7B7B9A;
+  --g20:#D8D8E8; --g10:#EEEEF5; --g05:#F6F6FB;
+  --white:#FFFFFF;
+  --nav-h:62px; --max:1280px;
+  --r:10px; --r-lg:16px;
+  --sh:0 2px 12px rgba(13,43,85,.08);
+  --sh-md:0 6px 24px rgba(13,43,85,.12);
+  --sh-lg:0 16px 48px rgba(13,43,85,.16);
+  --ease:.18s cubic-bezier(.4,0,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans KR',sans-serif;color:var(--g90);background:var(--white);line-height:1.5}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+.wrap{max-width:var(--max);margin:0 auto;padding:0 48px}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px}
+.sec-title{font-size:20px;font-weight:700;color:var(--navy);letter-spacing:-.4px}
+.sec-title small{display:block;font-size:13px;font-weight:400;color:var(--g50);margin-top:3px}
+.sec-more{font-size:13px;color:var(--sky);font-weight:500;display:flex;align-items:center;gap:4px;transition:gap var(--ease)}
+.sec-more:hover{gap:8px}
+
+/* ── SPA 페이지 전환 ── */
+.page{display:none}
+.page.active{display:block}
+/* 페이지 전환 fade */
+.page.active{animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─────────────────────────────────────
+   NAV 
+───────────────────────────────────── */
+.nav{position:sticky;top:0;z-index:400;background:var(--navy-dk);height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid rgba(255,255,255,.06)}
+.nav__logo{display:flex;align-items:center;gap:11px;flex-shrink:0;cursor:pointer}
+.nav__logo-icon{width:36px;height:36px;background:var(--teal);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.nav__logo-icon svg{width:20px;height:20px}
+.nav__logo-ko{font-size:14px;font-weight:700;color:var(--white);letter-spacing:-.3px}
+.nav__logo-en{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase}
+.nav__tabs{display:flex;align-items:stretch;height:var(--nav-h);overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;flex:1;min-width:0;margin:0 12px}
+.nav__tabs::-webkit-scrollbar{display:none}
+.nav__tab{display:flex;align-items:center;flex-shrink:0;padding:0 16px;font-size:13.5px;font-weight:500;color:rgba(255,255,255,.65);border-bottom:3px solid transparent;margin-bottom:-1px;transition:all var(--ease);white-space:nowrap;cursor:pointer}
+.nav__tab:hover,.nav__tab.on{color:var(--white);border-bottom-color:var(--teal)}
+.nav__right{display:flex;align-items:center;gap:8px}
+.nav__search-wrap{position:relative}
+.nav__search{width:190px;padding:6px 30px 6px 12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:20px;font-size:12.5px;color:var(--white);outline:none;transition:all var(--ease)}
+.nav__search::placeholder{color:rgba(255,255,255,.35)}
+.nav__search:focus{width:250px;background:rgba(255,255,255,.15)}
+.nav__search-ico{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.4);pointer-events:none}
+.nav__btn{padding:6px 15px;border-radius:6px;font-size:12.5px;font-weight:500;transition:all var(--ease)}
+.nav__btn-out{color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.18)}
+.nav__btn-out:hover{background:rgba(255,255,255,.08);color:var(--white)}
+.nav__btn-fill{background:var(--teal);color:var(--white)}
+.nav__btn-fill:hover{background:var(--teal-dk)}
+
+/* ─────────────────────────────────────
+   PAGE 1: MAIN 
+───────────────────────────────────── */
+.hero{background:radial-gradient(circle at 50% 10%,rgba(0,137,123,.22) 0%,transparent 62%),linear-gradient(150deg,var(--navy-dk) 0%,var(--navy) 60%,#1B4A8A 100%);padding:52px 48px 40px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.018'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.hero__inner{max-width:820px;margin:0 auto;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+.hero__eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(0,137,123,.18);border:1px solid rgba(0,137,123,.35);color:#80CBC4;font-size:11.5px;font-weight:500;padding:4px 13px;border-radius:20px;margin-bottom:18px;letter-spacing:.4px;width:fit-content}
+.hero__dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.hero__title{font-size:34px;font-weight:900;color:var(--white);line-height:1.32;letter-spacing:-.8px;margin-bottom:12px}
+.hero__title em{color:#80CBC4;font-style:normal}
+.hero__desc{font-size:14.5px;color:rgba(255,255,255,.58);line-height:1.75;margin-bottom:26px;max-width:none;white-space:nowrap}
+.hero__search-wrap{width:100%;max-width:720px}
+.hero__tabs{display:inline-flex;gap:4px;margin-bottom:12px;padding:4px;background:rgba(255,255,255,.06);border-radius:12px}
+.hero__tab{padding:8px 18px;border-radius:9px;font-size:13.5px;font-weight:500;color:rgba(255,255,255,.5);transition:all var(--ease)}
+.hero__tab.on{background:rgba(255,255,255,.14);color:var(--white)}
+.hero__tab:hover:not(.on){color:rgba(255,255,255,.78)}
+.hero__bar{display:flex;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.16);border-radius:14px;overflow:hidden;backdrop-filter:blur(4px)}
+.hero__input{flex:1;border:none;outline:none;background:transparent;padding:18px 22px;font-size:16px;color:var(--white);font-family:inherit;min-width:0;text-align:left}
+.hero__input::placeholder{color:rgba(255,255,255,.32)}
+.hero__sbtn{background:var(--teal);color:var(--white);padding:0 34px;font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;transition:background var(--ease);font-family:inherit;flex-shrink:0}
+.hero__sbtn:hover{background:var(--teal-dk)}
+.hero__chips{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-top:13px}
+.hero__chip{font-size:11.5px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);border-radius:20px;padding:3px 11px;transition:all var(--ease);cursor:pointer}
+.hero__chip:hover{color:var(--white);background:rgba(255,255,255,.13)}
+.hero__links{width:100%;max-width:720px;margin-top:26px;text-align:left}
+.hero__links-head{font-size:12.5px;font-weight:700;color:#80CBC4;margin-bottom:9px}
+.hero__links-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.hero__link{position:relative;display:flex;flex-direction:column;gap:3px;padding:13px 32px 13px 15px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-lg);text-decoration:none;transition:all var(--ease)}
+.hero__link:hover{background:rgba(255,255,255,.1);border-color:#80CBC4}
+.hero__link-name{font-size:13px;font-weight:700;color:var(--white);line-height:1.35;word-break:keep-all}
+.hero__link-desc{font-size:11px;color:rgba(255,255,255,.5);line-height:1.4}
+.hero__link-arrow{position:absolute;top:12px;right:13px;font-size:13px;color:#80CBC4}
+@media(max-width:640px){.hero__links-grid{grid-template-columns:1fr}}
+.hero__notice{width:100%;max-width:720px;margin-top:26px;text-align:left;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-lg);padding:16px 18px;backdrop-filter:blur(4px)}
+.hero__notice-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;font-size:12.5px;font-weight:700;color:#80CBC4}
+.hero__notice-more{font-size:11px;font-weight:500;color:rgba(255,255,255,.4);cursor:pointer;transition:color var(--ease)}
+.hero__notice-more:hover{color:var(--white)}
+.hero__notice-list{list-style:none;display:flex;flex-direction:column;gap:7px}
+.hero__notice-list li{display:flex;align-items:center;gap:10px;font-size:12.5px;color:rgba(255,255,255,.75);cursor:pointer;transition:color var(--ease)}
+.hero__notice-list li:hover{color:var(--white)}
+.hero__notice-cat{flex-shrink:0;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(0,137,123,.25);color:#80CBC4}
+.hero__notice-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hero__notice-date{flex-shrink:0;font-size:11px;color:rgba(255,255,255,.35)}
+.hero__stats{width:100%;max-width:480px;margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.1);display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hero__stat-num{font-size:19px;font-weight:900;color:var(--white);letter-spacing:-.4px}
+.hero__stat-unit{font-size:11px;font-weight:400;color:rgba(255,255,255,.4);margin-left:1px}
+.hero__stat-label{font-size:11px;color:rgba(255,255,255,.45);margin-top:3px}
+.resources{padding:52px 0}
+.res-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;background:var(--teal-lt);border:1px solid #BFE3DE;border-radius:24px;padding:20px}
+@media(max-width:999px){.res-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:479px){.res-grid{grid-template-columns:1fr;padding:14px}}
+.res-card{height:100%;border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:22px 20px;cursor:pointer;transition:all var(--ease);display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden;background:var(--white)}
+.res-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--cc,var(--teal));transform:scaleX(0);transform-origin:left;transition:transform var(--ease)}
+.res-card:hover{border-color:var(--cc,var(--teal));box-shadow:var(--sh-md);transform:translateY(-3px)}
+.res-card:hover::after{transform:scaleX(1)}
+.res-icon{width:44px;height:44px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.res-title{font-size:14.5px;font-weight:700;color:var(--navy)}
+.res-desc{font-size:12px;color:var(--g50);line-height:1.6;flex:1}
+.res-count{font-size:24px;font-weight:900;color:var(--cc,var(--teal));line-height:1;margin-top:auto}
+.res-count span{font-size:12px;font-weight:400;color:var(--g50);margin-left:2px}
+.browse{background:var(--g05);padding:52px 0;border-top:1px solid var(--g20);border-bottom:1px solid var(--g20)}
+.topic-split{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.topic-track{background:var(--white);border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:20px}
+.topic-track__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.topic-track__head-lbl{font-size:14.5px;font-weight:900;color:var(--navy);display:flex;align-items:center;gap:8px}
+.topic-track__count{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
+.topic-track--clinical .topic-track__count{background:var(--sky-lt);color:var(--sky)}
+.topic-track--public .topic-track__count{background:var(--teal-lt);color:var(--teal-dk)}
+.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.topic-item{background:var(--g05);border:1.5px solid var(--g10);border-radius:11px;padding:11px 12px;cursor:pointer;display:flex;align-items:center;gap:9px;transition:all var(--ease)}
+.topic-item:hover{border-color:var(--teal);background:var(--teal-lt)}
+.topic-item__name{font-size:12.5px;font-weight:700;color:var(--navy);line-height:1.35;word-break:keep-all;display:block}
+.topic-item__count{font-size:11px;color:var(--g50);margin-top:1px;display:block}
+.topic-track__more{margin-top:12px;width:100%;text-align:center;font-size:12.5px;font-weight:700;color:var(--teal-dk);background:var(--white);border:1.5px solid var(--g20);border-radius:11px;padding:9px;transition:all var(--ease)}
+.topic-track__more:hover{background:var(--teal-lt);border-color:var(--teal)}
+.featured{padding:52px 0}
+.feat-split{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}
+.feat-panel{border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:22px 24px;background:var(--g05)}
+.feat-panel__head{display:flex;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1.5px solid var(--g20);font-size:16px;font-weight:900;color:var(--navy)}
+.feat-panel__sub{font-size:11.5px;color:var(--g50);font-weight:500;margin-left:6px}
+.feat-tabs{display:inline-flex;gap:4px;padding:3px;background:var(--white);border:1px solid var(--g20);border-radius:11px;margin-bottom:16px}
+.feat-tab{padding:8px 16px;border-radius:9px;font-size:12.5px;font-weight:700;color:var(--g50);transition:all var(--ease)}
+.feat-tab.on{background:var(--navy);color:var(--white)}
+.feat-tab:hover:not(.on){color:var(--navy)}
+.feat-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.feat-list li{display:flex;align-items:center;gap:12px;padding:10px;border-radius:11px;background:var(--white);border:1px solid transparent;cursor:pointer;transition:all var(--ease)}
+.feat-list li:hover{border-color:var(--sky);box-shadow:var(--sh)}
+.feat-rank{width:24px;height:24px;border-radius:7px;background:var(--navy);color:var(--white);font-size:11.5px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.feat-list li:not(:first-child) .feat-rank{background:var(--g50)}
+.feat-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.feat-name{font-size:13px;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feat-org{font-size:11px;color:var(--g50);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feat-meta{flex-shrink:0;font-size:11.5px;font-weight:700;color:var(--g50)}
+.roles-mini{padding:0 0 56px}
+.roles-mini__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.roles-mini__item{display:flex;align-items:center;gap:12px;padding:16px 18px;border:1.5px solid var(--g20);border-radius:var(--r-lg);cursor:pointer;transition:all var(--ease)}
+.roles-mini__item:hover{border-color:var(--accent,var(--teal));box-shadow:var(--sh);transform:translateY(-2px)}
+.roles-mini__icon{width:40px;height:40px;border-radius:10px;background:var(--icon-bg,var(--teal-lt));display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.roles-mini__title{font-size:13.5px;font-weight:700;color:var(--navy)}
+.roles-mini__sub{font-size:11.5px;color:var(--g50);margin-top:1px}
+.roles-mini__arr{margin-left:auto;color:var(--g50);font-size:16px;flex-shrink:0}
+/* 이용자 유형별 상세 안내(포털 소개 페이지 전용) */
+.roles-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1.5px solid var(--g20);border-radius:var(--r-lg);overflow:hidden}
+.role-panel{padding:36px 32px;display:flex;flex-direction:column;gap:16px;border-right:1.5px solid var(--g20);position:relative;overflow:hidden;transition:background var(--ease)}
+.role-panel:last-child{border-right:none}
+.role-panel:hover{background:var(--hover-bg,var(--g05))}
+.role-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--accent,var(--teal))}
+.role-panel__icon{width:52px;height:52px;border-radius:12px;background:var(--icon-bg,var(--teal-lt));display:flex;align-items:center;justify-content:center;font-size:24px}
+.role-panel__title{font-size:17px;font-weight:700;color:var(--navy)}
+.role-panel__sub{font-size:12.5px;color:var(--g50);margin-top:-8px}
+.role-panel__list{list-style:none;display:flex;flex-direction:column;gap:7px}
+.role-panel__list li{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--g70)}
+.role-panel__list li::before{content:'›';color:var(--accent,var(--teal));font-weight:700;flex-shrink:0}
+.role-panel__cta{margin-top:auto;display:inline-flex;align-items:center;gap:6px;background:var(--accent,var(--teal));color:var(--white);padding:10px 20px;border-radius:8px;font-size:13.5px;font-weight:600;width:fit-content;transition:filter var(--ease)}
+.role-panel__cta:hover{filter:brightness(.9)}
+.news-title{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:20px;letter-spacing:-.4px}
+.news-tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--g20)}
+.ntab{padding:8px 16px;font-size:13px;font-weight:500;color:var(--g50);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all var(--ease);cursor:pointer}
+.ntab.on{color:var(--sky);border-bottom-color:var(--sky)}
+.ntab:hover:not(.on){color:var(--g70)}
+.news-list{display:flex;flex-direction:column}
+.ni{display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid var(--g10);cursor:pointer}
+.ni:last-child{border-bottom:none}
+.ni:hover .ni__title{color:var(--sky)}
+.ni__date-col{width:44px;text-align:center;flex-shrink:0}
+.ni__m{font-size:10px;font-weight:700;color:var(--g50);letter-spacing:.5px;text-transform:uppercase}
+.ni__d{font-size:24px;font-weight:900;color:var(--navy);line-height:1}
+.ni__vl{width:1px;background:var(--g20);align-self:stretch;flex-shrink:0}
+.ni__body{flex:1;min-width:0}
+.ni__cat{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:5px}
+.cat-notice{background:var(--sky-lt);color:var(--sky)}
+.cat-data{background:var(--purple-lt);color:var(--purple)}
+.cat-edu{background:var(--amber-lt);color:var(--amber)}
+.cat-event{background:var(--teal-lt);color:var(--teal)}
+.ni__title{font-size:13.5px;font-weight:500;color:var(--g90);line-height:1.55;transition:color var(--ease);word-break:keep-all}
+.partners{padding:24px 0;background:var(--white);border-top:1px solid var(--g20);overflow:hidden}
+.partners__label{text-align:center;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--g50);margin-bottom:14px}
+.ticker-wrap{overflow:hidden}
+.ticker{display:flex;gap:10px;animation:tick 30s linear infinite;width:max-content}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ticker-wrap:hover .ticker{animation-play-state:paused}
+.ptag{background:var(--g05);border:1px solid var(--g20);border-radius:6px;padding:8px 18px;font-size:12.5px;font-weight:600;color:var(--g70);white-space:nowrap;flex-shrink:0}
+.cta{background:linear-gradient(135deg,var(--teal) 0%,var(--teal-dk) 100%);padding:48px 0}
+.cta__inner{display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap}
+.cta__text h2{font-size:22px;font-weight:700;color:var(--white);margin-bottom:7px}
+.cta__text p{font-size:14px;color:rgba(255,255,255,.7);line-height:1.65}
+.cta__form{display:flex;gap:10px}
+.cta__inp{padding:11px 18px;border-radius:8px;border:none;outline:none;font-size:14px;font-family:inherit;width:240px}
+.cta__sub{background:var(--navy-dk);color:var(--white);border-radius:8px;padding:11px 22px;font-size:13.5px;font-weight:600;font-family:inherit;transition:background var(--ease)}
+.cta__sub:hover{background:#000}
+footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45);font-size:12px}
+.footer__top{display:flex;justify-content:space-between;gap:40px;flex-wrap:wrap;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:20px}
+.footer__brand{max-width:280px}
+.footer__name{font-size:14px;font-weight:700;color:var(--white);margin-bottom:8px}
+.footer__addr{line-height:1.9}
+.footer__nav{display:flex;gap:48px;flex-wrap:wrap}
+.fnav h4{font-size:11px;font-weight:700;color:rgba(255,255,255,.55);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px}
+.fnav a{display:block;font-size:12.5px;color:rgba(255,255,255,.38);margin-bottom:8px;transition:color var(--ease);cursor:pointer}
+.fnav a:hover{color:rgba(255,255,255,.78)}
+.footer__bot{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.footer__copy{font-size:11.5px}
+.footer__gov{font-size:11px;color:rgba(255,255,255,.28)}
+/* ── 전체 메뉴(햄버거 → 슬라이드 패널) ── */
+.nav__menu-btn{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--white);flex-shrink:0;transition:background var(--ease)}
+.nav__menu-btn:hover{background:rgba(255,255,255,.1)}
+.menu-overlay{position:fixed;inset:0;background:rgba(7,26,56,.55);z-index:9500;opacity:0;visibility:hidden;transition:opacity var(--ease)}
+.menu-overlay.open{opacity:1;visibility:visible}
+.menu-panel{position:fixed;top:0;right:0;bottom:0;width:300px;max-width:85vw;background:var(--white);z-index:9600;box-shadow:var(--sh-lg);transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow-y:auto}
+.menu-panel.open{transform:translateX(0)}
+.menu-panel__head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--g10);flex-shrink:0}
+.menu-panel__title{font-size:15px;font-weight:700;color:var(--navy)}
+.menu-panel__close{font-size:16px;color:var(--g50);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all var(--ease)}
+.menu-panel__close:hover{background:var(--g05);color:var(--navy)}
+.menu-panel__group{padding:14px 12px;border-bottom:1px solid var(--g10)}
+.menu-panel__group:last-child{border-bottom:none}
+.menu-panel__label{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--g50);padding:6px 12px 8px}
+.menu-panel__item{display:block;padding:11px 12px;border-radius:9px;font-size:13.5px;font-weight:600;color:var(--g80);cursor:pointer;transition:all var(--ease)}
+.menu-panel__item:hover{background:var(--teal-lt);color:var(--teal-dk)}
+.menu-panel__item.on{background:var(--teal);color:var(--white)}
+
+/* ── 우측 고정 메타데이터 도구 아이콘 독(스크롤해도 따라다님) ── */
+.tool-dock{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:8000;background:var(--white);border:1.5px solid var(--g20);border-radius:14px;box-shadow:var(--sh-md);padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.tool-dock__group{display:flex;flex-direction:column;align-items:center;gap:8px}
+.tool-dock__group+.tool-dock__group{padding-top:10px;border-top:1px solid var(--g10)}
+.tool-dock__label{font-size:10.5px;font-weight:800;letter-spacing:.4px;color:var(--g50);white-space:nowrap;padding-bottom:6px}
+.tool-dock__item{position:relative;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--g70);transition:all var(--ease)}
+.tool-dock__item:hover{background:var(--teal-lt);color:var(--teal-dk)}
+.tool-dock__item.on{background:var(--teal);color:var(--white)}
+.tool-dock__tip{position:absolute;right:48px;top:50%;transform:translateY(-50%);background:var(--navy-dk);color:var(--white);font-size:12px;font-weight:600;padding:6px 12px;border-radius:8px;white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;transition:opacity var(--ease)}
+.tool-dock__item:hover .tool-dock__tip{opacity:1;visibility:visible}
+/* 본문 최대폭(1280px) 옆에 여백이 실제로 남는 넓은 화면에서만 띄운다.
+   그보다 좁으면 우측 정렬 링크("전체 검색 →" 등)와 겹칠 수 있어 숨기고,
+   대신 햄버거 메뉴(전체 메뉴 패널)로 동일한 링크에 접근하게 한다. */
+@media(max-width:1400px){
+  .tool-dock{display:none}
+}
+
+/* ── AI 검색 도우미(챗봇) ── */
+.chat-fab{position:fixed;bottom:24px;right:24px;width:86px;height:96px;display:flex;align-items:center;justify-content:center;z-index:9000;transition:transform var(--ease)}
+.chat-fab:hover{transform:scale(1.06)}
+.chat-panel{position:fixed;bottom:132px;right:24px;width:360px;max-width:calc(100vw - 32px);height:480px;max-height:calc(100vh - 120px);background:var(--white);border-radius:var(--r-lg);box-shadow:var(--sh-lg);display:none;flex-direction:column;overflow:hidden;z-index:9000;border:1px solid var(--g20);transition:width var(--ease)}
+.chat-panel.open{display:flex}
+.chat-panel.chat-panel--wide{width:440px}
+.chat-ds-cards{display:flex;flex-direction:column;gap:6px;align-self:stretch}
+.chat-ds-card{border:1px solid var(--g20);background:var(--white);border-radius:8px;padding:8px 10px;cursor:pointer;transition:border-color var(--ease),background var(--ease)}
+.chat-ds-card:hover{border-color:var(--teal);background:var(--teal-lt)}
+.chat-ds-card__name{font-size:12.5px;font-weight:700;color:var(--navy)}
+.chat-ds-card__meta{font-size:11px;color:var(--g50);margin-top:2px}
+.chat-panel__head{background:var(--navy);color:var(--white);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.chat-panel__title{font-size:14px;font-weight:700}
+.chat-panel__sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+.chat-panel__close{color:var(--white);font-size:15px;opacity:.7}
+.chat-panel__close:hover{opacity:1}
+.chat-panel__body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--g05)}
+.chat-msg{max-width:85%;padding:9px 12px;border-radius:12px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.chat-msg--bot{background:var(--white);border:1px solid var(--g20);color:var(--g90);align-self:flex-start;border-bottom-left-radius:2px}
+.chat-msg--user{background:var(--teal);color:var(--white);align-self:flex-end;border-bottom-right-radius:2px}
+.chat-msg--err{background:var(--rose-lt);color:var(--rose);align-self:flex-start}
+.chat-panel__foot{display:flex;gap:8px;padding:12px;border-top:1px solid var(--g20);flex-shrink:0}
+.chat-panel__foot input{flex:1;border:1px solid var(--g20);border-radius:8px;padding:9px 11px;font-size:13px;font-family:inherit}
+.chat-panel__foot input:focus{outline:none;border-color:var(--teal)}
+.chat-panel__foot button{background:var(--teal);color:var(--white);padding:0 16px;border-radius:8px;font-size:13px;font-weight:600;flex-shrink:0}
+.chat-panel__foot button:disabled{opacity:.5;cursor:default}
+
+/* ─────────────────────────────────────
+   PAGE 2: 검색결과 추가 CSS
+───────────────────────────────────── */
+#page-search{background:var(--g05)}
+.search-bar{background:var(--navy);padding:18px 48px;border-bottom:1px solid rgba(255,255,255,.06)}
+.search-bar__inner{display:flex;align-items:center;gap:10px;max-width:var(--max);margin:0 auto}
+.search-bar__tabs{display:flex;gap:3px;flex-shrink:0}
+.sbtab{padding:7px 14px;border-radius:7px;font-size:12.5px;font-weight:500;color:rgba(255,255,255,.48);transition:all var(--ease)}
+.sbtab.on{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.14)}
+.sbtab:hover:not(.on){color:rgba(255,255,255,.78)}
+.search-bar__row{flex:1;display:flex;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);border-radius:9px;overflow:hidden}
+.search-bar__input{flex:1;border:none;outline:none;background:transparent;padding:10px 16px;font-size:14px;color:#fff;font-family:inherit;min-width:0}
+.search-bar__input::placeholder{color:rgba(255,255,255,.32)}
+.search-bar__btn{background:var(--teal);color:#fff;padding:0 22px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;transition:background var(--ease);font-family:inherit;flex-shrink:0}
+.search-bar__btn:hover{background:var(--teal-dk)}
+.breadcrumb{padding:16px 0 0;display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--g50)}
+.breadcrumb span.link{color:var(--sky);cursor:pointer}
+.breadcrumb span.link:hover{text-decoration:underline}
+.breadcrumb__sep{color:var(--g20)}
+.result-head{padding:18px 0 16px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.result-head__title{font-size:18px;font-weight:700;color:var(--navy)}
+.result-head__title em{color:var(--teal);font-style:normal}
+.result-head__right{display:flex;align-items:center;gap:10px}
+.sort-select{padding:6px 12px;border:1.5px solid var(--g20);border-radius:var(--r);font-size:12.5px;font-family:inherit;color:var(--g70);background:var(--white);outline:none;cursor:pointer}
+.view-toggle{display:flex;border:1.5px solid var(--g20);border-radius:var(--r);overflow:hidden}
+.view-btn{padding:6px 10px;font-size:14px;color:var(--g50);transition:all var(--ease);background:var(--white)}
+.view-btn.on{background:var(--navy);color:#fff}
+.view-btn{cursor:pointer;border:none}
+.rt-wrap{overflow-x:auto;border:1.5px solid var(--g20);border-radius:var(--r-lg);background:var(--white)}
+.rt{width:100%;min-width:760px;border-collapse:collapse;font-size:13px}
+.rt th{position:sticky;top:0;background:var(--g05);color:var(--navy);font-weight:700;text-align:left;padding:11px 14px;border-bottom:1.5px solid var(--g20);white-space:nowrap}
+.rt td{padding:11px 14px;border-bottom:1px solid var(--g10);color:var(--g70);vertical-align:top;line-height:1.55}
+.rt tr:last-child td{border-bottom:none}
+.rt tbody tr{cursor:pointer;transition:background var(--ease)}
+.rt tbody tr:hover{background:var(--teal-lt)}
+.rt__no{width:44px;color:var(--g50);text-align:right}
+.rt__name{font-weight:700;color:var(--navy);min-width:200px}
+.rt__org{min-width:130px}
+.rt__nowrap{white-space:nowrap}
+.rt__kw{font-size:12px;color:var(--g50);min-width:180px}
+.active-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.af-label{font-size:12px;font-weight:600;color:var(--g50)}
+.af-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:var(--sky-lt);border:1px solid #B3CEF0;font-size:12px;font-weight:500;color:var(--sky)}
+.af-chip__x{cursor:pointer;opacity:.6;transition:opacity var(--ease)}
+.af-chip__x:hover{opacity:1}
+.af-clear{font-size:12px;color:var(--amber);font-weight:500;cursor:pointer;margin-left:4px}
+.search-layout{display:grid;grid-template-columns:240px 1fr;gap:24px;padding-bottom:60px;align-items:start}
+/* 화면에 고정(sticky)되므로 패널이 화면보다 길면 아래가 잘린다 → 화면 높이로 제한하고 패널 안에서 따로 스크롤 */
+.filter-panel{background:var(--white);border:1.5px solid var(--g20);border-radius:var(--r-lg);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--g20) transparent;position:sticky;top:calc(var(--nav-h) + 70px);max-height:calc(100vh - var(--nav-h) - 90px)}
+.filter-panel__head{padding:16px 18px;border-bottom:1px solid var(--g10);display:flex;align-items:center;justify-content:space-between}
+.filter-panel__title{font-size:13.5px;font-weight:700;color:var(--navy)}
+.filter-panel__reset{font-size:12px;color:var(--amber);font-weight:500;cursor:pointer}
+.filter-group{border-bottom:1px solid var(--g10)}
+.filter-group:last-child{border-bottom:none}
+.filter-group__head{padding:13px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background var(--ease)}
+.filter-group__head:hover{background:var(--g05)}
+.filter-group__label{font-size:13px;font-weight:600;color:var(--g70)}
+.filter-group__arrow{font-size:11px;color:var(--g50);transition:transform var(--ease)}
+.filter-group__arrow.open{transform:rotate(180deg)}
+.filter-group__body{padding:4px 18px 14px;display:flex;flex-direction:column;gap:6px}
+.filter-item{display:flex;align-items:center;gap:9px;cursor:pointer;padding:4px 0}
+.filter-item:hover .filter-item__label{color:var(--navy)}
+.filter-item__check{width:16px;height:16px;border:1.5px solid var(--g20);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--ease)}
+.filter-item.checked .filter-item__check{background:var(--sky);border-color:var(--sky)}
+.filter-item.checked .filter-item__check::after{content:'✓';font-size:10px;color:#fff;font-weight:700}
+.filter-item__label{font-size:12.5px;color:var(--g70);transition:color var(--ease)}
+.filter-item__count{margin-left:auto;font-size:11px;color:var(--g50);background:var(--g10);padding:1px 7px;border-radius:20px}
+.filter-range{padding:6px 18px 16px}
+.filter-range__row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.filter-range__input{flex:1;min-width:0;width:0;padding:6px 10px;border:1.5px solid var(--g20);border-radius:var(--r);font-size:12px;font-family:inherit;color:var(--g90);outline:none;text-align:center}
+.filter-range__input:focus{border-color:var(--sky)}
+.filter-range__sep{font-size:12px;color:var(--g50)}
+.result-list{display:flex;flex-direction:column;gap:12px}
+.sr-card{background:var(--white);border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:22px 24px;cursor:pointer;transition:all var(--ease);display:flex;gap:20px;position:relative}
+.sr-card:hover{border-color:var(--sky);box-shadow:var(--sh-md);transform:translateY(-2px)}
+.sr-card__left{flex:1;min-width:0}
+.sr-card__top{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.sr-type{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:.3px;text-transform:uppercase}
+.sr-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+.badge-new{background:var(--teal-lt);color:var(--teal)}
+.badge-hot{background:var(--amber-lt);color:var(--amber)}
+.sr-card__title{font-size:16px;font-weight:700;color:var(--navy);line-height:1.4;margin-bottom:7px;word-break:keep-all;transition:color var(--ease)}
+.sr-card:hover .sr-card__title{color:var(--sky)}
+.sr-card__org{font-size:12.5px;color:var(--g50);margin-bottom:10px}
+.sr-card__desc{font-size:13px;color:var(--g70);line-height:1.65;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sr-card__tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px}
+.sr-tag{font-size:11.5px;padding:3px 10px;border-radius:20px;background:var(--g10);color:var(--g70)}
+.sr-card__meta{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.sr-meta-item{font-size:12px;color:var(--g50);display:flex;align-items:center;gap:4px}
+.sr-meta-link{color:var(--teal);font-weight:700;text-decoration:none}
+.sr-meta-link:hover{text-decoration:underline}
+.ds-hero__plat-link{color:inherit;text-decoration:none}
+.ds-hero__plat-link:hover{text-decoration:underline}
+.sr-card__right{display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;flex-shrink:0;min-width:120px}
+.sr-score-label{font-size:10.5px;color:var(--g50);margin-bottom:3px;text-align:right}
+.sr-score{font-size:24px;font-weight:900;color:var(--teal);line-height:1}
+.sr-score span{font-size:12px;font-weight:400;color:var(--g50)}
+.sr-actions{display:flex;flex-direction:column;gap:6px}
+.sr-btn-p{background:var(--sky);color:#fff;padding:8px 16px;border-radius:7px;font-size:12.5px;font-weight:600;text-align:center;transition:background var(--ease);cursor:pointer;border:none;font-family:inherit}
+.sr-btn-p:hover{background:var(--navy)}
+.sr-btn-s{border:1.5px solid var(--g20);color:var(--g70);padding:6px 16px;border-radius:7px;font-size:12px;font-weight:500;text-align:center;transition:all var(--ease);background:var(--white);cursor:pointer;font-family:inherit}
+.sr-btn-s:hover{border-color:var(--sky);color:var(--sky)}
+.pagination{display:flex;align-items:center;justify-content:center;gap:4px;padding:32px 0 0}
+.pg-btn{width:36px;height:36px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:500;color:var(--g70);border:1.5px solid var(--g20);background:var(--white);transition:all var(--ease);cursor:pointer}
+.pg-btn:hover{border-color:var(--sky);color:var(--sky)}
+.pg-btn.on{background:var(--sky);border-color:var(--sky);color:#fff}
+
+/* ── 대화형 AI 검색 (검색결과 페이지) ── */
+.ai-search-answer{background:var(--white);border:1.5px solid var(--teal);border-radius:var(--r-lg);padding:18px 22px;margin-bottom:20px}
+.ai-search-answer__label{font-size:12.5px;font-weight:700;color:var(--teal);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.ai-search-answer__body{font-size:13.5px;line-height:1.7;color:var(--g90);white-space:pre-wrap;word-break:break-word}
+.ai-search-answer__body--err{color:var(--rose)}
+.ai-search-sub{font-size:13px;font-weight:700;color:var(--navy);margin:4px 0 12px}
+.ai-search-web{background:var(--g05);border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:16px 22px;margin-top:20px}
+.ai-search-web__label{font-size:13px;font-weight:600;color:var(--g70);margin-bottom:10px}
+.ai-search-web__link{font-size:13px;font-weight:700;color:var(--teal);text-decoration:none;white-space:nowrap}
+.ai-search-web__link:hover{text-decoration:underline}
+.ai-search-web__results{font-size:13px;min-height:32px;display:flex;flex-direction:column;gap:14px}
+.ai-search-web__results:empty::before{content:'불러오는 중...';color:var(--g50)}
+.ai-search-web__item{padding-bottom:14px;border-bottom:1px solid var(--g10)}
+.ai-search-web__item:last-child{border-bottom:none;padding-bottom:0}
+.ai-search-web__item-title{font-size:13.5px;font-weight:700;color:var(--teal);text-decoration:none}
+.ai-search-web__item-title:hover{text-decoration:underline}
+.ai-search-web__item-url{font-size:11.5px;color:var(--g50);margin:2px 0 4px}
+.ai-search-web__item-snippet{font-size:12.5px;color:var(--g70);line-height:1.6}
+
+/* ─────────────────────────────────────
+   PAGE 3: 데이터셋 상세 추가 CSS
+───────────────────────────────────── */
+#page-dataset{background:var(--g05)}
+.ds-hero{background:linear-gradient(150deg,var(--navy-dk) 0%,var(--navy) 70%,#1B4A8A 100%);padding:28px 48px 0;position:relative;overflow:hidden}
+.ds-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.018'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.ds-hero__inner{position:relative;z-index:1;max-width:var(--max);margin:0 auto}
+.ds-hero__top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.ds-hero__type{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(33,150,243,.2);border:1px solid rgba(33,150,243,.35);color:#90CAF9;letter-spacing:.4px;text-transform:uppercase}
+.ds-hero__badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(0,137,123,.2);border:1px solid rgba(0,137,123,.35);color:#80CBC4}
+.ds-hero__dcat{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(105,240,174,.12);border:1px solid rgba(105,240,174,.3);color:#69F0AE}
+.ds-hero__title{font-size:26px;font-weight:900;color:#fff;line-height:1.3;letter-spacing:-.5px;margin-bottom:10px}
+.ds-hero__org{font-size:14px;color:rgba(255,255,255,.6);margin-bottom:20px}
+.ds-hero__stats{display:flex;gap:28px;flex-wrap:wrap;padding-bottom:24px}
+.ds-hero__stat-num{font-size:20px;font-weight:900;color:#fff;line-height:1}
+.ds-hero__stat-label{font-size:11.5px;color:rgba(255,255,255,.45);margin-top:3px}
+.ds-tabs-bar{background:var(--navy);border-bottom:1px solid rgba(255,255,255,.06)}
+.ds-tabs-inner{max-width:var(--max);margin:0 auto;padding:0 48px;display:flex}
+.ds-tab{padding:14px 20px;font-size:13.5px;font-weight:500;color:rgba(255,255,255,.55);border-bottom:3px solid transparent;transition:all var(--ease);cursor:pointer;white-space:nowrap}
+.ds-tab:hover{color:rgba(255,255,255,.85)}
+.ds-tab.on{color:#fff;border-bottom-color:var(--teal)}
+.ds-layout{display:grid;grid-template-columns:1fr 320px;gap:24px;padding:28px 0 60px;align-items:start}
+.ds-card{background:var(--white);border:1.5px solid var(--g20);border-radius:var(--r-lg);overflow:hidden;margin-bottom:16px}
+.ds-card:last-child{margin-bottom:0}
+.ds-card__head{padding:18px 22px;border-bottom:1px solid var(--g10);display:flex;align-items:center;justify-content:space-between}
+.ds-card__title{font-size:15px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
+.ds-card__title-bar{width:3px;height:16px;background:var(--teal);border-radius:2px;flex-shrink:0}
+.ds-card__body{padding:20px 22px}
+.ds-desc{font-size:14px;color:var(--g70);line-height:1.8;margin-bottom:16px}
+.ds-tags{display:flex;flex-wrap:wrap;gap:6px}
+.ds-tag{font-size:12px;padding:4px 11px;border-radius:20px;background:var(--g10);color:var(--g70)}
+/* ── 데이터셋 정보표 (항목-값 세로 표) ── */
+.info-table{width:100%;border-collapse:collapse;font-size:13.5px;border-top:1.5px solid var(--g20)}
+.info-table th{width:200px;text-align:left;vertical-align:top;background:var(--g05);color:var(--navy);font-weight:700;padding:13px 16px;border-bottom:1px solid var(--g10);border-right:1px solid var(--g10);white-space:nowrap}
+.info-table td{padding:13px 16px;border-bottom:1px solid var(--g10);color:var(--g70);line-height:1.7;word-break:break-word}
+.info-table tr:last-child th,.info-table tr:last-child td{border-bottom:none}
+.info-table .iv-empty{color:var(--g20);font-weight:600}
+/* ── 상세페이지 보기 / 돌아가기 링크 ── */
+.ds-detail-link{font-size:13px;font-weight:600;color:#fff;background:var(--navy);padding:7px 15px;border-radius:var(--r);cursor:pointer;transition:all var(--ease);white-space:nowrap}
+.ds-detail-link:hover{background:var(--navy-md);box-shadow:var(--sh-md)}
+.ds-detail-link[disabled]{background:var(--g20);color:var(--g50);cursor:default;box-shadow:none}
+.ds-back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--sky);background:var(--sky-lt);padding:8px 16px;border-radius:var(--r);cursor:pointer;margin-bottom:16px;transition:all var(--ease)}
+.ds-back-link:hover{background:#D3E3F5}
+/* ── 관련 데이터셋 카드 ── */
+.rel-head{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.rel-head .bar{width:3px;height:16px;background:var(--teal);border-radius:2px}
+.rel-sub{font-size:12.5px;color:var(--g50);margin-bottom:16px}
+.rel-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.rel-card{border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:18px;cursor:pointer;transition:all var(--ease);background:var(--white);display:flex;flex-direction:column}
+.rel-card:hover{border-color:var(--sky);box-shadow:var(--sh-md);transform:translateY(-2px)}
+.rel-card__type{align-self:flex-start;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px;margin-bottom:10px}
+.rel-card__title{font-size:14px;font-weight:700;color:var(--navy);line-height:1.45;margin-bottom:8px;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rel-card:hover .rel-card__title{color:var(--sky)}
+.rel-card__meta{font-size:11.5px;color:var(--g50);margin-top:auto}
+.rel-empty{font-size:13px;color:var(--g50);padding:8px 0}
+@media(max-width:900px){.rel-grid{grid-template-columns:1fr}}
+.meta-table{width:100%;border-collapse:collapse}
+.meta-table tr{border-bottom:1px solid var(--g10)}
+.meta-table tr:last-child{border-bottom:none}
+.meta-table th{width:160px;padding:11px 14px 11px 0;font-size:12.5px;font-weight:600;color:var(--g50);text-align:left;vertical-align:top}
+.meta-table td{padding:11px 0;font-size:13px;color:var(--g90);line-height:1.6;vertical-align:top}
+.meta-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;font-size:11.5px;font-weight:600}
+.meta-badge-teal{background:var(--teal-lt);color:var(--teal)}
+.meta-badge-sky{background:var(--sky-lt);color:var(--sky)}
+.meta-badge-amber{background:var(--amber-lt);color:var(--amber)}
+.dcat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.dcat-item{background:var(--g05);border:1px solid var(--g10);border-radius:var(--r);padding:13px 15px}
+.dcat-item__prop{font-size:10.5px;font-weight:700;color:var(--teal);letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px}
+.dcat-item__prop-ns{color:var(--g50);font-weight:400}
+.dcat-item__val{font-size:12.5px;color:var(--g90);line-height:1.5;word-break:break-all}
+.var-search{width:100%;padding:9px 14px;border:1.5px solid var(--g20);border-radius:var(--r);font-size:13px;font-family:inherit;color:var(--g90);outline:none;margin-bottom:14px;transition:border-color var(--ease)}
+.var-search:focus{border-color:var(--sky)}
+.var-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.var-table thead tr{background:var(--g05);border-bottom:1.5px solid var(--g20)}
+.var-table th{padding:9px 12px;text-align:left;font-size:11.5px;font-weight:700;color:var(--g50);letter-spacing:.3px;white-space:nowrap}
+.var-table tbody tr{border-bottom:1px solid var(--g10);transition:background var(--ease);cursor:pointer}
+.var-table tbody tr:hover{background:var(--sky-lt)}
+.var-table td{padding:9px 12px;color:var(--g90);vertical-align:middle}
+.var-table td:first-child{font-weight:600;color:var(--navy);font-family:monospace;font-size:12px}
+.var-type{font-size:10.5px;padding:2px 7px;border-radius:3px;font-weight:600}
+.vt-num{background:#E3EDF9;color:#1565C0}
+.vt-str{background:#E0F2F0;color:#00897B}
+.vt-date{background:#EDE7F6;color:#4527A0}
+.vt-code{background:#FFF3E0;color:#E65100}
+.var-table tfoot tr{background:var(--g05);border-top:1.5px solid var(--g20)}
+.var-table tfoot td{padding:8px 12px;font-size:12px;color:var(--g50)}
+.quality-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.quality-item{text-align:center;padding:16px 10px;background:var(--g05);border-radius:var(--r)}
+.quality-item__score{font-size:28px;font-weight:900;line-height:1;margin-bottom:5px}
+.quality-item__label{font-size:11.5px;color:var(--g50)}
+.quality-bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--g70);margin-bottom:5px}
+.quality-bar{height:6px;background:var(--g10);border-radius:3px;overflow:hidden;margin-bottom:12px}
+.quality-bar__fill{height:100%;border-radius:3px}
+.sidebar{display:flex;flex-direction:column;gap:14px;position:sticky;top:calc(var(--nav-h) + 20px)}
+.apply-panel{background:var(--white);border:1.5px solid var(--g20);border-radius:var(--r-lg);overflow:hidden}
+.apply-panel__head{background:linear-gradient(135deg,var(--navy),var(--navy-md));padding:18px 20px}
+.apply-panel__head-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px}
+.apply-panel__head-sub{font-size:12px;color:rgba(255,255,255,.55)}
+.apply-panel__body{padding:18px 20px}
+.apply-status{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--r);margin-bottom:16px;background:var(--teal-lt);border:1px solid rgba(0,137,123,.25)}
+.apply-status__dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--teal)}
+.apply-status__text{font-size:12.5px;font-weight:600;color:var(--teal)}
+.apply-info{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.apply-info__row{display:flex;justify-content:space-between;align-items:center;font-size:12.5px}
+.apply-info__label{color:var(--g50)}
+.apply-info__val{color:var(--g90);font-weight:500;text-align:right}
+.apply-divider{height:1px;background:var(--g10);margin:14px 0}
+.apply-btn-p{width:100%;padding:13px;background:var(--sky);color:#fff;border-radius:var(--r);font-size:14px;font-weight:700;text-align:center;transition:background var(--ease);display:block;margin-bottom:8px;cursor:pointer;border:none;font-family:inherit}
+.apply-btn-p:hover{background:var(--navy)}
+.apply-btn-s{width:100%;padding:10px;border:1.5px solid var(--g20);color:var(--g70);border-radius:var(--r);font-size:13px;font-weight:500;text-align:center;transition:all var(--ease);display:block;background:var(--white);margin-bottom:8px;cursor:pointer;font-family:inherit}
+.apply-btn-s:hover{border-color:var(--sky);color:var(--sky)}
+.apply-notice{margin-top:8px;padding:10px 13px;background:var(--amber-lt);border-radius:var(--r);font-size:11.5px;color:var(--amber);line-height:1.6}
+.related-panel{background:var(--white);border:1.5px solid var(--g20);border-radius:var(--r-lg);overflow:hidden}
+.related-panel__head{padding:15px 18px;border-bottom:1px solid var(--g10);font-size:13.5px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:7px}
+.related-panel__head-bar{width:3px;height:14px;background:var(--purple);border-radius:2px}
+.related-item{display:flex;gap:12px;padding:13px 18px;border-bottom:1px solid var(--g10);cursor:pointer;transition:background var(--ease)}
+.related-item:last-child{border-bottom:none}
+.related-item:hover{background:var(--g05)}
+.related-item__icon{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.related-item__title{font-size:12.5px;font-weight:600;color:var(--navy);line-height:1.4;margin-bottom:3px;word-break:keep-all}
+.related-item:hover .related-item__title{color:var(--sky)}
+.related-item__org{font-size:11px;color:var(--g50)}
+.usage-panel{background:var(--white);border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:18px}
+.usage-panel__title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.usage-panel__title-bar{width:3px;height:13px;background:var(--amber);border-radius:2px}
+.usage-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--g10)}
+.usage-row:last-child{border-bottom:none}
+.usage-row__label{font-size:12px;color:var(--g50)}
+.usage-row__val{font-size:14px;font-weight:700;color:var(--g90)}
+
+/* ─────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────── */
+@media(max-width:1100px){
+  .nav__tabs{display:none}
+  .topic-split,.feat-split{grid-template-columns:1fr}
+  .roles-mini__grid{grid-template-columns:repeat(2,1fr)}
+  .roles-grid{grid-template-columns:1fr}
+  .role-panel{border-right:none;border-bottom:1.5px solid var(--g20)}
+  .role-panel:last-child{border-bottom:none}
+  .search-layout{grid-template-columns:1fr}
+  .filter-panel{position:static;max-height:none;overflow-y:visible}
+  .ds-layout{grid-template-columns:1fr}
+  .sidebar{position:static}
+  .dcat-grid{grid-template-columns:1fr}
+  .quality-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .wrap{padding:0 16px}.nav{padding:0 16px}
+  .hero{padding:40px 16px 32px}.hero__title{font-size:26px}
+  .hero__desc{white-space:normal;font-size:13px;max-width:420px}
+  .topic-grid{grid-template-columns:1fr}
+  .search-bar{padding:12px 16px}
+  .ds-hero,.ds-tabs-inner{padding-left:16px;padding-right:16px}
+  .cta__inner{flex-direction:column}.cta__form{width:100%;flex-direction:column}.cta__inp{width:100%}
+}
+
+/* ─────────────────────────────────────
+   PAGE: 포털 소개 (About)
+───────────────────────────────────── */
+.about-hero{background:linear-gradient(150deg,var(--navy-dk) 0%,var(--navy) 60%,#1B4A8A 100%);padding:56px 48px;position:relative;overflow:hidden}
+.about-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.018'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.about-hero__inner{max-width:var(--max);margin:0 auto;position:relative;z-index:1}
+.about-hero__eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(0,137,123,.18);border:1px solid rgba(0,137,123,.35);color:#80CBC4;font-size:11.5px;font-weight:500;padding:4px 13px;border-radius:20px;margin-bottom:18px;letter-spacing:.4px}
+.about-hero__title{font-size:32px;font-weight:900;color:var(--white);line-height:1.35;letter-spacing:-.8px;margin-bottom:14px}
+.about-hero__title em{color:#80CBC4;font-style:normal}
+.about-hero__desc{font-size:14.5px;color:rgba(255,255,255,.6);line-height:1.8;max-width:720px}
+
+.about-body{padding:56px 0 72px}
+.placeholder-box{text-align:center;padding:64px 20px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.placeholder-box__icon{font-size:44px;margin-bottom:6px}
+.placeholder-box__title{font-size:18px;font-weight:800;color:var(--navy)}
+.placeholder-box__desc{font-size:13.5px;color:var(--g50);max-width:420px;line-height:1.7}
+.placeholder-box__cta{margin-top:14px;background:var(--teal);color:var(--white);padding:11px 22px;border-radius:9px;font-size:13.5px;font-weight:700;transition:background var(--ease)}
+.placeholder-box__cta:hover{background:var(--teal-dk)}
+.about-sec{margin-bottom:64px;scroll-margin-top:calc(var(--nav-h) + 16px)}
+.about-sec:last-child{margin-bottom:0}
+.about-sec__num{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:var(--teal);color:var(--white);font-size:14px;font-weight:900;margin-right:12px;flex-shrink:0}
+.about-sec__head{display:flex;align-items:center;margin-bottom:22px;padding-bottom:14px;border-bottom:2px solid var(--g10)}
+.about-sec__title{font-size:22px;font-weight:700;color:var(--navy);letter-spacing:-.5px}
+.about-p{font-size:15px;color:var(--g70);line-height:1.85;margin-bottom:16px}
+.about-p:last-child{margin-bottom:0}
+.about-p strong{color:var(--navy);font-weight:700}
+.about-hl{background:linear-gradient(transparent 60%,var(--teal-lt) 60%);color:var(--navy-dk);font-weight:700;padding:0 1px}
+
+/* 미션 인용 */
+.about-mission{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-md) 100%);border-radius:var(--r-lg);padding:36px 40px;margin-bottom:24px;position:relative;overflow:hidden}
+.about-mission::before{content:'\201C';position:absolute;top:-10px;left:22px;font-size:120px;font-weight:900;color:rgba(128,203,196,.18);font-family:Georgia,serif;line-height:1}
+.about-mission__txt{font-size:21px;font-weight:700;color:var(--white);line-height:1.6;letter-spacing:-.4px;position:relative;z-index:1}
+.about-mission__txt em{color:#80CBC4;font-style:normal}
+
+/* 도해 캡션 */
+.about-fig{margin:8px 0 4px;border:1.5px solid var(--g20);border-radius:var(--r-lg);overflow:hidden;background:var(--white);box-shadow:var(--sh)}
+.about-fig__caption{font-size:12.5px;color:var(--g50);text-align:center;padding:12px 16px;background:var(--g05);border-top:1px solid var(--g10)}
+.about-fig svg{display:block;width:100%;height:auto}
+
+/* 주요 기능 카드 */
+.about-feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:8px}
+.about-feat{border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:24px 24px 22px;transition:all var(--ease);position:relative;overflow:hidden}
+.about-feat::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--fc,var(--teal))}
+.about-feat:hover{box-shadow:var(--sh-md);transform:translateY(-3px);border-color:var(--fc,var(--teal))}
+.about-feat__head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.about-feat__badge{width:34px;height:34px;border-radius:9px;background:var(--fc-lt,var(--teal-lt));color:var(--fc,var(--teal));font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.about-feat__title{font-size:15.5px;font-weight:700;color:var(--navy);line-height:1.4}
+.about-feat__desc{font-size:13px;color:var(--g70);line-height:1.75}
+
+/* 핵심 메시지 배너 */
+.about-key{background:var(--teal-lt);border:1.5px solid var(--teal);border-radius:var(--r-lg);padding:28px 32px;display:flex;align-items:flex-start;gap:18px;margin-top:8px}
+.about-key__icon{width:46px;height:46px;border-radius:11px;background:var(--teal);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.about-key__label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--teal-dk);margin-bottom:6px}
+.about-key__txt{font-size:15.5px;font-weight:700;color:var(--navy-dk);line-height:1.7}
+.about-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px}
+.about-meta-box{border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:24px 26px;background:var(--g05)}
+.about-meta-box__label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--teal-dk);margin-bottom:14px}
+.about-meta-box__list{list-style:none}
+.about-meta-box__list li{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--g10);font-size:13.5px;color:var(--g70)}
+.about-meta-box__list li:last-child{border-bottom:none}
+.about-meta-box__list li strong{color:var(--navy);font-weight:600;text-align:right}
+.about-legal-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.about-legal-table th{text-align:left;padding:10px 14px;background:var(--teal-lt);color:var(--teal-dk);font-weight:700;border-bottom:1.5px solid var(--teal);font-size:12.5px}
+.about-legal-table th:first-child{border-top-left-radius:8px;width:34%}
+.about-legal-table th:last-child{border-top-right-radius:8px}
+.about-legal-table td{padding:11px 14px;border-bottom:1px solid var(--g10);color:var(--g70);line-height:1.6;vertical-align:top}
+.about-legal-table td:first-child{font-weight:600;color:var(--navy)}
+.about-legal-table tbody tr:last-child td,.about-legal-table tr:last-child td{border-bottom:none}
+
+/* 목차(앵커) */
+.about-toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px}
+.about-toc__item{font-size:12.5px;color:rgba(255,255,255,.8);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:6px 14px;transition:all var(--ease);cursor:pointer}
+.about-toc__item:hover{background:rgba(0,137,123,.25);color:var(--white);border-color:rgba(0,137,123,.5)}
+
+@media(max-width:768px){
+  .about-hero{padding:40px 16px}.about-hero__title{font-size:24px}
+  .about-feat-grid{grid-template-columns:1fr}
+  .about-mission{padding:28px 24px}.about-mission__txt{font-size:17px}
+  .about-key{flex-direction:column;gap:12px;padding:22px}
+  .about-meta-grid{grid-template-columns:1fr}
+}
+
+/* 가이드 마크다운 렌더링 */
+.md-body .md-h3{font-size:14px;font-weight:700;color:var(--navy);margin:0 0 10px}
+.md-body .md-h4{font-size:13px;font-weight:700;color:var(--g80);margin:12px 0 6px}
+.md-body .md-p{font-size:13px;color:var(--g80);line-height:1.7;margin:0 0 8px}
+.md-body .md-quote{font-size:12.5px;color:var(--teal);background:var(--teal-lt);padding:8px 12px;border-radius:8px;margin:0 0 10px;font-weight:600}
+.md-body .md-ul{list-style:none;margin:0 0 8px;padding:0}
+.md-body .md-ul li{font-size:13px;color:var(--g90);line-height:1.7;padding:3px 0 3px 14px;position:relative}
+.md-body .md-ul li:before{content:"";position:absolute;left:2px;top:12px;width:4px;height:4px;border-radius:50%;background:var(--teal)}
+.md-body .md-ul li.md-sub{padding-left:28px;color:var(--g70);font-size:12.5px}
+.md-body .md-ul li.md-sub:before{left:16px;background:var(--g40);width:3px;height:3px}
+.md-body .md-ul li strong{color:var(--g50);font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- ══════════ 공통 NAV ══════════ -->
+<header class="nav">
+  <div class="nav__logo" onclick="goPage('main')">
+    <div class="nav__logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 10h10M4 14h13M4 18h8"/></svg>
+    </div>
+    <div>
+      <div class="nav__logo-ko">보건의료데이터 중개 포털</div>
+      <div class="nav__logo-en">Medical Data Portal · MDP</div>
+    </div>
+  </div>
+  <nav class="nav__tabs">
+    <span class="nav__tab on" data-page="main" onclick="goPage('main')">검색</span>
+    <span class="nav__tab" data-page="datamap" onclick="goPage('datamap')">데이터 맵</span>
+    <span class="nav__tab" data-page="howto" onclick="goPage('howto')">포털 서비스</span>
+    <span class="nav__tab" data-page="community" onclick="goPage('community')">커뮤니티</span>
+    <span class="nav__tab" data-page="notice" onclick="goPage('notice')">알림·소식</span>
+    <span class="nav__tab" data-page="about" onclick="goPage('about')">포털 소개</span>
+  </nav>
+  <div class="nav__right">
+    <button class="nav__menu-btn" onclick="toggleMenu()" aria-label="전체 메뉴 열기">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <div class="nav__search-wrap">
+      <input class="nav__search" id="navSearch" type="text" placeholder="통합검색" onkeydown="if(event.key==='Enter')doSearch()">
+      <svg class="nav__search-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    </div>
+    <button class="nav__btn nav__btn-out">로그인</button>
+    <button class="nav__btn nav__btn-fill">회원가입</button>
+  </div>
+</header>
+
+<!-- ══════════ 전체 메뉴 슬라이드 패널 ══════════ -->
+<div class="menu-overlay" id="menuOverlay" onclick="toggleMenu(false)"></div>
+<aside class="menu-panel" id="menuPanel">
+  <div class="menu-panel__head">
+    <span class="menu-panel__title">전체 메뉴</span>
+    <button class="menu-panel__close" onclick="toggleMenu(false)" aria-label="메뉴 닫기">✕</button>
+  </div>
+  <div class="menu-panel__group">
+    <div class="menu-panel__label">포털</div>
+    <a class="menu-panel__item on" data-page="main" onclick="goPage('main');toggleMenu(false)">검색</a>
+    <a class="menu-panel__item" data-page="datamap" onclick="goPage('datamap');toggleMenu(false)">데이터 맵</a>
+    <a class="menu-panel__item" data-page="howto" onclick="goPage('howto');toggleMenu(false)">포털 서비스</a>
+    <a class="menu-panel__item" data-page="community" onclick="goPage('community');toggleMenu(false)">커뮤니티</a>
+    <a class="menu-panel__item" data-page="notice" onclick="goPage('notice');toggleMenu(false)">알림·소식</a>
+    <a class="menu-panel__item" data-page="about" onclick="goPage('about');toggleMenu(false)">포털 소개</a>
+  </div>
+  <div class="menu-panel__group">
+    <div class="menu-panel__label">메타데이터 도구</div>
+    <a class="menu-panel__item" href="https://kdyoung100.github.io/HealthDCAT-KR/" target="_blank" rel="noopener">메타데이터 설명서</a>
+    <a class="menu-panel__item" href="https://kdyoung100.github.io/HealthDCAT-KR-Dataset-Description-Assistant/" target="_blank" rel="noopener">메타데이터 생성</a>
+  </div>
+  <div class="menu-panel__group">
+    <div class="menu-panel__label">데이터셋 자료집</div>
+    <a class="menu-panel__item" href="https://kdyoung100.github.io/Korean-Healthcare-Data-Reference-Materials/" target="_blank" rel="noopener">데이터셋 자료집</a>
+  </div>
+</aside>
+
+<!-- ══════════════════════════════════════════
+   PAGE 1: 메인
+══════════════════════════════════════════ -->
+<div id="page-main" class="page active">
+
+<!-- HERO (Type E: 인라인 공지·통합검색형) -->
+<section class="hero">
+  <div class="hero__inner">
+    <div class="hero__eyebrow"><span class="hero__dot"></span>DCAT 2.0 · 국가 보건의료데이터 중개 플랫폼 · v1 Prototype</div>
+    <h1 class="hero__title">보건의료데이터를<br><em>쉽게 찾고, 안전하게</em> 활용하세요</h1>
+    <p class="hero__desc">표준 메타데이터 기반으로 데이터를 탐색하고, 신청·심의·활용까지 하나의 포털에서 처리합니다.</p>
+    <div class="hero__search-wrap">
+      <div class="hero__tabs">
+        <button class="hero__tab on" data-mode="ai" onclick="setHeroTab(this,'예: 결핵 데이터 찾아줘 (자연어로 물어보세요)')">대화형 AI 검색</button>
+        <button class="hero__tab" onclick="setHeroTab(this,'데이터셋 기반 검색 (예: 건강검진, 암 등록...)')">데이터셋</button>
+        <button class="hero__tab" onclick="setHeroTab(this,'항목명·표준코드로 검색 (예: 혈압, ICD-10...)')">항목 검색</button>
+        <button class="hero__tab" onclick="setHeroTab(this,'코호트 조건 입력 (예: 65세 이상 당뇨병 환자...)')">코호트</button>
+        <button class="hero__tab" onclick="setHeroTab(this,'프로젝트·논문 검색...')">연구정보</button>
+      </div>
+      <div class="hero__bar">
+        <input id="hinput" class="hero__input" type="text" placeholder="예: 결핵 데이터 찾아줘 (자연어로 물어보세요)" onkeydown="if(event.key==='Enter')doSearch()">
+        <button class="hero__sbtn" onclick="doSearch()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>검색
+        </button>
+      </div>
+      <div class="hero__chips">
+        <span style="font-size:11.5px;color:rgba(255,255,255,.35);align-self:center">인기 :</span>
+        <span class="hero__chip" onclick="searchChip('#질병관리청')">#질병관리청</span>
+        <span class="hero__chip" onclick="searchChip('#국민건강영양조사')">#국민건강영양조사</span>
+        <span class="hero__chip" onclick="searchChip('#건강보험공단')">#건강보험공단</span>
+        <span class="hero__chip" onclick="searchChip('#응급의료')">#응급의료</span>
+        <span class="hero__chip" onclick="searchChip('#사망원인')">#사망원인</span>
+        <span class="hero__chip" onclick="searchChip('#결핵')">#결핵</span>
+      </div>
+    </div>
+
+    <!-- 관련 사이트: 실제 신청 창구 3곳. 주소는 PLATFORMS(신청 창구 판별)와 같은 값을 쓴다. -->
+    <div class="hero__links">
+      <div class="hero__links-head">관련 사이트</div>
+      <div class="hero__links-grid">
+        <a class="hero__link" href="https://k-cure.mohw.go.kr/" target="_blank" rel="noopener"><span class="hero__link-name">K-CURE</span><span class="hero__link-desc">암 공공·임상 라이브러리</span><span class="hero__link-arrow" aria-hidden="true">↗</span></a>
+        <a class="hero__link" href="https://hcdl.mohw.go.kr/" target="_blank" rel="noopener"><span class="hero__link-name">보건의료 빅데이터 통합 플랫폼</span><span class="hero__link-desc">공공기관 데이터 결합·신청</span><span class="hero__link-arrow" aria-hidden="true">↗</span></a>
+        <a class="hero__link" href="https://k-cure.mohw.go.kr/portal/pfm/kif/dat/viewPfmKifDat.do" target="_blank" rel="noopener"><span class="hero__link-name">의료데이터 중심병원</span><span class="hero__link-desc">병원 임상데이터 카탈로그</span><span class="hero__link-arrow" aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+
+    <div class="hero__stats">
+      <div><div class="hero__stat-num" id="stat-dataset-count">35<span class="hero__stat-unit">건</span></div><div class="hero__stat-label">등록 데이터셋</div></div>
+      <div><div class="hero__stat-num" id="stat-org-count">15<span class="hero__stat-unit">개</span></div><div class="hero__stat-label">참여 공급 기관</div></div>
+      <div><div class="hero__stat-num">4,892<span class="hero__stat-unit">건</span></div><div class="hero__stat-label">누적 데이터 신청</div></div>
+    </div>
+
+    <div class="hero__notice">
+      <div class="hero__notice-head"><span>📌 주요 공지</span><span class="hero__notice-more" onclick="goPage('notice')">더보기 →</span></div>
+      <ul class="hero__notice-list">
+        <li onclick="goPage('notice')"><span class="hero__notice-cat">공지</span><span class="hero__notice-txt">「보건의료데이터 중개 포털」 1차 서비스 오픈 안내 (2026년 12월)</span><span class="hero__notice-date">12.01</span></li>
+        <li onclick="goPage('notice')"><span class="hero__notice-cat">데이터</span><span class="hero__notice-txt">DCAT 2.0 기반 데이터 카탈로그 등록 기준 안내</span><span class="hero__notice-date">11.20</span></li>
+        <li onclick="goPage('notice')"><span class="hero__notice-cat">교육</span><span class="hero__notice-txt">2026년 4분기 수요자 온라인 교육 수강 신청 안내</span><span class="hero__notice-date">11.10</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- RESOURCE TYPES (4×2 고정 그리드: 카드 8장을 한 번에 보여준다) -->
+<section class="resources">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-title">리소스 탐색<small>실제 등록된 보건의료 데이터를 분류 기준별로 탐색합니다.</small></div>
+      <span class="sec-more" onclick="goPage('search')">전체 검색 →</span>
+    </div>
+    <div class="res-grid" id="resGrid"></div>
+  </div>
+</section>
+
+<!-- SUBJECT BROWSE (Type C: 임상/공공 듀얼 스플릿) -->
+<section class="browse">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-title">주제별 데이터 탐색<small>임상데이터와 공공데이터를 질환·분야 주제별로 바로 찾아볼 수 있습니다.</small></div></div>
+    <div class="topic-split">
+      <div class="topic-track topic-track--clinical">
+        <div class="topic-track__head"><span class="topic-track__head-lbl">임상데이터</span><span class="topic-track__count" id="topicClinicalCount">0건</span></div>
+        <div class="topic-grid" id="topicClinicalGrid"></div>
+        <button class="topic-track__more" onclick="exploreResource('clinical')">임상데이터 전체보기 →</button>
+      </div>
+      <div class="topic-track topic-track--public">
+        <div class="topic-track__head"><span class="topic-track__head-lbl">공공데이터</span><span class="topic-track__count" id="topicPublicCount">0건</span></div>
+        <div class="topic-grid" id="topicPublicGrid"></div>
+        <button class="topic-track__more" onclick="exploreResource('public')">공공데이터 전체보기 →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED (Type A: 탭 전환형 — 인기/최신 데이터셋)
+     '인기 데이터' 조회수는 아직 방문 통계가 없어 실제 값이 아니라
+     데이터셋 ID 기반으로 고정 생성한 표시용 숫자다(새로고침해도 안 바뀜).
+     실제 조회 로그가 생기면 fakeViewCount()만 실제 집계로 바꿔치면 된다. -->
+<section class="featured">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-title">주목 데이터셋<small>인기 있는 데이터셋과 최근 갱신된 데이터셋을 확인하세요.</small></div>
+      <span class="sec-more" onclick="goPage('search')">전체 데이터셋 →</span>
+    </div>
+    <div class="feat-split">
+      <div class="feat-panel">
+        <div class="feat-panel__head">주요 공급기관<span class="feat-panel__sub">등록 데이터셋 순</span></div>
+        <ul class="feat-list" id="featuredOrgList"></ul>
+      </div>
+      <div class="feat-panel">
+        <div class="feat-tabs">
+          <button class="feat-tab on" onclick="switchFeaturedTab('popular', this)">인기 데이터</button>
+          <button class="feat-tab" onclick="switchFeaturedTab('recent', this)">최신 데이터</button>
+        </div>
+        <ul class="feat-list" id="featuredList"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROLES (요약 — 상세 설명은 포털 소개 페이지 참고) -->
+<section class="roles-mini">
+  <div class="wrap">
+    <div class="sec-head"><div class="sec-title">이용자 유형별 안내<small>역할에 맞는 서비스를 바로 시작하세요.</small></div><span class="sec-more" onclick="goToAboutSec('about-s6')">자세히 보기 →</span></div>
+    <div class="roles-mini__grid">
+      <div class="roles-mini__item" style="--accent:#1565C0;--icon-bg:#E3EDF9" onclick="goPage('search')"><div class="roles-mini__icon">🔍</div><div><div class="roles-mini__title">데이터 수요자</div><div class="roles-mini__sub">연구자·의료기관·기업</div></div><span class="roles-mini__arr">›</span></div>
+      <div class="roles-mini__item" style="--accent:#00897B;--icon-bg:#E0F2F0" onclick="goToAboutSec('about-s6')"><div class="roles-mini__icon">🏥</div><div><div class="roles-mini__title">데이터 공급자</div><div class="roles-mini__sub">의료기관·공공기관·연구소</div></div><span class="roles-mini__arr">›</span></div>
+      <div class="roles-mini__item" style="--accent:#E65100;--icon-bg:#FFF3E0" onclick="goToAboutSec('about-s6')"><div class="roles-mini__icon">⚖️</div><div><div class="roles-mini__title">심의자</div><div class="roles-mini__sub">DRB 위원</div></div><span class="roles-mini__arr">›</span></div>
+      <div class="roles-mini__item" style="--accent:#4527A0;--icon-bg:#EDE7F6" onclick="goToAboutSec('about-s6')"><div class="roles-mini__icon">🛠️</div><div><div class="roles-mini__title">관리자</div><div class="roles-mini__sub">포털 운영자</div></div><span class="roles-mini__arr">›</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PARTNERS -->
+<div class="partners">
+  <div class="partners__label">참여 기관</div>
+  <div class="ticker-wrap"><div class="ticker">
+    <span class="ptag">국민건강보험공단</span><span class="ptag">건강보험심사평가원</span><span class="ptag">국립암센터</span><span class="ptag">질병관리청</span><span class="ptag">국립중앙의료원</span><span class="ptag">서울아산병원</span><span class="ptag">삼성서울병원</span><span class="ptag">세브란스병원</span><span class="ptag">서울대학교병원</span><span class="ptag">고려대학교의료원</span><span class="ptag">한국보건산업진흥원</span><span class="ptag">한국보건의료정보원</span><span class="ptag">아주대학교병원</span><span class="ptag">경북대학교병원</span>
+    <span class="ptag">국민건강보험공단</span><span class="ptag">건강보험심사평가원</span><span class="ptag">국립암센터</span><span class="ptag">질병관리청</span><span class="ptag">국립중앙의료원</span><span class="ptag">서울아산병원</span><span class="ptag">삼성서울병원</span><span class="ptag">세브란스병원</span><span class="ptag">서울대학교병원</span><span class="ptag">고려대학교의료원</span><span class="ptag">한국보건산업진흥원</span><span class="ptag">한국보건의료정보원</span><span class="ptag">아주대학교병원</span><span class="ptag">경북대학교병원</span>
+  </div></div>
+</div>
+
+<!-- CTA -->
+<div class="cta"><div class="wrap"><div class="cta__inner">
+  <div class="cta__text"><h2>포털 뉴스레터 구독</h2><p>신규 데이터셋 등록, 시스템 업데이트, 교육 일정 등을<br>매월 이메일로 받아보세요.</p></div>
+  <div class="cta__form"><input class="cta__inp" type="email" placeholder="이메일 주소를 입력하세요"><button class="cta__sub">구독하기</button></div>
+</div></div></div>
+
+<!-- FOOTER -->
+<footer><div class="wrap">
+  <div class="footer__top">
+    <div class="footer__brand"><div class="footer__name">보건의료데이터 중개 포털 (MDP)</div><div class="footer__addr">(재)한국보건의료정보원 데이터활용지원사업단<br>서울특별시 중구 퇴계로 173 남산스퀘어<br>Tel: 02-6901-8114 · mdportal@khidi.or.kr</div></div>
+    <nav class="footer__nav">
+      <div class="fnav"><h4>서비스</h4><a onclick="goPage('search')">데이터셋 검색</a><a onclick="goPage('search')">코호트 디스커버리</a><a>데이터 신청</a><a>안심활용센터</a></div>
+      <div class="fnav"><h4>정보</h4><a onclick="goPage('about')">포털 소개</a><a onclick="goPage('howto')">포털 서비스</a><a onclick="goPage('datamap')">데이터 맵</a><a onclick="goPage('community')">커뮤니티</a><a onclick="goPage('notice')">알림·소식</a></div>
+      <div class="fnav"><h4>정책</h4><a>개인정보처리방침</a><a>이용약관</a><a>저작권정책</a><a>오픈 API</a></div>
+    </nav>
+  </div>
+  <div class="footer__bot"><div class="footer__copy">COPYRIGHT © 2026 KHIDI. ALL RIGHTS RESERVED.</div><div class="footer__gov">감독기관 : 보건복지부 보건의료데이터진흥과 · 전문기관 : 한국보건산업진흥원</div></div>
+</div></footer>
+
+</div><!-- /#page-main -->
+
+<!-- ══════════════════════════════════════════
+   PAGE: 포털 소개 (About)
+══════════════════════════════════════════ -->
+<div id="page-about" class="page">
+
+  <section class="about-hero">
+    <div class="about-hero__inner">
+      <span class="about-hero__eyebrow"><span class="hero__dot"></span>PORTAL INTRODUCTION · 포털 소개</span>
+      <h1 class="about-hero__title">원본이 아닌 <em>메타데이터</em>로 연결하는<br>안전한 보건의료데이터 중개 포털</h1>
+      <p class="about-hero__desc">본 포털은 민감한 원본 데이터를 유출하는 곳이 아니라, ‘메타데이터’라는 안전한 명세서를 통해 흩어진 데이터를 찾아주고 연결해주는 곳입니다. 여러 의료기관·공공기관에 분산된 보건의료데이터를 한곳에서 안전하게 탐색하고 활용할 수 있도록 지원합니다.</p>
+      <div class="about-toc">
+        <span class="about-toc__item" onclick="document.getElementById('about-s1').scrollIntoView({behavior:'smooth'})">메타데이터란?</span>
+        <span class="about-toc__item" onclick="document.getElementById('about-s2').scrollIntoView({behavior:'smooth'})">중개 포털이란?</span>
+        <span class="about-toc__item" onclick="document.getElementById('about-s3').scrollIntoView({behavior:'smooth'})">설립 목적</span>
+        <span class="about-toc__item" onclick="document.getElementById('about-s4').scrollIntoView({behavior:'smooth'})">서비스 개념도</span>
+        <span class="about-toc__item" onclick="document.getElementById('about-s5').scrollIntoView({behavior:'smooth'})">주요 기능</span>
+        <span class="about-toc__item" onclick="document.getElementById('about-s6').scrollIntoView({behavior:'smooth'})">이용자 유형별 안내</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap about-body">
+
+    <!-- 섹션 1: 메타데이터란? -->
+    <section class="about-sec" id="about-s1">
+      <div class="about-sec__head"><span class="about-sec__num">1</span><h2 class="about-sec__title">메타데이터(Metadata)란?</h2></div>
+      <p class="about-p">메타데이터는 <strong>데이터를 설명하는 데이터(Data about Data)</strong>입니다.</p>
+      <p class="about-p">보건의료데이터는 환자의 민감한 개인정보를 포함하고 있어 원본을 그대로 공유하거나 이동하기 어렵습니다. 본 포털에서 활용하는 ‘메타데이터’는 민감한 원본 데이터를 직접 포함하지 않고, 해당 데이터의 <span class="about-hl">구조·특성·위치·품질 정보만을 설명하는 ‘안전한 요약표이자 카탈로그’</span> 역할을 합니다.</p>
+      <p class="about-p">이를 통해 연구자는 자신에게 필요한 데이터가 어디에 있는지 빠르고 정확하게 사전 탐색할 수 있으며, 데이터 공급자는 데이터 유출 위험 없이 안전하게 데이터를 알릴 수 있습니다.</p>
+      <figure class="about-fig">
+        <svg viewBox="0 0 920 360" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans KR',sans-serif">
+  <!-- 원본 데이터 (잠금) -->
+  <g>
+    <rect x="32" y="36" width="180" height="288" rx="14" fill="#FCE4EC" stroke="#AD1457" stroke-width="1.5" stroke-dasharray="6 5"/>
+    <text x="122" y="74" text-anchor="middle" font-size="15" font-weight="900" fill="#AD1457">🔒 원본 데이터</text>
+    <text x="122" y="96" text-anchor="middle" font-size="11.5" fill="#AD1457">기관 내부에 보관</text>
+    <rect x="56" y="120" width="132" height="40" rx="7" fill="#fff" stroke="#F3C0D4"/>
+    <text x="122" y="145" text-anchor="middle" font-size="11.5" fill="#7B7B9A">공공데이터</text>
+    <rect x="56" y="172" width="132" height="40" rx="7" fill="#fff" stroke="#F3C0D4"/>
+    <text x="122" y="197" text-anchor="middle" font-size="11.5" fill="#7B7B9A">임상데이터</text>
+    <rect x="56" y="224" width="132" height="40" rx="7" fill="#fff" stroke="#F3C0D4"/>
+    <text x="122" y="249" text-anchor="middle" font-size="11.5" fill="#7B7B9A">연구데이터</text>
+    <text x="122" y="298" text-anchor="middle" font-size="11" font-weight="700" fill="#AD1457">포털에 직접 제공되지 않음</text>
+  </g>
+
+  <!-- 화살표 (추출) -->
+  <g>
+    <line x1="216" y1="180" x2="270" y2="180" stroke="#00897B" stroke-width="2.5"/>
+    <polygon points="270,174 282,180 270,186" fill="#00897B"/>
+    <text x="248" y="166" text-anchor="middle" font-size="10.5" font-weight="700" fill="#00695C">메타데이터</text>
+    <text x="248" y="204" text-anchor="middle" font-size="10.5" font-weight="700" fill="#00695C">추출</text>
+  </g>
+
+  <!-- 메타데이터 4계층 -->
+  <text x="600" y="26" text-anchor="middle" font-size="13" font-weight="900" fill="#0D2B55">안전한 요약표이자 카탈로그 — 메타데이터* 4계층</text>
+
+  <!-- L1 -->
+  <g>
+    <rect x="300" y="40" width="588" height="58" rx="10" fill="#E0F2F0" stroke="#00897B" stroke-width="1.5"/>
+    <circle cx="332" cy="69" r="15" fill="#00897B"/>
+    <text x="332" y="74" text-anchor="middle" font-size="13" font-weight="900" fill="#fff">1</text>
+    <text x="362" y="64" font-size="14" font-weight="700" fill="#0D2B55">구조 (Structure)</text>
+    <text x="362" y="84" font-size="11.5" fill="#3D3D5C">테이블·변수·항목 구성 — 어떤 항목으로 이루어졌는가</text>
+  </g>
+  <!-- L2 -->
+  <g>
+    <rect x="300" y="108" width="588" height="58" rx="10" fill="#E3EDF9" stroke="#1565C0" stroke-width="1.5"/>
+    <circle cx="332" cy="137" r="15" fill="#1565C0"/>
+    <text x="332" y="142" text-anchor="middle" font-size="13" font-weight="900" fill="#fff">2</text>
+    <text x="362" y="132" font-size="14" font-weight="700" fill="#0D2B55">특성 (Characteristics)</text>
+    <text x="362" y="152" font-size="11.5" fill="#3D3D5C">대상 질환·기간·규모(코호트 수) — 어떤 데이터인가</text>
+  </g>
+  <!-- L3 -->
+  <g>
+    <rect x="300" y="176" width="588" height="58" rx="10" fill="#EDE7F6" stroke="#4527A0" stroke-width="1.5"/>
+    <circle cx="332" cy="205" r="15" fill="#4527A0"/>
+    <text x="332" y="210" text-anchor="middle" font-size="13" font-weight="900" fill="#fff">3</text>
+    <text x="362" y="200" font-size="14" font-weight="700" fill="#0D2B55">위치 (Location)</text>
+    <text x="362" y="220" font-size="11.5" fill="#3D3D5C">보유 기관·접근 경로 — 어디에 있고 어떻게 접근하는가</text>
+  </g>
+  <!-- L4 -->
+  <g>
+    <rect x="300" y="244" width="588" height="58" rx="10" fill="#FFF3E0" stroke="#E65100" stroke-width="1.5"/>
+    <circle cx="332" cy="273" r="15" fill="#E65100"/>
+    <text x="332" y="278" text-anchor="middle" font-size="13" font-weight="900" fill="#fff">4</text>
+    <text x="362" y="268" font-size="14" font-weight="700" fill="#0D2B55">품질 (Quality)</text>
+    <text x="362" y="288" font-size="11.5" fill="#3D3D5C">완전성·정확성·갱신주기 — 얼마나 신뢰할 수 있는가</text>
+  </g>
+
+  <text x="600" y="328" text-anchor="middle" font-size="11" fill="#7B7B9A">*국가 데이터 카탈로그 표준(DCAT-AP 2.1 기반)과 HealthDCAT-AP 기반</text>
+</svg>
+        <figcaption class="about-fig__caption">[그림 1] 의료 메타데이터의 구조 — 4계층과 국가 데이터 카탈로그 표준(DCAT-AP 2.1 기반 · HealthDCAT-AP)</figcaption>
+      </figure>
+    </section>
+
+    <!-- 섹션 2: 중개 포털이란? -->
+    <section class="about-sec" id="about-s2">
+      <div class="about-sec__head"><span class="about-sec__num">2</span><h2 class="about-sec__title">메타데이터 기반 보건의료데이터 중개 포털이란?</h2></div>
+      <div class="about-mission">
+        <p class="about-mission__txt">전국 어디서나 안전하고 편리하게 활용 가능한<br><em>보건의료데이터 혁신 생태계</em></p>
+      </div>
+      <p class="about-p">보건의료데이터 중개 포털은 여러 의료기관 및 공공기관에 흩어져 있는 방대한 보건의료데이터를 한곳에서 쉽게 찾고 활용할 수 있도록 지원하는 통합 플랫폼입니다. 본 포털은 원본 데이터를 직접 수집하여 저장하지 않고, ‘메타데이터’를 중심으로 수요자와 공급자를 매칭하는 <span class="about-hl">안전한 맞춤형 탐색 및 중개 환경</span>을 제공합니다.</p>
+    </section>
+
+    <!-- 섹션 3: 설립 목적 -->
+    <section class="about-sec" id="about-s3">
+      <div class="about-sec__head"><span class="about-sec__num">3</span><h2 class="about-sec__title">설립 목적</h2></div>
+      <p class="about-p">과거에는 연구 가치가 있는 보건의료데이터가 각 기관에 개별적으로 분산되어 있어, 연구자가 이를 파악하고 접근하는 데 큰 어려움이 있었습니다. 특히 의료기관에서 생성되는 민감정보는 외부 반출이 제한되어, 다른 연구 데이터와 달리 ‘어떤 기관이 어떤 데이터를 보유하고 있는지’ 탐색하는 것 자체가 어려웠습니다.</p>
+      <p class="about-p">본 포털은 이러한 물리적 한계를 극복하고 데이터 수요자와 공급자를 안전하게 연결하기 위해 설립되었습니다. <strong>수요자 및 공급자 중심의 통합 중개 기반을 구축하여 산재된 보건의료데이터의 균형적인 활용을 촉진</strong>하고, 누구나 데이터 자원에 접근할 수 있는 혁신적인 보건의료 연구 생태계를 조성하는 것을 목적으로 합니다.</p>
+    </section>
+
+    <!-- 섹션 4: 서비스 개념도 -->
+    <section class="about-sec" id="about-s4">
+      <div class="about-sec__head"><span class="about-sec__num">4</span><h2 class="about-sec__title">서비스 개념도</h2></div>
+      <p class="about-p">공급자가 보유한 데이터에서 메타데이터를 추출·제공하면, 중개 포털이 이를 표준화하고, 수요자는 이를 탐색하여 안전하게 신청·중개받습니다.</p>
+      <figure class="about-fig">
+        <svg viewBox="0 0 960 340" xmlns="http://www.w3.org/2000/svg" font-family="'Noto Sans KR',sans-serif">
+  <!-- ===== 공급자 ===== -->
+  <g>
+    <rect x="20" y="40" width="270" height="256" rx="16" fill="#FCE4EC" stroke="#AD1457" stroke-width="1.5"/>
+    <rect x="20" y="40" width="270" height="46" rx="16" fill="#AD1457"/>
+    <rect x="20" y="62" width="270" height="24" fill="#AD1457"/>
+    <text x="155" y="70" text-anchor="middle" font-size="15" font-weight="900" fill="#fff">데이터 공급자</text>
+    <text x="155" y="108" text-anchor="middle" font-size="11.5" fill="#AD1457">의료기관 · 공공기관</text>
+
+    <rect x="42" y="128" width="226" height="64" rx="9" fill="#fff" stroke="#F3C0D4"/>
+    <text x="56" y="155" font-size="12.5" font-weight="700" fill="#0D2B55">🔒 원본 안전 보관</text>
+    <text x="56" y="176" font-size="11" fill="#7B7B9A">기관 내부 보안 환경에 보관</text>
+
+    <rect x="42" y="204" width="226" height="64" rx="9" fill="#fff" stroke="#F3C0D4"/>
+    <text x="56" y="231" font-size="12.5" font-weight="700" fill="#0D2B55">📤 메타데이터만 추출</text>
+    <text x="56" y="252" font-size="11" fill="#7B7B9A">전용 SW로 표준 메타데이터 생성</text>
+  </g>
+
+  <!-- 화살표 공급자 → 포털 (메타데이터) / 포털 → 공급자 (신청) -->
+  <g>
+    <line x1="290" y1="152" x2="342" y2="152" stroke="#00897B" stroke-width="3"/>
+    <polygon points="342,144 356,152 342,160" fill="#00897B"/>
+    <text x="323" y="138" text-anchor="middle" font-size="10.5" font-weight="700" fill="#00695C">메타데이터</text>
+    <line x1="356" y1="190" x2="304" y2="190" stroke="#1565C0" stroke-width="3"/>
+    <polygon points="304,182 290,190 304,198" fill="#1565C0"/>
+    <text x="323" y="214" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1565C0">신청</text>
+  </g>
+
+  <!-- ===== 중개 포털 ===== -->
+  <g>
+    <rect x="360" y="40" width="270" height="256" rx="16" fill="#E0F2F0" stroke="#00897B" stroke-width="2"/>
+    <rect x="360" y="40" width="270" height="46" rx="16" fill="#00897B"/>
+    <rect x="360" y="62" width="270" height="24" fill="#00897B"/>
+    <text x="495" y="70" text-anchor="middle" font-size="15" font-weight="900" fill="#fff">데이터 중개 포털</text>
+    <text x="495" y="108" text-anchor="middle" font-size="11.5" fill="#00695C">메타데이터 기반 플랫폼</text>
+
+    <rect x="382" y="128" width="226" height="64" rx="9" fill="#fff" stroke="#B2DFDB"/>
+    <text x="396" y="155" font-size="12.5" font-weight="700" fill="#0D2B55">📚 수집 및 표준화</text>
+    <text x="396" y="176" font-size="11" fill="#7B7B9A">DCAT 2.0 카탈로그로 통합</text>
+
+    <rect x="382" y="204" width="226" height="64" rx="9" fill="#fff" stroke="#B2DFDB"/>
+    <text x="396" y="231" font-size="12.5" font-weight="700" fill="#0D2B55">🗺️ 데이터맵 제공</text>
+    <text x="396" y="252" font-size="11" fill="#7B7B9A">연관관계 네트워크 시각화</text>
+  </g>
+
+  <!-- 화살표 포털 → 수요자 (탐색) / 수요자 → 포털 (신청) -->
+  <g>
+    <line x1="630" y1="152" x2="682" y2="152" stroke="#00897B" stroke-width="3"/>
+    <polygon points="682,144 696,152 682,160" fill="#00897B"/>
+    <text x="663" y="138" text-anchor="middle" font-size="10.5" font-weight="700" fill="#00695C">탐색</text>
+    <line x1="696" y1="190" x2="644" y2="190" stroke="#1565C0" stroke-width="3"/>
+    <polygon points="644,182 630,190 644,198" fill="#1565C0"/>
+    <text x="663" y="214" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1565C0">신청</text>
+  </g>
+
+  <!-- ===== 수요자 ===== -->
+  <g>
+    <rect x="700" y="40" width="240" height="256" rx="16" fill="#E3EDF9" stroke="#1565C0" stroke-width="1.5"/>
+    <rect x="700" y="40" width="240" height="46" rx="16" fill="#1565C0"/>
+    <rect x="700" y="62" width="240" height="24" fill="#1565C0"/>
+    <text x="820" y="70" text-anchor="middle" font-size="15" font-weight="900" fill="#fff">데이터 수요자</text>
+    <text x="820" y="108" text-anchor="middle" font-size="11.5" fill="#1565C0">연구자 · 기업</text>
+
+    <rect x="722" y="128" width="196" height="64" rx="9" fill="#fff" stroke="#BBD3EE"/>
+    <text x="736" y="155" font-size="12.5" font-weight="700" fill="#0D2B55">🔍 데이터 탐색</text>
+    <text x="736" y="176" font-size="11" fill="#7B7B9A">데이터셋·변수·코호트 규모</text>
+
+    <rect x="722" y="204" width="196" height="64" rx="9" fill="#fff" stroke="#BBD3EE"/>
+    <text x="736" y="231" font-size="12.5" font-weight="700" fill="#0D2B55">📝 사용 신청</text>
+    <text x="736" y="252" font-size="11" fill="#7B7B9A">통합 서식으로 안전 신청</text>
+  </g>
+
+</svg>
+        <figcaption class="about-fig__caption">[그림 2] 보건의료데이터 중개 포털 — 공급자 · 중개 포털 · 수요자의 역할과 흐름</figcaption>
+      </figure>
+    </section>
+
+    <!-- 섹션 5: 주요 기능 -->
+    <section class="about-sec" id="about-s5">
+      <div class="about-sec__head"><span class="about-sec__num">5</span><h2 class="about-sec__title">주요 기능</h2></div>
+      <div class="about-feat-grid">
+        <div class="about-feat" style="--fc:#00897B;--fc-lt:#E0F2F0">
+          <div class="about-feat__head"><span class="about-feat__badge">①</span><h3 class="about-feat__title">데이터셋 및 상세 항목 검색, 코호트 생성</h3></div>
+          <p class="about-feat__desc">여러 기관에 산재된 국가 보건의료데이터를 한 곳에서 검색할 수 있습니다. 일반 데이터셋 검색부터 상세 항목 검색, 그리고 실제 연구에 활용 가능한 대상 집단(환자 수 등)의 규모를 사전에 추정하는 코호트 생성을 할 수 있습니다.</p>
+        </div>
+        <div class="about-feat" style="--fc:#1565C0;--fc-lt:#E3EDF9">
+          <div class="about-feat__head"><span class="about-feat__badge">②</span><h3 class="about-feat__title">데이터맵 및 (가칭)데이터 디렉토리</h3></div>
+          <p class="about-feat__desc">기관별 보유 데이터 현황을 한 눈에 빠르고 직관적으로 파악할 수 있도록<br>① 시각화된 데이터맵 제공<br>② 국가 보건의료데이터 디렉토리 제공</p>
+        </div>
+        <div class="about-feat" style="--fc:#4527A0;--fc-lt:#EDE7F6">
+          <div class="about-feat__head"><span class="about-feat__badge">③</span><h3 class="about-feat__title">다기관 데이터셋을 이용한 연구 지원</h3></div>
+          <p class="about-feat__desc">다기관 데이터 활용 시 발생하는 행정 부담을 대폭 줄여줍니다.<br>① 공동 데이터심의위원회(DRB) 기능<br>② 공통서식 작성으로 기관별 서식 자동 생성 기능</p>
+        </div>
+        <div class="about-feat" style="--fc:#E65100;--fc-lt:#FFF3E0">
+          <div class="about-feat__head"><span class="about-feat__badge">④</span><h3 class="about-feat__title">데이터 공급자용 데이터 활용 지원</h3></div>
+          <p class="about-feat__desc">의료기관에 배포되는 전용 소프트웨어로 원데이터에서 메타데이터를 자동 추출·변환합니다. 또한 데이터 결합·가공을 위한 비식별화, 가명처리, 결합키 등을 지원합니다.</p>
+        </div>
+      </div>
+
+      <!-- 핵심 메시지 -->
+      <div class="about-key" style="margin-top:18px">
+        <div class="about-key__icon">🔐</div>
+        <div>
+          <div class="about-key__label">핵심 메시지</div>
+          <p class="about-key__txt">국가 보건의료데이터를 한 곳에서 안전하고 쉽고 빠르게 찾을 수 있습니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 섹션 6: 이용자 유형별 안내 -->
+    <section class="about-sec" id="about-s6">
+      <div class="about-sec__head"><span class="about-sec__num">6</span><h2 class="about-sec__title">이용자 유형별 안내</h2></div>
+      <div class="roles-grid">
+        <div class="role-panel" style="--accent:#1565C0;--icon-bg:#E3EDF9;--hover-bg:#F0F5FF"><div class="role-panel__icon">🔍</div><div><div class="role-panel__title">데이터 수요자</div><div class="role-panel__sub">연구자·의료기관·기업</div></div><ul class="role-panel__list"><li>데이터셋·항목 검색 및 메타데이터 확인</li><li>코호트 조건 검색으로 연구 가능 규모 사전 추정</li><li>데이터 이용 신청 및 DRB 심의 진행</li><li>안심활용센터 이용 신청</li></ul><span class="role-panel__cta" onclick="goPage('search')">수요자로 시작하기 →</span></div>
+        <div class="role-panel" style="--accent:#00897B;--icon-bg:#E0F2F0;--hover-bg:#F0FAF8"><div class="role-panel__icon">🏥</div><div><div class="role-panel__title">데이터 공급자</div><div class="role-panel__sub">의료기관·공공기관·연구소</div></div><ul class="role-panel__list"><li>기관 데이터셋 등록 및 메타데이터 관리</li><li>데이터 신청 검토 및 승인 처리</li><li>전용 소프트웨어 기반 메타데이터 자동 추출·전송</li><li>데이터 품질 관리 및 현황 확인</li></ul></div>
+        <div class="role-panel" style="--accent:#E65100;--icon-bg:#FFF3E0;--hover-bg:#FFF8F2"><div class="role-panel__icon">⚖️</div><div><div class="role-panel__title">심의자</div><div class="role-panel__sub">공용(중앙) DRB·기관 DRB 위원</div></div><ul class="role-panel__list"><li>데이터 이용 신청 심의 및 결과 처리</li><li>DRB 회의 일정 및 심의 현황 관리</li><li>다기관 공동 심의 서식 검토</li></ul></div>
+        <div class="role-panel" style="--accent:#4527A0;--icon-bg:#EDE7F6;--hover-bg:#F7F5FC"><div class="role-panel__icon">🛠️</div><div><div class="role-panel__title">관리자</div><div class="role-panel__sub">포털 운영자</div></div><ul class="role-panel__list"><li>사용자·기관 계정 관리</li><li>포털 콘텐츠·공지사항 관리</li><li>통계 대시보드 및 시스템 모니터링</li></ul></div>
+      </div>
+    </section>
+
+    <!-- 버전정보 -->
+    <div class="about-meta-box" style="margin-top:24px">
+      <div class="about-meta-box__label">버전정보</div>
+      <ul class="about-meta-box__list">
+        <li><span>서비스 버전</span><strong>v1 Prototype</strong></li>
+        <li><span>메타데이터 표준</span><strong>DCAT-AP 2.1 · HealthDCAT-AP 기반</strong></li>
+        <li><span>최종 업데이트</span><strong>2026.07.31</strong></li>
+      </ul>
+    </div>
+
+    <!-- 데이터 활용의 법적근거 -->
+    <div class="about-meta-box" style="margin-top:16px">
+      <div class="about-meta-box__label">데이터 활용의 법적근거</div>
+      <table class="about-legal-table">
+        <thead>
+          <tr><th>법령</th><th>주요 내용</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>개인정보 보호법</td><td>가명정보 처리 및 결합에 관한 근거 (제28조의2~9)</td></tr>
+          <tr><td>보건의료기본법</td><td>보건의료정보의 수집·관리·활용 근거</td></tr>
+          <tr><td>감염병의 예방 및 관리에 관한 법률</td><td>감염병 관련 데이터 신고·수집 의무</td></tr>
+          <tr><td>생명윤리 및 안전에 관한 법률</td><td>IRB 심의 기준 및 인간대상 연구 규정</td></tr>
+          <tr><td>공공데이터의 제공 및 이용 활성화에 관한 법률</td><td>공공기관 보유 데이터 개방 의무</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div><!-- /#page-about -->
+
+<!-- ══════════════════════════════════════════
+   PAGE: 이용 절차
+══════════════════════════════════════════ -->
+<div id="page-howto" class="page">
+  <section class="about-hero">
+    <div class="about-hero__inner">
+      <span class="about-hero__eyebrow"><span class="hero__dot"></span>HOW IT WORKS · 이용 절차</span>
+      <h1 class="about-hero__title">데이터 탐색부터 <em>활용 승인</em>까지<br>4단계로 진행됩니다</h1>
+      <p class="about-hero__desc">검색으로 필요한 데이터셋을 찾고, 신청·심의를 거쳐 승인된 경로로 안전하게 활용하기까지의 절차를 안내합니다.</p>
+    </div>
+  </section>
+  <div class="wrap about-body">
+    <div class="about-feat-grid">
+      <div class="about-feat" style="--fc:#1565C0;--fc-lt:#E3EDF9">
+        <div class="about-feat__head"><span class="about-feat__badge">01</span><h3 class="about-feat__title">데이터 탐색</h3></div>
+        <p class="about-feat__desc">키워드·주제·기관별 검색으로 필요한 데이터셋을 탐색하고 DCAT 2.0 기반 메타데이터를 확인합니다.</p>
+      </div>
+      <div class="about-feat" style="--fc:#00897B;--fc-lt:#E0F2F0">
+        <div class="about-feat__head"><span class="about-feat__badge">02</span><h3 class="about-feat__title">데이터 신청</h3></div>
+        <p class="about-feat__desc">연구계획서와 필요 서류를 온라인으로 제출하여 데이터 이용 신청서를 작성합니다.</p>
+      </div>
+      <div class="about-feat" style="--fc:#E65100;--fc-lt:#FFF3E0">
+        <div class="about-feat__head"><span class="about-feat__badge">03</span><h3 class="about-feat__title">DRB 심의</h3></div>
+        <p class="about-feat__desc">공용(중앙) DRB 또는 기관 DRB의 심의를 거쳐 이용 적합성을 검토합니다.</p>
+      </div>
+      <div class="about-feat" style="--fc:#4527A0;--fc-lt:#EDE7F6">
+        <div class="about-feat__head"><span class="about-feat__badge">04</span><h3 class="about-feat__title">데이터 활용</h3></div>
+        <p class="about-feat__desc">승인 후 안심활용센터 또는 승인된 경로로 데이터를 안전하게 활용합니다.</p>
+      </div>
+    </div>
+  </div>
+</div><!-- /#page-howto -->
+
+<!-- ══════════════════════════════════════════
+   PAGE: 공지사항
+══════════════════════════════════════════ -->
+<div id="page-notice" class="page">
+  <section class="about-hero">
+    <div class="about-hero__inner">
+      <span class="about-hero__eyebrow"><span class="hero__dot"></span>NOTICE · 알림·소식</span>
+      <h1 class="about-hero__title">포털 <em>공지사항</em>과<br>새 소식을 확인하세요</h1>
+      <p class="about-hero__desc">서비스 오픈, 데이터 등록, 교육·이벤트 일정 등 포털의 최신 소식을 모아 안내합니다.</p>
+    </div>
+  </section>
+  <div class="wrap about-body">
+    <div class="news-tabs"><div class="ntab on" onclick="switchNews(this)">전체</div><div class="ntab" onclick="switchNews(this)">공지사항</div><div class="ntab" onclick="switchNews(this)">교육</div><div class="ntab" onclick="switchNews(this)">데이터 등록</div><div class="ntab" onclick="switchNews(this)">이벤트</div></div>
+    <div class="news-list">
+      <div class="ni"><div class="ni__date-col"><div class="ni__m">DEC</div><div class="ni__d">01</div></div><div class="ni__vl"></div><div class="ni__body"><span class="ni__cat cat-notice">공지</span><div class="ni__title">「보건의료데이터 중개 포털」 1차 서비스 오픈 안내 (2026년 12월)</div></div></div>
+      <div class="ni"><div class="ni__date-col"><div class="ni__m">NOV</div><div class="ni__d">20</div></div><div class="ni__vl"></div><div class="ni__body"><span class="ni__cat cat-data">데이터</span><div class="ni__title">DCAT 2.0 기반 데이터 카탈로그 등록 기준 및 메타데이터 항목 안내</div></div></div>
+      <div class="ni"><div class="ni__date-col"><div class="ni__m">NOV</div><div class="ni__d">10</div></div><div class="ni__vl"></div><div class="ni__body"><span class="ni__cat cat-edu">교육</span><div class="ni__title">2026년 4분기 수요자 온라인 교육 수강 신청 안내</div></div></div>
+      <div class="ni"><div class="ni__date-col"><div class="ni__m">NOV</div><div class="ni__d">05</div></div><div class="ni__vl"></div><div class="ni__body"><span class="ni__cat cat-event">이벤트</span><div class="ni__title">코호트 디스커버리 기능 시연회 참가 신청 (12월 중 개최 예정)</div></div></div>
+      <div class="ni"><div class="ni__date-col"><div class="ni__m">OCT</div><div class="ni__d">28</div></div><div class="ni__vl"></div><div class="ni__body"><span class="ni__cat cat-notice">공지</span><div class="ni__title">데이터 신청 처리 기간 및 공용(중앙) DRB 심의 절차 안내</div></div></div>
+      <div class="ni"><div class="ni__date-col"><div class="ni__m">OCT</div><div class="ni__d">15</div></div><div class="ni__vl"></div><div class="ni__body"><span class="ni__cat cat-data">데이터</span><div class="ni__title">2023년 국가 암 등록통계 데이터셋 신규 등록 완료 안내</div></div></div>
+      <div class="ni"><div class="ni__date-col"><div class="ni__m">OCT</div><div class="ni__d">05</div></div><div class="ni__vl"></div><div class="ni__body"><span class="ni__cat cat-edu">교육</span><div class="ni__title">공급자 대상 메타데이터 등록 실습 교육 개설 안내</div></div></div>
+    </div>
+  </div>
+</div><!-- /#page-notice -->
+
+<!-- ══════════════════════════════════════════
+   PAGE: 데이터 맵 (준비 중)
+══════════════════════════════════════════ -->
+<div id="page-datamap" class="page">
+  <section class="about-hero">
+    <div class="about-hero__inner">
+      <span class="about-hero__eyebrow"><span class="hero__dot"></span>COMING SOON · 준비 중</span>
+      <h1 class="about-hero__title">데이터 맵은 <em>준비 중</em>입니다</h1>
+      <p class="about-hero__desc">기관별 보건의료데이터 보유 현황을 시각화된 지도로 한눈에 보여주는 기능을 준비하고 있습니다.</p>
+    </div>
+  </section>
+  <div class="wrap about-body">
+    <div class="placeholder-box">
+      <div class="placeholder-box__icon">🗺️</div>
+      <div class="placeholder-box__title">데이터 맵 기능 준비 중</div>
+      <div class="placeholder-box__desc">오픈되면 이 페이지에서 바로 확인하실 수 있습니다. 지금은 데이터셋 검색으로 먼저 둘러보세요.</div>
+      <button class="placeholder-box__cta" onclick="goPage('search')">데이터셋 검색으로 둘러보기 →</button>
+    </div>
+  </div>
+</div><!-- /#page-datamap -->
+
+<!-- ══════════════════════════════════════════
+   PAGE: 커뮤니티 (준비 중)
+══════════════════════════════════════════ -->
+<div id="page-community" class="page">
+  <section class="about-hero">
+    <div class="about-hero__inner">
+      <span class="about-hero__eyebrow"><span class="hero__dot"></span>COMING SOON · 준비 중</span>
+      <h1 class="about-hero__title">커뮤니티는 <em>준비 중</em>입니다</h1>
+      <p class="about-hero__desc">데이터 활용 사례를 나누고 질문할 수 있는 공간을 준비하고 있습니다.</p>
+    </div>
+  </section>
+  <div class="wrap about-body">
+    <div class="placeholder-box">
+      <div class="placeholder-box__icon">💬</div>
+      <div class="placeholder-box__title">커뮤니티 기능 준비 중</div>
+      <div class="placeholder-box__desc">연구자·기관 담당자 간 정보 교류 공간이 오픈되면 이 페이지에서 안내드립니다.</div>
+      <button class="placeholder-box__cta" onclick="goPage('notice')">알림·소식에서 진행 상황 확인하기 →</button>
+    </div>
+  </div>
+</div><!-- /#page-community -->
+
+<!-- ══════════════════════════════════════════
+   PAGE 2: 검색 결과
+══════════════════════════════════════════ -->
+<div id="page-search" class="page">
+
+<div class="search-bar">
+  <div class="search-bar__inner">
+    <div class="search-bar__tabs">
+      <button class="sbtab on" data-mode="ai" onclick="setSbtab(this)">대화형 AI 검색</button>
+      <button class="sbtab" onclick="setSbtab(this)">데이터셋</button>
+      <button class="sbtab" onclick="setSbtab(this)">항목 검색</button>
+      <button class="sbtab" onclick="setSbtab(this)">코호트</button>
+      <button class="sbtab" onclick="setSbtab(this)">연구정보</button>
+    </div>
+    <div class="search-bar__row">
+      <input class="search-bar__input" id="searchInput" type="text" placeholder="예: 결핵 데이터 찾아줘 (자연어로 물어보세요)" onkeydown="if(event.key==='Enter')doSearchFromResult()">
+      <button class="search-bar__btn" onclick="doSearchFromResult()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>검색</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="breadcrumb">
+    <span class="link" onclick="goPage('main')">홈</span>
+    <span class="breadcrumb__sep">›</span>
+    <span>데이터셋 검색 결과</span>
+  </div>
+  <div class="result-head">
+    <div class="result-head__title">"<em id="resultQuery">건강검진</em>" 검색 결과 <span style="font-size:14px;font-weight:400;color:var(--g50);margin-left:8px">총 <strong style="color:var(--navy)" id="resultCount">0</strong>건</span></div>
+    <div class="result-head__right">
+      <select class="sort-select" id="sortSelect" onchange="renderResults(document.getElementById('resultQuery').dataset.label)"><option value="relevance">관련도순</option><option value="recent">최신 업데이트순</option><option value="views">조회수순</option><option value="name">이름순</option></select>
+      <div class="view-toggle"><button class="view-btn on" id="viewBtnList" onclick="setResultView('list')" title="카드형으로 보기" aria-label="카드형으로 보기">☰</button><button class="view-btn" id="viewBtnTable" onclick="setResultView('table')" title="표로 보기" aria-label="표로 보기">⊞</button></div>
+    </div>
+  </div>
+  <div class="active-filters" style="display:none">
+    <span class="af-label">적용 필터 :</span>
+    <span class="af-chip">데이터 유형 : 임상 <span class="af-chip__x" onclick="this.parentElement.remove()">×</span></span>
+    <span class="af-chip">기관 : 국민건강보험공단 <span class="af-chip__x" onclick="this.parentElement.remove()">×</span></span>
+    <span class="af-chip">기간 : 2015~2023 <span class="af-chip__x" onclick="this.parentElement.remove()">×</span></span>
+    <span class="af-clear" onclick="document.querySelectorAll('.af-chip').forEach(c=>c.remove())">전체 초기화</span>
+  </div>
+
+  <div class="search-layout">
+    <!-- 필터 패널 -->
+    <aside class="filter-panel">
+      <div class="filter-panel__head"><span class="filter-panel__title">필터</span><span class="filter-panel__reset" onclick="resetFilters()">초기화</span></div>
+      <div class="filter-group"><div class="filter-group__head" onclick="toggleFG(this)"><span class="filter-group__label">구분</span><span class="filter-group__arrow open">▼</span></div>
+        <div class="filter-group__body" id="catFilterBody"></div>
+      </div>
+      <div class="filter-group"><div class="filter-group__head" onclick="toggleFG(this)"><span class="filter-group__label">주제</span><span class="filter-group__arrow open">▼</span></div>
+        <div class="filter-group__body" id="topicFilterBody"></div>
+      </div>
+      <div class="filter-group"><div class="filter-group__head" onclick="toggleFG(this)"><span class="filter-group__label">공급 기관</span><span class="filter-group__arrow open">▼</span></div>
+        <div class="filter-group__body" id="orgFilterBody"></div>
+      </div>
+      <div class="filter-group"><div class="filter-group__head" onclick="toggleFG(this)"><span class="filter-group__label">수집 기간</span><span class="filter-group__arrow open">▼</span></div>
+        <div class="filter-range">
+          <div style="font-size:12px;color:var(--g50)">연도 범위로 검색</div>
+          <div class="filter-range__row">
+            <input class="filter-range__input" id="periodFrom" type="text" inputmode="numeric" placeholder="예: 2015" onkeydown="if(event.key==='Enter')applyFiltersAndRerun()">
+            <span class="filter-range__sep">~</span>
+            <input class="filter-range__input" id="periodTo" type="text" inputmode="numeric" placeholder="예: 2023" onkeydown="if(event.key==='Enter')applyFiltersAndRerun()">
+          </div>
+          <button onclick="applyFiltersAndRerun()" style="margin-top:8px;width:100%;padding:7px 0;border:1.5px solid var(--g20);border-radius:var(--r);background:var(--white);font-size:12px;font-weight:600;color:var(--g70);cursor:pointer">기간으로 검색</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- 결과 목록 -->
+    <div>
+      <div class="result-list" id="resultList"></div>
+
+      <div class="pagination" id="pagination">
+        <button class="pg-btn" style="font-size:16px">‹</button>
+        <button class="pg-btn on">1</button>
+        <button class="pg-btn">2</button><button class="pg-btn">3</button><button class="pg-btn">4</button><button class="pg-btn">5</button>
+        <span style="padding:0 4px;color:var(--g50)">…</span>
+        <button class="pg-btn">13</button>
+        <button class="pg-btn" style="font-size:16px">›</button>
+      </div>
+    </div>
+  </div>
+</div><!-- /wrap -->
+</div><!-- /#page-search -->
+
+
+<!-- ══════════════════════════════════════════
+   PAGE 3: 데이터셋 상세
+══════════════════════════════════════════ -->
+<div id="page-dataset" class="page">
+
+<div class="ds-hero">
+  <div class="ds-hero__inner">
+    <div class="breadcrumb" style="margin-bottom:16px">
+      <span class="link" onclick="goPage('main')">홈</span>
+      <span class="breadcrumb__sep">›</span>
+      <span class="link" onclick="goPage('search')">검색</span>
+      <span class="breadcrumb__sep">›</span>
+      <span>데이터셋 상세</span>
+    </div>
+    <div class="ds-hero__top">
+      <span class="ds-hero__type" id="dsType">데이터</span>
+      <span class="ds-hero__dcat" id="dsIdBadge"></span>
+    </div>
+    <h1 class="ds-hero__title" id="dsTitle"></h1>
+    <div class="ds-hero__org" id="dsOrg"></div>
+    <div class="ds-hero__stats" id="dsStats"></div>
+  </div>
+</div>
+
+<div class="wrap">
+<div class="ds-layout">
+  <div>
+    <div class="ds-card">
+      <div class="ds-card__head"><div class="ds-card__title"><span class="ds-card__title-bar"></span>데이터셋 개요</div></div>
+      <div class="ds-card__body">
+        <p class="ds-desc" id="dsDesc"></p>
+        <div class="ds-tags" id="dsTags"></div>
+      </div>
+    </div>
+    <!-- 데이터셋 정보표 -->
+    <div class="ds-card" id="dsInfoCard">
+      <div class="ds-card__head">
+        <div class="ds-card__title"><span class="ds-card__title-bar"></span>데이터셋 상세 정보</div>
+        <button class="ds-detail-link" id="dsGuideBtn" onclick="showGuide()">상세페이지 보기 →</button>
+      </div>
+      <div class="ds-card__body">
+        <div id="dsInfoTable"></div>
+      </div>
+    </div>
+    <!-- 상세페이지(md) — 클릭 시 정보표를 대체 -->
+    <div id="dsGuideView" style="display:none">
+      <button class="ds-back-link" onclick="showInfo()">← 상세 정보표로 돌아가기</button>
+      <div id="dsGuide"></div>
+    </div>
+    <!-- 관련 데이터셋 (같은 제공기관) -->
+    <div id="dsRelated" style="margin-top:28px"></div>
+  </div>
+  <aside>
+    <div class="ds-card" style="position:sticky;top:80px">
+      <div class="ds-card__body" style="text-align:center">
+        <div style="font-size:13px;color:var(--g50);margin-bottom:6px">이 데이터셋 이용 신청</div>
+        <div id="dsApplyType" style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:12px"></div>
+        <div id="dsDifficulty" style="margin-bottom:16px"></div>
+        <button class="sr-btn-p" id="dsApplyBtn" style="width:100%;padding:12px;font-size:14px;margin-bottom:8px">📋 이용 신청하기</button>
+        <button class="sr-btn-s" style="width:100%;padding:12px;font-size:14px">💬 큐레이션 상담</button>
+        <div id="dsApplyProcess" style="margin-top:16px;font-size:12px;color:var(--g60);line-height:1.7;text-align:left"></div>
+      </div>
+    </div>
+  </aside>
+</div>
+</div>
+
+</div><!-- /#page-dataset -->
+
+<!-- ══════════ 우측 고정 아이콘 독(메타데이터 도구 + 데이터셋 자료집) ══════════ -->
+<div class="tool-dock">
+  <div class="tool-dock__group">
+    <div class="tool-dock__label">메타데이터 도구</div>
+    <a class="tool-dock__item" href="https://kdyoung100.github.io/HealthDCAT-KR/" target="_blank" rel="noopener" aria-label="메타데이터 설명서">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 12l2 2 4-4"/></svg>
+      <span class="tool-dock__tip">메타데이터 설명서</span>
+    </a>
+    <a class="tool-dock__item" href="https://kdyoung100.github.io/HealthDCAT-KR-Dataset-Description-Assistant/" target="_blank" rel="noopener" aria-label="메타데이터 생성">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"/><path d="M19 15l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7.7-2z"/></svg>
+      <span class="tool-dock__tip">메타데이터 생성</span>
+    </a>
+  </div>
+  <div class="tool-dock__group">
+    <div class="tool-dock__label">데이터셋 자료집</div>
+    <a class="tool-dock__item" href="https://kdyoung100.github.io/Korean-Healthcare-Data-Reference-Materials/" target="_blank" rel="noopener" aria-label="데이터셋 자료집">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H12v18H6.5A2.5 2.5 0 0 1 4 18.5v-13z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H12v18h5.5a2.5 2.5 0 0 0 2.5-2.5v-13z"/></svg>
+      <span class="tool-dock__tip">데이터셋 자료집</span>
+    </a>
+  </div>
+</div>
+
+<!-- ══════════ AI 검색 도우미 챗봇 ══════════ -->
+<button id="chatFab" class="chat-fab" onclick="toggleChat()" aria-label="AI 검색 도우미 열기">
+  <img src="chatbot-icon.png" alt="" width="86" height="96">
+</button>
+
+<div id="chatPanel" class="chat-panel">
+  <div class="chat-panel__head">
+    <div>
+      <div class="chat-panel__title">AI 검색 도우미</div>
+      <div class="chat-panel__sub">등록된 데이터셋 기준으로 답변합니다</div>
+    </div>
+    <button class="chat-panel__close" onclick="toggleChat(false)" aria-label="닫기">✕</button>
+  </div>
+  <div id="chatBody" class="chat-panel__body">
+    <div class="chat-msg chat-msg--bot">안녕하세요. 찾으시는 데이터를 물어보세요. 예) "건강검진 데이터 있어?"</div>
+  </div>
+  <div class="chat-panel__foot">
+    <input id="chatInput" type="text" placeholder="질문을 입력하세요" onkeydown="if(event.key==='Enter')sendChat()">
+    <button id="chatSend" onclick="sendChat()">전송</button>
+  </div>
+</div>
+
+<script>
+/* ══════════ 데이터 (엑셀 → 내장) ══════════ */
+let DATASETS = [];  // data.json 에서 자동 로드됩니다
+
+/* ── 신청 창구 매핑 ──
+   DS-###   (결합) → 보건의료 빅데이터 통합 플랫폼
+   K-###    (결합) → K-CURE 플랫폼
+   1-1~7-19 (결합) → 의료데이터 중심병원
+   CD###    (공통→'단독' 표기) → 각 제공기관 홈페이지에서 연구자가 직접 신청·다운로드 */
+const PLATFORMS={
+  hcdl:{name:'보건의료 빅데이터 통합 플랫폼', url:'https://hcdl.mohw.go.kr/'},
+  kcure:{name:'K-CURE 플랫폼',                url:'https://k-cure.mohw.go.kr/'},
+  khis:{name:'의료데이터 중심병원',           url:'https://k-cure.mohw.go.kr/portal/pfm/kif/dat/viewPfmKifDat.do'},
+  self:{name:'제공기관 홈페이지에서 직접 신청·다운로드', url:''}
+};
+/* 데이터셋ID 형식으로 창구를 판별한다. */
+function platformById(id){
+  const s=(id==null?'':String(id)).trim();
+  if(/^DS[-_ ]?\d+/i.test(s))     return PLATFORMS.hcdl;
+  if(/^K[-_ ]?\d+/i.test(s))      return PLATFORMS.kcure;
+  if(/^\d+\s*-\s*\d+$/.test(s))   return PLATFORMS.khis;
+  if(/^CD[-_ ]?\d+/i.test(s))     return PLATFORMS.self;
+  return null;
+}
+/* ID가 비어 AUTO-#### 로 채워진 행 대비:
+   숫자형 ID를 쓰는 기관(=의데중 참여병원) 목록을 데이터에서 만들어 두고 예비로 쓴다. */
+let ORG_PLATFORM={};
+function buildOrgPlatform(){
+  ORG_PLATFORM={};
+  DATASETS.forEach(function(d){
+    const p=platformById(d.id);
+    if(p && d.org && !ORG_PLATFORM[d.org]) ORG_PLATFORM[d.org]=p;
+  });
+}
+function platformOf(d){
+  if(!d) return null;
+  if(typeof d==='string') return platformById(d);
+  return platformById(d.id) || (d.org?ORG_PLATFORM[d.org]:null)
+      || (/공통|단독/.test(String(d.type||''))?PLATFORMS.self:null);
+}
+/* 제공유형 표기: '공통' → '단독' (연구자가 기관 홈페이지에서 직접 받는 형태) */
+function typeLabel(t){
+  const s=(t==null?'':String(t)).trim();
+  if(!s) return '데이터';
+  return s.replace(/공통/g,'단독');
+}
+function typeColor(t){
+  const s=typeLabel(t);
+  if(s.includes('결합')) return {bg:'#E3EDF9',fg:'#1565C0'};
+  if(s.includes('단독')) return {bg:'#E0F2F0',fg:'#00897B'};
+  return {bg:'#EDE7F6',fg:'#4527A0'};
+}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function kwList(d){ return d.keywords? d.keywords.split(/[,;\u00b7\/]/).map(k=>k.trim()).filter(Boolean):[]; }
+
+let CURRENT_RESULTS = [];
+
+/* 검색 대상 문자열(데이터셋당 1회만 만들고 캐시).
+   뒤에 공백 제거본을 덧붙여 '기본DB' 처럼 띄어쓰기가 다른 입력도 잡는다. */
+function haystack(d){
+  if(d._hay) return d._hay;
+  const tb=(d.tables||[]).map(t=>(t.en||'')+' '+(t.ko||'')).join(' ');
+  const yr=(d.years||[]).join(' ');
+  const base=[d.id,d.org,d.name,d.type,d.keywords,d.period,d.note,d.desc,d.itemInfo,tb,yr]
+    .filter(Boolean).join(' ').toLowerCase();
+  d._hay = base+' '+base.replace(/\s+/g,'');
+  return d._hay;
+}
+
+/* ══ 왼쪽 필터 패널 (구분 / 공급기관 / 수집기간) ══
+   데이터셋ID 규칙으로 구분을 정한다:
+   CD···/DS··· → 공공데이터, K-1~K-12 → 공공데이터, K-13~K-98 → 임상데이터,
+   숫자만으로 된 ID(예: 1-1, 7-19, 의료데이터 중심병원 형식) → 임상데이터.
+   원본에 ID가 없어 build.py가 AUTO-####로 채운 행(전부 병원 소속 '결합' 유형)은
+   위 규칙 어디에도 안 걸리지만, 성격상 숫자ID(의료데이터 중심병원) 케이스와 같은
+   임상데이터라 임상데이터로 분류한다. */
+function dataCategory(id){
+  const s=(id==null?'':String(id)).trim();
+  if(/^CD/i.test(s)) return '공공데이터';
+  if(/^DS/i.test(s)) return '공공데이터';
+  const mK=s.match(/^K[-_ ]?(\d+)/i);
+  if(mK) return (parseInt(mK[1],10)>=13) ? '임상데이터' : '공공데이터';
+  if(/^\d+\s*-\s*\d+$/.test(s)) return '임상데이터';
+  if(/^AUTO/i.test(s)) return '임상데이터';
+  return null;
+}
+
+/* ══ 메인 페이지의 리소스 탐색·주제별 탐색·주요 공급기관 카드 ══
+   전부 DATASETS에서 직접 집계한 실제 건수만 쓴다(고정 숫자 없음). 카드를 누르면
+   그 조건으로 실제로 필터링한 검색결과 페이지로 바로 이동한다. */
+function goSearchWithResults(list, label){
+  const hinput=document.getElementById('hinput'); if(hinput) hinput.value='';
+  const nav=document.getElementById('navSearch'); if(nav) nav.value='';
+  const si=document.getElementById('searchInput'); if(si) si.value='';
+  SEARCH_MODE='normal';
+  syncSbtabToSearchMode();
+  document.querySelectorAll('.filter-panel .filter-item.checked').forEach(function(el){ el.classList.remove('checked'); });
+  const pf=document.getElementById('periodFrom'), pt=document.getElementById('periodTo');
+  if(pf) pf.value=''; if(pt) pt.value='';
+  LAST_QUERY='';
+  CURRENT_RESULTS=list;
+  renderResults(label);
+  goPage('search');
+}
+function exploreResource(kind){
+  if(kind==='all')      return goSearchWithResults(DATASETS.slice(), '전체 데이터셋');
+  if(kind==='clinical') return goSearchWithResults(DATASETS.filter(function(d){ return dataCategory(d.id)==='임상데이터'; }), '임상데이터');
+  if(kind==='public')   return goSearchWithResults(DATASETS.filter(function(d){ return dataCategory(d.id)==='공공데이터'; }), '공공데이터');
+  if(kind==='combined') return goSearchWithResults(DATASETS.filter(function(d){ return /결합/.test(d.type||''); }), '결합데이터');
+  if(kind==='solo')     return goSearchWithResults(DATASETS.filter(function(d){ return /공통/.test(d.type||''); }), '단독(공통) 데이터');
+  if(kind==='registry') return goSearchWithResults(DATASETS.filter(isRegistryOrCohort), '코호트·레지스트리');
+  if(kind==='guide')    return goSearchWithResults(DATASETS.filter(function(d){ return !!d.guideFile; }), '상세 안내 제공 데이터셋');
+  goPage('search');
+}
+function exploreResourceOrg(org){
+  goSearchWithResults(DATASETS.filter(function(d){ return d.org===org; }), org);
+}
+
+/* lastUpdate 표기가 '2025.12.31.'/'2025.08.'/'2026. 8. 기준'/'2025-05-31' 등으로
+   제각각이라, 연/월/일 숫자만 뽑아 비교 가능한 정수로 바꾼다(정렬 전용, 표시는 원문 유지). */
+function parseLastUpdate(s){
+  if(!s) return 0;
+  const m=String(s).match(/(\d{4})\D*(\d{1,2})?\D*(\d{1,2})?/);
+  if(!m) return 0;
+  const y=parseInt(m[1],10), mo=m[2]?parseInt(m[2],10):1, da=m[3]?parseInt(m[3],10):1;
+  return y*10000+mo*100+da;
+}
+
+/* 리소스 탐색(4×2 고정 그리드): 카드 8장, 건수는 전부 DATASETS에서 실제 집계. */
+function isRegistryOrCohort(d){ return /코호트|레지스트리|registry|cohort/i.test((d.name||'')+' '+(d.keywords||'')); }
+const RESOURCE_CARDS=[
+  {kind:'all',      cc:'#1565C0', bg:'#E3EDF9', icon:'🗄️', title:'전체 데이터셋', desc:'등록된 모든 임상·공공 보건의료 데이터셋을 한 곳에서 탐색하세요.', unit:'건'},
+  {kind:'clinical', cc:'#00897B', bg:'#E0F2F0', icon:'🏥', title:'임상데이터', desc:'병원 EMR·CDW 등 의료기관이 직접 보유·제공하는 데이터입니다.', unit:'건'},
+  {kind:'public',   cc:'#4527A0', bg:'#EDE7F6', icon:'🏛️', title:'공공데이터', desc:'질병관리청·건강보험공단 등 공공기관이 보유한 데이터입니다.', unit:'건'},
+  {kind:'combined', cc:'#E65100', bg:'#FFF3E0', icon:'🔗', title:'결합데이터', desc:'여러 기관의 자료를 연계·결합해 제공하는 데이터셋입니다.', unit:'건'},
+  {kind:'solo',     cc:'#2E7D32', bg:'#E8F5E9', icon:'📄', title:'단독(공통) 데이터', desc:'제공기관이 단독으로 보유·제공하는 데이터셋입니다.', unit:'건'},
+  {kind:'registry', cc:'#00838F', bg:'#E0F7FA', icon:'📊', title:'코호트·레지스트리', desc:'대상자를 장기 추적하거나 질환별로 등록·관리하는 데이터셋입니다.', unit:'건'},
+  {kind:'guide',    cc:'#6A1B9A', bg:'#F3E5F5', icon:'📘', title:'상세 안내 제공', desc:'범위·분석환경·신청 방법을 정리한 상세페이지가 있는 데이터셋입니다.', unit:'건'},
+  {kind:'orgs',     cc:'#AD1457', bg:'#FCE4EC', icon:'🏢', title:'참여 공급기관', desc:'데이터를 제공하는 의료기관·공공기관 목록을 확인하세요.', unit:'개'}
+];
+function renderResourceCards(){
+  const grid=document.getElementById('resGrid');
+  if(!grid) return;
+  const orgSet={}; DATASETS.forEach(function(d){ if(d.org) orgSet[d.org]=1; });
+  const counts={
+    all: DATASETS.length,
+    clinical: DATASETS.filter(function(d){ return dataCategory(d.id)==='임상데이터'; }).length,
+    public: DATASETS.filter(function(d){ return dataCategory(d.id)==='공공데이터'; }).length,
+    combined: DATASETS.filter(function(d){ return /결합/.test(d.type||''); }).length,
+    solo: DATASETS.filter(function(d){ return /공통/.test(d.type||''); }).length,
+    registry: DATASETS.filter(isRegistryOrCohort).length,
+    guide: DATASETS.filter(function(d){ return !!d.guideFile; }).length,
+    orgs: Object.keys(orgSet).length
+  };
+  grid.innerHTML=RESOURCE_CARDS.map(function(c){
+    const onclick=c.kind==='orgs' ? "goPage('search')" : ("exploreResource('"+c.kind+"')");
+    return '<div class="res-card" style="--cc:'+c.cc+'" onclick="'+onclick+'">'+
+      '<div class="res-icon" style="background:'+c.bg+'">'+c.icon+'</div>'+
+      '<div class="res-title">'+esc(c.title)+'</div>'+
+      '<div class="res-desc">'+esc(c.desc)+'</div>'+
+      '<div class="res-count">'+counts[c.kind].toLocaleString()+'<span>'+c.unit+'</span></div>'+
+    '</div>';
+  }).join('');
+}
+
+/* 주제별 데이터 탐색(Type C): 임상/공공 트랙 안을 데이터셋 주제(질환·분야)로 나눈다.
+   주제는 데이터셋 이름+키워드에 아래 패턴이 들어있는지로 정한다. 한 데이터셋이 여러
+   주제에 동시에 들어갈 수 있다(예: '폐암' → 암). 각 트랙에서 건수가 많은 상위 6개만 보여준다.
+   주제를 늘리거나 고치려면 이 목록만 수정하면 된다. */
+const DATA_TOPICS=[
+  {name:'암',              re:/암|종양|cancer|백혈병|림프종/i},
+  {name:'심뇌혈관',        re:/심장|심혈관|뇌졸중|뇌혈관|심근|심정지|고혈압|부정맥|심부전|관상동맥|경동맥/i},
+  {name:'감염병',          re:/감염|결핵|코로나|covid|인플루엔자|예방접종|백신|폐렴|패혈증|균혈증|간염/i},
+  {name:'만성·대사질환',   re:/당뇨|만성|비만|대사|신장질환|콩팥|copd|천식|호흡기|호흡부전|간질환/i},
+  {name:'정신·신경',       re:/치매|정신|우울|파킨슨|뇌전증|신경|자살/i},
+  {name:'모자·여성·소아',  re:/여성|임신|임산부|출산|분만|난임|모성|소아|신생아|아동|영유아|청소년/i},
+  {name:'근골격·안과',     re:/관절|골절|척추|회전근개|근골격|황반|안구|안과|경면현미경/i},
+  {name:'중환자·응급',     re:/중환자|응급|nedis|생체신호|vital|waveform|심정지/i},
+  {name:'건강검진·조사',   re:/검진|건강영양조사|조사|설문|코호트|패널/i},
+  {name:'청구·보험·사망',  re:/청구|보험|자격|사망|요양기관|진료내역/i},
+  {name:'영상·생체신호·유전체', re:/영상|pacs|ecg|유전체|오믹스|genom|병리|이미지|인체자원/i},
+  {name:'통합 임상DB(CDM·CDW)', re:/cdm|cdw|omop|baseline/i},
+  {name:'환경·손상',       re:/대기오염|환경|손상|사고|외상|화상/i}
+];
+function datasetTopicText(d){ return (d.name||'')+' '+(d.keywords||''); }
+/* 메인 주제 카드 클릭: 검색 페이지 왼쪽 필터의 '구분'과 '주제'를 체크한 상태로 전체 목록을 보여준다
+   (필터에 체크가 남아 있어 사용자가 바로 풀거나 다른 주제를 더할 수 있다). */
+function exploreTopic(cat, topicName){
+  goSearchWithResults(DATASETS.slice(), '');   // 검색어·기존 필터 초기화 + 검색 페이지로 이동
+  [['catFilterBody',cat],['topicFilterBody',topicName]].forEach(function(p){
+    document.querySelectorAll('#'+p[0]+' .filter-item').forEach(function(el){
+      const lb=el.querySelector('.filter-item__label');
+      if(lb && lb.textContent===p[1]) el.classList.add('checked');
+    });
+  });
+  LAST_QUERY='';
+  CURRENT_RESULTS=applyFacetFilters(DATASETS.slice());
+  renderResults(cat+' · '+topicName);
+}
+function renderTopicSplit(){
+  function buildTrack(cat, gridId, countId){
+    const grid=document.getElementById(gridId), countEl=document.getElementById(countId);
+    if(!grid || !countEl) return;
+    const list=DATASETS.filter(function(d){ return dataCategory(d.id)===cat; });
+    countEl.textContent=list.length.toLocaleString()+'건';
+    const topics=DATA_TOPICS
+      .map(function(t){ return {t:t, n:list.filter(function(d){ return t.re.test(datasetTopicText(d)); }).length}; })
+      .filter(function(x){ return x.n>0; })
+      .sort(function(a,b){ return b.n-a.n; })
+      .slice(0,6);
+    grid.innerHTML = topics.length ? topics.map(function(x){
+      return '<div class="topic-item" data-cat="'+esc(cat)+'" data-topic="'+esc(x.t.name)+'" onclick="exploreTopic(this.dataset.cat,this.dataset.topic)">'+
+        '<span><span class="topic-item__name">'+esc(x.t.name)+'</span><span class="topic-item__count">'+x.n+'건</span></span>'+
+      '</div>';
+    }).join('') : '<div style="font-size:12.5px;color:var(--g50);padding:8px;grid-column:1/-1">등록된 데이터가 없습니다.</div>';
+  }
+  buildTrack('임상데이터','topicClinicalGrid','topicClinicalCount');
+  buildTrack('공공데이터','topicPublicGrid','topicPublicCount');
+}
+
+/* 주목 데이터셋(Type A, 탭 전환): '최신 데이터'는 실제 lastUpdate 기준.
+   '인기 데이터'는 방문 통계가 없어 조회수 실데이터가 없다 — 사용자 요청으로
+   데이터셋 ID를 해시해 만든 표시용 가짜 조회수를 쓴다(항상 같은 값으로 고정,
+   새로고침마다 순서가 바뀌지 않는다). 나중에 실제 조회 로그가 생기면
+   fakeViewCount()를 그 값으로 바꿔치기만 하면 된다. */
+function fakeViewCount(id){
+  const s=String(id||'');
+  let h=0;
+  for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; }
+  return 80+(h%2800);
+}
+let featuredTabMode='popular';
+function switchFeaturedTab(mode, btnEl){
+  document.querySelectorAll('.feat-tab').forEach(function(b){ b.classList.remove('on'); });
+  btnEl.classList.add('on');
+  featuredTabMode=mode;
+  renderFeaturedList();
+}
+/* 주요 공급기관: 탭과 무관하게 항상 보이는 고정 목록. */
+function renderFeaturedOrgList(){
+  const orgList=document.getElementById('featuredOrgList');
+  if(!orgList) return;
+  const orgCounts={};
+  DATASETS.forEach(function(d){ if(d.org) orgCounts[d.org]=(orgCounts[d.org]||0)+1; });
+  const topOrgs=Object.keys(orgCounts).sort(function(a,b){ return orgCounts[b]-orgCounts[a]; }).slice(0,6);
+  orgList.innerHTML = topOrgs.length ? topOrgs.map(function(o,i){
+    return '<li data-org="'+esc(o)+'" onclick="exploreResourceOrg(this.dataset.org)">'+
+      '<span class="feat-rank">'+(i+1)+'</span><span class="feat-info"><span class="feat-name">'+esc(o)+'</span></span><span class="feat-meta">'+orgCounts[o]+'건</span>'+
+    '</li>';
+  }).join('') : '<li style="color:var(--g50);font-size:12.5px">데이터 없음</li>';
+}
+function renderFeaturedList(){
+  const list=document.getElementById('featuredList');
+  if(!list) return;
+
+  const items = featuredTabMode==='popular'
+    ? DATASETS.slice().sort(function(a,b){ return fakeViewCount(b.id)-fakeViewCount(a.id); }).slice(0,6)
+    : DATASETS.slice().sort(function(a,b){ return parseLastUpdate(b.lastUpdate)-parseLastUpdate(a.lastUpdate); }).slice(0,6);
+  list.innerHTML = items.length ? items.map(function(d,i){
+    const meta = featuredTabMode==='popular'
+      ? ('👁 '+fakeViewCount(d.id).toLocaleString()+' 조회')
+      : esc(d.lastUpdate||'-');
+    return '<li onclick="openDetail(\''+d.id+'\')">'+
+      '<span class="feat-rank">'+(i+1)+'</span>'+
+      '<span class="feat-info"><span class="feat-name">'+esc(d.name)+'</span><span class="feat-org">'+esc(d.org||'-')+'</span></span>'+
+      '<span class="feat-meta">'+meta+'</span>'+
+    '</li>';
+  }).join('') : '<li style="color:var(--g50);font-size:12.5px">데이터 없음</li>';
+}
+
+/* d.period 문자열('2015~2023', '2007.01.01. ~ 2007.12.31.', '기관별 상이~기관별 상이' 등)
+   에서 4자리 연도만 뽑아 [시작연도, 끝연도]를 만든다. 연도를 하나도 못 찾으면 null
+   (→ 기간 필터가 걸려도 걸러내지 않고 항상 통과시킨다. 파싱 실패를 "범위 밖"으로 오판하지 않으려는 것). */
+function periodRange(d){
+  const nums=(d.period||'').match(/\d{4}/g);
+  if(!nums || !nums.length) return null;
+  const ys=nums.map(Number);
+  return [Math.min.apply(null,ys), Math.max.apply(null,ys)];
+}
+
+function filterItemHtml(label, count){
+  return '<label class="filter-item" onclick="this.classList.toggle(\'checked\');applyFiltersAndRerun()">'+
+    '<span class="filter-item__check"></span>'+
+    '<span class="filter-item__label">'+esc(label)+'</span>'+
+    '<span class="filter-item__count">'+count+'</span></label>';
+}
+
+/* 구분(공공/임상) 전체 집계, 공급기관 상위 5개를 실제 DATASETS로 채운다.
+   data.json 로드 완료 후(onDataReady) 한 번 호출된다. */
+function renderFilterPanel(){
+  const catCounts={'공공데이터':0,'임상데이터':0};
+  DATASETS.forEach(function(d){ const c=dataCategory(d.id); if(c) catCounts[c]++; });
+  const catBody=document.getElementById('catFilterBody');
+  if(catBody) catBody.innerHTML=Object.keys(catCounts).map(function(k){ return filterItemHtml(k, catCounts[k]); }).join('');
+
+  // 주제: 메인 '주제별 데이터 탐색'과 같은 DATA_TOPICS 기준. 건수 많은 순, 0건은 숨김.
+  const topicBody=document.getElementById('topicFilterBody');
+  if(topicBody) topicBody.innerHTML=DATA_TOPICS
+    .map(function(t){ return {t:t, n:DATASETS.filter(function(d){ return t.re.test(datasetTopicText(d)); }).length}; })
+    .filter(function(x){ return x.n>0; })
+    .sort(function(a,b){ return b.n-a.n; })
+    .map(function(x){ return filterItemHtml(x.t.name, x.n); }).join('');
+
+  const orgCounts={};
+  DATASETS.forEach(function(d){ if(d.org) orgCounts[d.org]=(orgCounts[d.org]||0)+1; });
+  const topOrgs=Object.keys(orgCounts).sort(function(a,b){ return orgCounts[b]-orgCounts[a]; }).slice(0,5);
+  const orgBody=document.getElementById('orgFilterBody');
+  if(orgBody) orgBody.innerHTML=topOrgs.map(function(o){ return filterItemHtml(o, orgCounts[o]); }).join('');
+}
+
+function checkedFilterLabels(bodyId){
+  const set=new Set();
+  document.querySelectorAll('#'+bodyId+' .filter-item.checked .filter-item__label').forEach(function(el){ set.add(el.textContent); });
+  return set;
+}
+
+/* 검색 결과(토큰 매칭까지 끝난 목록)에 왼쪽 필터 패널의 선택 상태를 추가로 적용한다.
+   각 그룹은 아무것도 안 골랐으면 그 그룹은 필터링하지 않는다(전체 허용). */
+function applyFacetFilters(list){
+  const cats=checkedFilterLabels('catFilterBody');
+  const orgs=checkedFilterLabels('orgFilterBody');
+  // 주제는 여러 개 고르면 OR(하나라도 해당하면 통과)
+  const topics=DATA_TOPICS.filter(function(t){ return checkedFilterLabels('topicFilterBody').has(t.name); });
+  const fromEl=document.getElementById('periodFrom'), toEl=document.getElementById('periodTo');
+  const from=fromEl && fromEl.value.trim() ? parseInt(fromEl.value,10) : null;
+  const to=toEl && toEl.value.trim() ? parseInt(toEl.value,10) : null;
+  if(!cats.size && !orgs.size && !topics.length && from==null && to==null) return list;
+
+  return list.filter(function(d){
+    if(cats.size){ const c=dataCategory(d.id); if(!c || !cats.has(c)) return false; }
+    if(orgs.size && !orgs.has(d.org)) return false;
+    if(topics.length){ const tx=datasetTopicText(d); if(!topics.some(function(t){ return t.re.test(tx); })) return false; }
+    if(from!=null || to!=null){
+      const r=periodRange(d);
+      if(r){
+        if(from!=null && r[1]<from) return false;
+        if(to!=null && r[0]>to) return false;
+      }
+    }
+    return true;
+  });
+}
+
+/* 체크박스 클릭·기간 검색 버튼에서 호출: 마지막 검색어로 다시 검색해 필터를 반영한다. */
+function applyFiltersAndRerun(){ runSearch(LAST_QUERY); }
+
+function resetFilters(){
+  document.querySelectorAll('.filter-panel .filter-item.checked').forEach(function(el){ el.classList.remove('checked'); });
+  const pf=document.getElementById('periodFrom'), pt=document.getElementById('periodTo');
+  if(pf) pf.value='';
+  if(pt) pt.value='';
+  applyFiltersAndRerun();
+}
+
+/* 공백으로 끊어 모든 토큰이 들어있는 데이터셋만 남긴다(AND 검색) + 왼쪽 필터 패널 반영 */
+let LAST_QUERY = '';
+function runSearch(q){
+  q=(q||'').trim().replace(/^#/,'');
+  LAST_QUERY = q;
+  const toks=q.toLowerCase().split(/\s+/).filter(Boolean);
+  const matched = !toks.length ? DATASETS.slice()
+    : DATASETS.filter(d=>{ const h=haystack(d); return toks.every(t=>h.includes(t)); });
+  CURRENT_RESULTS = applyFacetFilters(matched);
+  renderResults(q);
+}
+/* 검색결과 카드 한 장(HTML). 일반 검색과 대화형 AI 검색이 같이 쓴다. */
+function datasetCardHtml(d){
+  const c=typeColor(d.type);
+  const pf=platformOf(d);
+  const pfMeta = !pf ? ''
+    : pf.url ? `<a class="sr-meta-item sr-meta-link" href="${pf.url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 ${esc(pf.name)}</a>`
+             : `<span class="sr-meta-item">🏠 ${esc(pf.name)}</span>`;
+  const tags=kwList(d).slice(0,5).map(k=>'<span class="sr-tag">#'+esc(k)+'</span>').join('');
+  const nT=(d.tables&&d.tables.length)?d.tables.length:null;
+  return `<div class="sr-card" onclick="openDetail('${d.id}')">
+    <div class="sr-card__left">
+      <div class="sr-card__top"><span class="sr-type" style="background:${c.bg};color:${c.fg}">${esc(typeLabel(d.type))}</span><span style="font-size:11.5px;color:var(--g50)">${esc(d.org)}</span></div>
+      <div class="sr-card__title">${esc(d.name)}</div>
+      <div class="sr-card__org">🏛 ${esc(d.org)} &nbsp;·&nbsp; 수집 기간 ${esc(d.period||'-')}</div>
+      ${tags?`<div class="sr-card__tags">${tags}</div>`:''}
+      <div class="sr-card__meta">
+        ${pfMeta}
+        ${nT?`<span class="sr-meta-item">🗂 ${nT}개 테이블</span>`:''}
+        ${d.lastUpdate?`<span class="sr-meta-item">📅 ${esc(d.lastUpdate)}</span>`:''}
+        ${d.updateCycle?`<span class="sr-meta-item">🔄 ${esc(d.updateCycle)}</span>`:''}
+      </div>
+    </div>
+    <div class="sr-card__right">
+      <div class="sr-actions"><button class="sr-btn-p" onclick="event.stopPropagation();openDetail('${d.id}')">상세 보기</button><button class="sr-btn-s" onclick="event.stopPropagation();${(pf&&pf.url)?`window.open('${pf.url}','_blank','noopener')`:`openDetail('${d.id}')`}">📋 신청 안내</button></div>
+    </div>
+  </div>`;
+}
+/* 검색결과 정렬(정렬 선택 상자). 원본 CURRENT_RESULTS는 건드리지 않고 복사본을 정렬한다.
+   - 관련도순: 검색어 토큰이 이름(5)·키워드(4)·설명(2)·기타(1) 어디에 걸렸는지 가중치 합.
+     검색어가 없으면(전체보기·주제 카드 등) 원래 순서 유지.
+   - 최신 업데이트순: lastUpdate. 데이터에 '등록일'이 없어서 이걸 쓴다.
+   - 조회수순: 메인 '인기 데이터'와 같은 표시용 조회수(fakeViewCount). */
+function sortResults(list){
+  const sel=document.getElementById('sortSelect');
+  const mode=sel ? sel.value : 'relevance';
+  const arr=list.slice();
+  if(mode==='recent') return arr.sort(function(a,b){ return parseLastUpdate(b.lastUpdate)-parseLastUpdate(a.lastUpdate); });
+  if(mode==='views')  return arr.sort(function(a,b){ return fakeViewCount(b.id)-fakeViewCount(a.id); });
+  if(mode==='name')   return arr.sort(function(a,b){ return String(a.name||'').localeCompare(String(b.name||''),'ko'); });
+  const toks=(LAST_QUERY||'').toLowerCase().split(/\s+/).filter(Boolean);
+  if(!toks.length) return arr;
+  const w=new Map(arr.map(function(d){
+    return [d, toks.reduce(function(s,t){ return s+fieldWeight(d,t); },0)];
+  }));
+  return arr.sort(function(a,b){ return w.get(b)-w.get(a); });
+}
+/* 검색결과 보기 방식: 'list'(카드형, 기본) / 'table'(표). 정렬·필터는 두 방식에 똑같이 적용된다. */
+let RESULT_VIEW='list';
+function setResultView(v){
+  RESULT_VIEW=v;
+  document.getElementById('viewBtnList').classList.toggle('on', v==='list');
+  document.getElementById('viewBtnTable').classList.toggle('on', v==='table');
+  renderResults(document.getElementById('resultQuery').dataset.label);
+}
+function resultTableHtml(list){
+  const V=function(v){ const t=(v==null?'':String(v)).trim(); return t?esc(t):'-'; };
+  return '<div class="rt-wrap"><table class="rt"><thead><tr>'+
+    '<th class="rt__no">No</th><th>데이터셋명</th><th>기관명</th><th>데이터 수집기간</th><th>최종 업데이트 일자</th><th>키워드</th>'+
+    '</tr></thead><tbody>'+
+    list.map(function(d,i){
+      const kw=kwList(d).map(function(k){ return k.replace(/^#/,''); }).slice(0,5).join(', ');
+      return '<tr data-id="'+esc(d.id)+'" onclick="openDetail(this.dataset.id)">'+
+        '<td class="rt__no">'+(i+1)+'</td>'+
+        '<td class="rt__name">'+esc(d.name)+'</td>'+
+        '<td class="rt__org">'+V(d.org)+'</td>'+
+        '<td class="rt__nowrap">'+V(d.period)+'</td>'+
+        '<td class="rt__nowrap">'+V(d.lastUpdate)+'</td>'+
+        '<td class="rt__kw">'+V(kw)+'</td></tr>';
+    }).join('')+
+    '</tbody></table></div>';
+}
+function renderResults(q){
+  const rq=document.getElementById('resultQuery');
+  rq.textContent = q||'전체';
+  rq.dataset.label = q||'';
+  document.getElementById('resultCount').textContent = CURRENT_RESULTS.length;
+  const wrap=document.getElementById('resultList');
+  const pagi=document.getElementById('pagination');
+  if(pagi) pagi.style.display='none';
+  if(!CURRENT_RESULTS.length){
+    wrap.innerHTML='<div style="padding:60px 20px;text-align:center;color:var(--g50);font-size:14px">검색 결과가 없습니다. 다른 검색어를 입력해 보세요.</div>';
+    return;
+  }
+  const sorted=sortResults(CURRENT_RESULTS);
+  wrap.innerHTML = RESULT_VIEW==='table' ? resultTableHtml(sorted) : sorted.map(datasetCardHtml).join('');
+}
+
+/* ══ 웹 검색결과 (Cloudflare Worker 경유) ══
+   구글은 신규 고객에게 Custom Search JSON API를 막아놔서(정책상 차단, 설정 문제 아님)
+   포기하고, 대신 우리가 만든 작은 서버(Cloudflare Worker, cloudflare-worker.js 참고)가
+   DuckDuckGo 결과를 대신 긁어와 CORS 없이 JSON으로 돌려주는 방식을 쓴다. */
+const WEB_SEARCH_PROXY_URL = 'https://web-search.kimdo.workers.dev/';
+
+function renderWebSearchResults(containerId, query){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+
+  if(!WEB_SEARCH_PROXY_URL){
+    const googleUrl = 'https://www.google.com/search?q=' + encodeURIComponent(query);
+    el.innerHTML = `<a class="ai-search-web__link" href="${googleUrl}" target="_blank" rel="noopener">Google에서 "${esc(query)}" 검색 결과 보기 →</a>`;
+    return;
+  }
+
+  const url = WEB_SEARCH_PROXY_URL + '?q=' + encodeURIComponent(query);
+
+  fetch(url)
+    .then(function(res){
+      return res.json().then(function(json){ return { ok: res.ok, json: json }; });
+    })
+    .then(function(r){
+      if(document.getElementById(containerId) !== el) return; // 그 사이 다른 검색으로 화면이 바뀌었으면 무시
+      // 프록시가 막히거나(검색엔진 쪽 일시 차단 등) 결과가 없을 때를 대비한 안전장치:
+      // 최소한 직접 검색으로 이어가는 링크는 항상 뜨게 한다.
+      const fallbackLink = `<a class="ai-search-web__link" href="https://www.google.com/search?q=${encodeURIComponent(query)}" target="_blank" rel="noopener">Google에서 "${esc(query)}" 검색 결과 보기 →</a>`;
+      if(!r.ok){
+        const msg = (r.json && r.json.error) || '웹 검색 결과를 가져오지 못했습니다.';
+        el.innerHTML = `<div style="color:var(--g50);font-size:12.5px;margin-bottom:8px">${esc(msg)}</div>${fallbackLink}`;
+        return;
+      }
+      const items = (r.json && r.json.items) || [];
+      if(!items.length){
+        el.innerHTML = `<div style="color:var(--g50);font-size:12.5px;margin-bottom:8px">관련 웹 검색 결과를 지금은 가져오지 못했습니다. 잠시 후 다시 시도해보세요.</div>${fallbackLink}`;
+        return;
+      }
+      el.innerHTML = items.slice(0, 8).map(function(it){
+        return `<div class="ai-search-web__item">
+          <a class="ai-search-web__item-title" href="${esc(it.link)}" target="_blank" rel="noopener">${esc(it.title || it.link)}</a>
+          <div class="ai-search-web__item-url">${esc(it.displayLink || it.link)}</div>
+          <div class="ai-search-web__item-snippet">${esc(it.snippet || '')}</div>
+        </div>`;
+      }).join('');
+    })
+    .catch(function(err){
+      console.error(err);
+      if(document.getElementById(containerId) !== el) return;
+      const fallbackLink = `<a class="ai-search-web__link" href="https://www.google.com/search?q=${encodeURIComponent(query)}" target="_blank" rel="noopener">Google에서 "${esc(query)}" 검색 결과 보기 →</a>`;
+      el.innerHTML = `<div style="color:var(--g50);font-size:12.5px;margin-bottom:8px">웹 검색 결과를 가져오지 못했습니다. (네트워크 오류)</div>${fallbackLink}`;
+    });
+}
+
+/* ══ 대화형 AI 검색 (검색결과 페이지) ══ */
+let aiSearchBusy = false;
+function runAISearch(q){
+  q = (q||'').trim();
+  document.getElementById('resultQuery').textContent = q || '전체';
+  const wrap = document.getElementById('resultList');
+  const pagi = document.getElementById('pagination');
+  if(pagi) pagi.style.display = 'none';
+
+  if(!q){
+    document.getElementById('resultCount').textContent = 0;
+    wrap.innerHTML = '<div style="padding:60px 20px;text-align:center;color:var(--g50);font-size:14px">궁금한 것을 자연어로 물어보세요. 예) "결핵 데이터 찾아줘"</div>';
+    return;
+  }
+
+  const picks = pickRelevantDatasets(q, 8);
+  document.getElementById('resultCount').textContent = picks.length;
+
+  wrap.innerHTML = `
+    <div class="ai-search-answer">
+      <div class="ai-search-answer__label">AI 검색 도우미</div>
+      <div class="ai-search-answer__body" id="aiSearchAnswerBody">${picks.length ? '생각 중...' : '등록된 데이터에서 관련 데이터셋을 찾지 못했습니다. 다른 검색어로 다시 시도해보세요.'}</div>
+    </div>
+    ${picks.length ? `<div class="ai-search-sub">🗄 우리 포털의 관련 데이터셋 (${picks.length}건)</div>
+    <div class="result-list" id="aiSearchDsResults">${picks.map(datasetCardHtml).join('')}</div>` : ''}
+    <div class="ai-search-web">
+      <div class="ai-search-web__label">🔎 웹 검색 결과</div>
+      <div id="aiSearchWebResults" class="ai-search-web__results"></div>
+    </div>`;
+
+  renderWebSearchResults('aiSearchWebResults', q);
+
+  if(!picks.length || aiSearchBusy) return;
+  aiSearchBusy = true;
+
+  streamOpenRouterAnswer({
+    systemPrompt: buildChatSystemPrompt(contextFromPicks(picks)),
+    userQuery: q,
+    onDelta: function(fullText){
+      const el = document.getElementById('aiSearchAnswerBody');
+      if(el) el.textContent = stripDatasetIds(fullText);
+    },
+    onStatus: function(text){
+      const el = document.getElementById('aiSearchAnswerBody');
+      if(el) el.textContent = text;
+    },
+    onError: function(msg){
+      const el = document.getElementById('aiSearchAnswerBody');
+      if(el){ el.textContent = msg; el.classList.add('ai-search-answer__body--err'); }
+    },
+    onDone: function(){ aiSearchBusy = false; }
+  });
+}
+
+/* URL 자동 링크 */
+function linkify(s){
+  return s.replace(/(https?:\/\/[^\s()<>]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:var(--teal);word-break:break-all">$1</a>');
+}
+function diffBadge(level){
+  const map={'하':{c:'#00897B',bg:'#E0F2F0',s:'★☆☆'},'중':{c:'#E65100',bg:'#FFF3E0',s:'★★☆'},'상':{c:'#C62828',bg:'#FDECEA',s:'★★★'}};
+  const m=map[level]; if(!m) return '';
+  return `<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:${m.c};background:${m.bg};padding:5px 12px;border-radius:20px">구득 난이도 ${level} ${m.s}</span>`;
+}
+
+/* ── 간단 마크다운 → HTML 렌더러 (가이드 md 파일용) ── */
+function renderMarkdown(md){
+  const lines = md.replace(/\r/g,'').split('\n');
+  let html='', inList=false, listBuf=[];
+  function flushList(){
+    if(listBuf.length){ html+='<ul class="md-ul">'+listBuf.join('')+'</ul>'; listBuf=[]; }
+    inList=false;
+  }
+  function inline(t){
+    t = esc(t);
+    t = t.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+    return linkify(t);
+  }
+  for(let raw of lines){
+    const line = raw.replace(/\s+$/,'');
+    if(!line.trim()){ flushList(); continue; }
+    let m;
+    if((m=line.match(/^#\s+(.*)$/))){ flushList(); /* 최상단 제목은 hero에 이미 있으므로 생략 */ continue; }
+    if((m=line.match(/^##\s+(.*)$/))){ flushList(); html+=`<h3 class="md-h3">${inline(m[1])}</h3>`; continue; }
+    if((m=line.match(/^###\s+(.*)$/))){ flushList(); html+=`<h4 class="md-h4">${inline(m[1])}</h4>`; continue; }
+    if((m=line.match(/^>\s+(.*)$/))){ flushList(); html+=`<div class="md-quote">${inline(m[1])}</div>`; continue; }
+    if((m=line.match(/^(\s*)-\s+(.*)$/))){
+      const indent = m[1].length;
+      inList=true;
+      listBuf.push(`<li class="${indent>=2?'md-sub':''}">${inline(m[2])}</li>`);
+      continue;
+    }
+    flushList();
+    html+=`<p class="md-p">${inline(line)}</p>`;
+  }
+  flushList();
+  return html;
+}
+
+// 현재 열려있는 데이터셋
+let CURRENT_DS=null;
+
+function openDetail(id){
+  const d=DATASETS.find(x=>x.id===id); if(!d) return;
+  CURRENT_DS=d;
+  document.getElementById('dsType').textContent=typeLabel(d.type);
+  document.getElementById('dsType').style.background='rgba(255,255,255,.15)';
+  const PF=platformOf(d);
+  const badge=document.getElementById('dsIdBadge');
+  badge.innerHTML = !PF ? ''
+    : PF.url ? `<a href="${PF.url}" target="_blank" rel="noopener" class="ds-hero__plat-link">🔗 ${esc(PF.name)}</a>`
+             : `🏠 ${esc(PF.name)}`;
+  badge.style.display = PF ? '' : 'none';
+  document.getElementById('dsTitle').textContent=d.name;
+  document.getElementById('dsOrg').innerHTML='🏛 '+esc(d.org);
+  const stats=[];
+  if(d.period)stats.push(['수집 기간',d.period]);
+  if(d.patientCount)stats.push(['대상자 수',d.patientCount]);
+  if(d.updateCycle)stats.push(['갱신 주기',d.updateCycle]);
+  document.getElementById('dsStats').innerHTML=stats.map(s=>`<div><div class="ds-hero__stat-num">${esc(s[1])}</div><div class="ds-hero__stat-label">${esc(s[0])}</div></div>`).join('');
+  document.getElementById('dsDesc').textContent = (d.desc && d.desc.trim())
+    ? d.desc.trim()
+    : `${d.org}에서 제공하는 「${d.name}」 데이터셋입니다.`+(d.period?` 수집 기간은 ${d.period}이며,`:'')+(d.type?` ${typeLabel(d.type)} 형태로 제공됩니다.`:'');
+  const kws=kwList(d);
+  document.getElementById('dsTags').innerHTML=kws.length?kws.map(k=>'<span class="ds-tag">#'+esc(k)+'</span>').join(''):'';
+  document.getElementById('dsApplyType').textContent=d.type?typeLabel(d.type)+' 제공':'신청 후 이용';
+  document.getElementById('dsDifficulty').innerHTML='';
+  const applyBtn=document.getElementById('dsApplyBtn');
+  if(applyBtn){
+    if(PF && PF.url){ applyBtn.disabled=false; applyBtn.textContent='📋 '+PF.name+'에서 신청하기';
+      applyBtn.onclick=()=>window.open(PF.url,'_blank','noopener'); }
+    else { applyBtn.disabled=false; applyBtn.textContent='📋 이용 신청하기'; applyBtn.onclick=null; }
+  }
+  document.getElementById('dsApplyProcess').innerHTML=
+    (PF? (PF.url
+        ? `<strong style="color:var(--g80)">신청 창구</strong><br><a href="${PF.url}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:700">${esc(PF.name)}</a> 에서 신청합니다.<br><br>`
+        : `<strong style="color:var(--g80)">신청 창구</strong><br>${esc(d.org)} 홈페이지에서 연구자가 직접 신청·다운로드합니다.<br><br>`) : '')
+    +'<strong style="color:var(--g80)">이용 절차 안내</strong><br>① 이용 신청서 제출 → ② 기관 검토·심의(DRB/IRB) → ③ 승인 후 데이터 제공';
+
+  // 데이터셋 정보표
+  renderInfoTable(d);
+  // 관련 데이터셋 (같은 제공기관)
+  renderRelated(d);
+
+  // md 뷰 초기화, 정보표 보이기
+  const gc=document.getElementById('dsGuide');
+  gc.innerHTML=''; gc.dataset.loaded='';
+  document.getElementById('dsGuideView').style.display='none';
+  document.getElementById('dsInfoCard').style.display='';
+  const btn=document.getElementById('dsGuideBtn');
+  if(d.guideFile){ btn.disabled=false; btn.textContent='상세페이지 보기 →'; }
+  else { btn.disabled=true; btn.textContent='상세페이지 준비 중'; }
+  goPage('dataset');
+  // 개요를 상세페이지(md) 소개문 기준으로 채움 (md 없으면 위의 엑셀문장 유지)
+  loadIntro(d);
+}
+
+/* md 캐시 (개요/난이도 미리 채우기 + 상세보기 재사용) */
+const GUIDE_CACHE={};
+function loadIntro(d){
+  if(!d.guideFile) return;
+  const apply=md=>{
+    if(CURRENT_DS!==d) return;   // 그 사이 다른 데이터셋으로 이동했으면 무시
+    // 소개문: 최상단 # 제목·> 인용 이후, 첫 ## 이전의 일반 문단
+    const lines=md.replace(/\r/g,'').split('\n');
+    let intro=[];
+    for(const l of lines){
+      if(/^#\s/.test(l)) continue;
+      if(/^>\s/.test(l)) continue;
+      if(/^<!--/.test(l)) continue;   // HTML 주석은 개요가 아니다
+      if(/^##\s/.test(l)) break;
+      if(l.trim()) intro.push(l.trim());
+    }
+    if(intro.length) document.getElementById('dsDesc').textContent=intro.join(' ');
+    // 난이도 배지
+    const diffLine=lines.find(l=>/구득\s*난이도/.test(l));
+    if(diffLine){
+      const dm=diffLine.match(/(상|중|하)\s*(★+☆*)/);
+      if(dm) document.getElementById('dsDifficulty').innerHTML=diffBadge(dm[1]);
+    }
+  };
+  if(GUIDE_CACHE[d.guideFile]!==undefined){ apply(GUIDE_CACHE[d.guideFile]); return; }
+  fetch(d.guideFile)
+    .then(r=>{ if(!r.ok) throw new Error('md 로드 실패'); return r.text(); })
+    .then(md=>{ GUIDE_CACHE[d.guideFile]=md; apply(md); })
+    .catch(()=>{});   // 실패 시 엑셀 문장 그대로 유지
+}
+
+/* 데이터셋 정보표: 엑셀 항목 전부 표시 (ID·제공유형 제외). 빈 값은 '-' */
+function renderInfoTable(d){
+  const wrap=document.getElementById('dsInfoTable');
+  const V=v=>{ const t=(v==null?'':String(v)).trim(); return t?esc(t):'<span class="iv-empty">-</span>'; };
+  const tbs=(d.tables||[]).filter(t=>t.en||t.ko);
+  const tableList = tbs.length ? tbs.map(t=>esc(t.en||t.ko)).join(', ') : '<span class="iv-empty">-</span>';
+  const rows=[
+    ['기관명', V(d.org)],
+    ['데이터명', V(d.name)],
+    ['수집 시작연도', V(d.startYear)],
+    ['수집 종료연도', V(d.endYear)],
+    ['데이터 수집기간', V(d.period)],
+    ['데이터 항목정보(Item)', V(d.itemInfo)],
+    ['제공 테이블 목록', tableList],
+    ['테이블 수', V(d.tableCount!=null&&String(d.tableCount).trim()!==''?d.tableCount:(tbs.length||''))],
+    ['컬럼 수', V(d.columnCount)],
+    ['데이터 파일 수', V(d.fileCount)],
+    ['환자 수', V(d.patientCount)],
+    ['최종 업데이트 일자', V(d.lastUpdate)],
+    ['업데이트 주기', V(d.updateCycle)],
+    ['주요 키워드', V(d.keywords)],
+    ['데이터 샘플정보(Sample)', V(d.sampleInfo)],
+    ['신청 창구', (function(){ const p=platformOf(d);
+        if(!p) return '<span class="iv-empty">-</span>';
+        return p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:700">${esc(p.name)}</a>`:esc(p.name); })()],
+    ['데이터 신청절차', V(d.applyProcess)],
+    ['비고', V(d.note)],
+  ];
+  wrap.innerHTML=`<table class="info-table"><tbody>${
+    rows.map(r=>`<tr><th>${r[0]}</th><td>${r[1]}</td></tr>`).join('')
+  }</tbody></table>`;
+}
+
+/* 관련 데이터셋: 같은 제공기관의 다른 데이터셋 최대 3개 */
+function renderRelated(d){
+  const box=document.getElementById('dsRelated');
+  if(!box) return;
+  let rel=DATASETS.filter(x=>x.id!==d.id && x.org && x.org===d.org);
+  // 같은 기관이 부족하면 표시할 게 없을 때만 비움 (다른 기관으로 채우지 않음)
+  rel=rel.slice(0,3);
+  const relColor=t=>{ const c=typeColor(t); return [c.bg,c.fg]; };
+  if(!rel.length){
+    box.innerHTML=`<div class="rel-head"><span class="bar"></span>관련 데이터셋</div>
+      <div class="rel-empty">${esc(d.org)}의 다른 데이터셋이 없습니다.</div>`;
+    return;
+  }
+  const cards=rel.map(x=>{
+    const [bg,fg]=relColor(x.type);
+    return `<div class="rel-card" onclick="openDetail('${x.id}')">
+      <span class="rel-card__type" style="background:${bg};color:${fg}">${esc(typeLabel(x.type))}</span>
+      <div class="rel-card__title">${esc(x.name)}</div>
+      <div class="rel-card__meta">🏛 ${esc(x.org)}${x.period?' · '+esc(x.period):''}</div>
+    </div>`;
+  }).join('');
+  box.innerHTML=`<div class="rel-head"><span class="bar"></span>관련 데이터셋</div>
+    <div class="rel-sub">${esc(d.org)}의 다른 데이터셋</div>
+    <div class="rel-grid">${cards}</div>`;
+}
+
+/* 상세페이지 보기: 정보표 숨기고 md로 전환 (지연 로딩) */
+function showGuide(){
+  const d=CURRENT_DS; if(!d||!d.guideFile) return;
+  document.getElementById('dsInfoCard').style.display='none';
+  document.getElementById('dsGuideView').style.display='block';
+  const gc=document.getElementById('dsGuide');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(gc.dataset.loaded==='1') return;
+  // 이미 개요용으로 받아둔 md가 있으면 재사용 (재요청 안 함)
+  if(GUIDE_CACHE[d.guideFile]!==undefined){
+    renderGuideFromMd(GUIDE_CACHE[d.guideFile]); gc.dataset.loaded='1'; return;
+  }
+  gc.innerHTML='<div class="ds-card"><div class="ds-card__body" style="color:var(--g50);font-size:13px;padding:18px 20px">상세페이지를 불러오는 중…</div></div>';
+  fetch(d.guideFile)
+    .then(r=>{ if(!r.ok) throw new Error('md 로드 실패'); return r.text(); })
+    .then(md=>{ GUIDE_CACHE[d.guideFile]=md; renderGuideFromMd(md); gc.dataset.loaded='1'; })
+    .catch(err=>{
+      console.error(err);
+      gc.innerHTML='<div class="ds-card"><div class="ds-card__body" style="color:var(--g50);font-size:13px;padding:18px 20px">상세페이지를 불러오지 못했습니다. (파일: '+esc(d.guideFile)+')</div></div>';
+    });
+}
+
+/* 정보표로 돌아가기 */
+function showInfo(){
+  document.getElementById('dsGuideView').style.display='none';
+  document.getElementById('dsInfoCard').style.display='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* md 텍스트를 상세 페이지 카드/개요/난이도에 반영 */
+function renderGuideFromMd(md){
+  const lines = md.replace(/\r/g,'').split('\n');
+  // 난이도: > **구득 난이도**: 하 ★☆☆
+  const diffLine = lines.find(l=>/구득\s*난이도/.test(l));
+  if(diffLine){
+    const dm = diffLine.match(/(상|중|하)\s*(★+☆*)/);
+    if(dm){
+      document.getElementById('dsDifficulty').innerHTML = diffBadge(dm[1]);
+      // hero 통계에도 추가
+      const statsEl=document.getElementById('dsStats');
+      statsEl.innerHTML += `<div><div class="ds-hero__stat-num">${dm[1]} ${dm[2]}</div><div class="ds-hero__stat-label">구득 난이도</div></div>`;
+    }
+  }
+  // 소개문: 최상단 # 제목과 > 인용 이후, 첫 ## 이전의 일반 문단
+  let introParas=[];
+  for(const l of lines){
+    if(/^#\s/.test(l)) continue;
+    if(/^>\s/.test(l)) continue;
+    if(/^<!--/.test(l)) continue;   // HTML 주석은 개요가 아니다
+    if(/^##\s/.test(l)) break;
+    if(l.trim()) introParas.push(l.trim());
+  }
+  if(introParas.length){
+    document.getElementById('dsDesc').textContent = introParas.join(' ');
+  }
+  // 본문(## 섹션들)을 카드로: 첫 소개/난이도 부분 잘라내고 렌더
+  const firstSec = md.indexOf('\n## ');
+  let body = firstSec>=0 ? md.slice(firstSec) : '';
+  // ## 단위로 카드 분할
+  const gc=document.getElementById('dsGuide');
+  if(!body.trim()){ gc.innerHTML=''; return; }
+  const secs = body.split(/\n##\s+/).filter(s=>s.trim());
+  gc.innerHTML = secs.map(sec=>{
+    const nl = sec.indexOf('\n');
+    const title = (nl>=0? sec.slice(0,nl):sec).trim();
+    const content = nl>=0? sec.slice(nl+1):'';
+    return `<div class="ds-card">
+      <div class="ds-card__head"><div class="ds-card__title"><span class="ds-card__title-bar"></span>${esc(title)}</div></div>
+      <div class="ds-card__body md-body">${renderMarkdown(content)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══ SPA 페이지 전환 ══ */
+const PAGES = {
+  main:      { id:'page-main',      label:'메인' },
+  search:    { id:'page-search',    label:'검색결과' },
+  dataset:   { id:'page-dataset',   label:'데이터셋 상세' },
+  datamap:   { id:'page-datamap',   label:'데이터 맵' },
+  howto:     { id:'page-howto',     label:'포털 서비스' },
+  community: { id:'page-community', label:'커뮤니티' },
+  notice:    { id:'page-notice',    label:'알림·소식' },
+  about:     { id:'page-about',     label:'포털 소개' }
+};
+
+function goPage(name) {
+  Object.values(PAGES).forEach(p => {
+    document.getElementById(p.id).classList.remove('active');
+  });
+  document.getElementById(PAGES[name].id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // nav 활성 표시(상단 탭 + 전체 메뉴 패널 + 우측 아이콘 독): 검색결과/데이터셋 상세는 '검색'을 켠 채로 유지한다.
+  document.querySelectorAll('.nav__tab[data-page], .menu-panel__item[data-page], .tool-dock__item[data-page]').forEach(l => l.classList.remove('on'));
+  const navKey = (name === 'search' || name === 'dataset') ? 'main' : name;
+  document.querySelectorAll('.nav__tab[data-page="' + navKey + '"], .menu-panel__item[data-page="' + navKey + '"], .tool-dock__item[data-page="' + navKey + '"]').forEach(l => l.classList.add('on'));
+}
+
+/* 전체 메뉴 슬라이드 패널 열기/닫기 */
+function toggleMenu(force){
+  const panel = document.getElementById('menuPanel');
+  const overlay = document.getElementById('menuOverlay');
+  const open = typeof force === 'boolean' ? force : !panel.classList.contains('open');
+  panel.classList.toggle('open', open);
+  overlay.classList.toggle('open', open);
+}
+
+/* 메인 히어로/역할 요약 카드에서 포털 소개 안의 특정 섹션으로 바로 이동한다. */
+function goToAboutSec(id){
+  goPage('about');
+  toggleMenu(false);
+  setTimeout(function(){
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({behavior:'smooth'});
+  }, 60);
+}
+
+/* ══ 검색 실행 (메인 → 검색결과) ══ */
+function doSearch() {
+  const q = document.getElementById('hinput').value.trim() ||
+            document.getElementById('navSearch').value.trim();
+  document.getElementById('searchInput').value = q;
+  syncSbtabToSearchMode();
+  if(SEARCH_MODE === 'ai') runAISearch(q);
+  else runSearch(q);
+  goPage('search');
+}
+function searchChip(keyword) {
+  const q = keyword.replace(/^#/,'');
+  document.getElementById('hinput').value = q;
+  document.getElementById('searchInput').value = q;
+  runSearch(q);
+  goPage('search');
+}
+function doSearchFromResult() {
+  const q = document.getElementById('searchInput').value.trim();
+  if(SEARCH_MODE === 'ai') runAISearch(q);
+  else runSearch(q);
+}
+
+/* ══ 히어로 탭 ══ */
+function setHeroTab(el, ph) {
+  document.querySelectorAll('.hero__tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('hinput').placeholder = ph;
+  SEARCH_MODE = el.dataset.mode === 'ai' ? 'ai' : 'normal';
+}
+
+/* ══ 검색바 탭 ══ */
+let SEARCH_MODE = 'ai';   // 'normal' | 'ai' (대화형 AI 검색 탭) — 기본값을 AI 검색으로
+/* 검색결과 페이지의 sbtab 표시를 현재 SEARCH_MODE에 맞춰 맞춘다.
+   메인 히어로 탭에서 넘어왔을 때도(sbtab을 직접 클릭 안 해도) 탭 표시가 어긋나지 않게. */
+function syncSbtabToSearchMode(){
+  document.querySelectorAll('.sbtab').forEach(t => {
+    t.classList.toggle('on', (t.dataset.mode === 'ai') === (SEARCH_MODE === 'ai'));
+  });
+  const input = document.getElementById('searchInput');
+  if(input) input.placeholder = SEARCH_MODE === 'ai'
+    ? '예: 결핵 데이터 찾아줘 (자연어로 물어보세요)'
+    : '검색어를 입력하세요';
+}
+function setSbtab(el) {
+  document.querySelectorAll('.sbtab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  SEARCH_MODE = el.dataset.mode === 'ai' ? 'ai' : 'normal';
+  const input = document.getElementById('searchInput');
+  if(input){
+    input.placeholder = SEARCH_MODE === 'ai'
+      ? '예: 결핵 데이터 찾아줘 (자연어로 물어보세요)'
+      : '검색어를 입력하세요';
+    if(input.value.trim()) doSearchFromResult();   // 탭만 바꿔도 같은 검색어로 바로 재검색
+  }
+}
+
+/* ══ 뉴스 탭 ══ */
+function switchNews(el) {
+  document.querySelectorAll('.ntab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+}
+
+/* ══ 필터 그룹 토글 ══ */
+function toggleFG(head) {
+  const arrow = head.querySelector('.filter-group__arrow');
+  const body  = head.nextElementSibling;
+  if (body && body.classList.contains('filter-group__body')) {
+    const isOpen = body.style.display !== 'none';
+    body.style.display = isOpen ? 'none' : 'flex';
+    arrow.classList.toggle('open', !isOpen);
+  }
+}
+
+/* ══ 데이터셋 상세 탭 ══ */
+function setDsTab(el) {
+  document.querySelectorAll('.ds-tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+  // data.json 을 불러와 데이터셋을 채운다 (엑셀 → data.json 만 갈아끼우면 됨)
+  fetch('data.json')
+    .then(function(res){
+      if(!res.ok) throw new Error('data.json 로드 실패 (HTTP '+res.status+')');
+      return res.json();
+    })
+    .then(function(json){
+      DATASETS = (json && json.datasets) ? json.datasets : (Array.isArray(json)?json:[]);
+      // 상세 본문이 data.json 안에 함께 들어온다. 캐시를 미리 채워 두면
+      // 상세를 열 때 guides/*.md 를 따로 받지 않는다. (없으면 예전처럼 fetch)
+      if(json && json.guides) Object.assign(GUIDE_CACHE, json.guides);
+      CURRENT_RESULTS = DATASETS.slice();
+      buildOrgPlatform();
+      onDataReady();
+    })
+    .catch(function(err){
+      console.error(err);
+      var rl = document.getElementById('resultList');
+      if(rl) rl.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#c62828;font-size:14px;line-height:1.7">데이터를 불러오지 못했습니다.<br><span style="color:var(--g50);font-size:12.5px">이 페이지는 로컬에서 파일을 직접 열면(더블클릭) 동작하지 않습니다.<br>같은 폴더에서 <code>python -m http.server</code> 로 열거나, GitHub Pages 등 웹서버에 올려서 확인하세요.</span></div>';
+    });
+});
+
+// 데이터 로드 완료 후 메인 통계·검색칩·인기카드 등 데이터 기반 요소를 갱신
+function onDataReady(){
+  try {
+    // 메인 히어로 통계: 등록 데이터셋 수 / 참여 기관 수 자동 갱신
+    var n = DATASETS.length;
+    var orgs = {};
+    DATASETS.forEach(function(d){ if(d.org) orgs[d.org]=1; });
+    var orgCount = Object.keys(orgs).length;
+    var elDs = document.querySelector('#stat-dataset-count');
+    var elOrg = document.querySelector('#stat-org-count');
+    if(elDs) elDs.childNodes[0].nodeValue = n;
+    if(elOrg) elOrg.childNodes[0].nodeValue = orgCount;
+    renderFilterPanel();
+    renderResourceCards();
+    renderTopicSplit();
+    renderFeaturedOrgList();
+    renderFeaturedList();
+  } catch(e){ console.warn(e); }
+}
+
+/* ══════════ AI 검색 도우미(챗봇) ══════════
+   OpenRouter API 키는 더 이상 여기(브라우저)에 없다. 대신 Cloudflare Worker의
+   /chat 라우트가 대신 호출해준다 — 키는 Worker의 Secret(OPENROUTER_KEY)으로만
+   저장되어 있고 클라이언트에는 절대 노출되지 않는다. (cloudflare-worker.js,
+   AI검색_안내.md 참고) */
+const CHAT_PROXY_URL = WEB_SEARCH_PROXY_URL + 'chat';
+// 2026-09-28: nex-agi 계열이 OpenRouter에서 통째로 내려가(404 "No endpoints found") 교체.
+// 실측(프록시 경유, 한국어 5문장): qwen3.8-27b 첫 토큰 1.1s/전체 3.6s, nemotron-3-super 1.4s/6.2s.
+const CHAT_MODEL = 'qwen/qwen3.8-27b:free';
+// 주 모델이 429/5xx/404로 완전히 실패하면 자동으로 이걸로 한 번 더 시도한다.
+// provider가 다른 모델을 골라야 한쪽이 통째로 죽어도 살아남는다.
+const CHAT_MODEL_FALLBACK = 'nvidia/nemotron-3-super-120b-a12b:free';
+
+function buildChatSystemPrompt(context){
+  // "있는지 없는지" 판단은 이미 우리 코드(pickRelevantDatasets)가 끝냈다.
+  // 이 함수는 picks.length>0 일 때만 호출되므로, 모델에게 존재 여부를 다시
+  // 판단하게 하지 않고 "이미 확인된 목록"이라고 못 박아 설명만 시킨다.
+  // NVIDIA Nemotron 계열은 "detailed thinking off"를 시스템 프롬프트에 넣어야
+  // 사고 과정(thinking process)을 안 뱉고 바로 최종 답만 낸다(모델 자체 관례).
+  return 'detailed thinking off\n\n' +
+    '당신은 "보건의료데이터 중개 포털"의 검색 도우미입니다. ' +
+    '사용자의 질문이 영어 등 다른 언어로 오더라도 반드시 한국어로만 답변하세요. 영어 단어나 문장을 섞지 마세요. ' +
+    '내부적으로 추론 과정을 서술하지 말고 최종 답변만 바로 출력하세요. ' +
+    '아래 [등록 데이터셋 목록]은 시스템이 이미 사용자 질문과 관련 있다고 확인해서 찾아준 실제 데이터셋입니다. ' +
+    '이 목록에 있는 항목은 확실히 존재하므로 "없다"거나 "찾지 못했다"고 답하지 마세요. ' +
+    '이 목록을 근거로 어떤 데이터셋들이 있는지 한국어로 설명하세요. ' +
+    '사람이 읽기 편하도록 데이터셋마다 아래 형식을 그대로 지켜서 줄바꿈해 작성하세요(굵게 표시나 마크다운 기호 **, # 은 절대 쓰지 마세요 — 화면에 별표가 그대로 글자로 보입니다):\n' +
+    '- 데이터셋명 (제공기관, 수집기간)\n' +
+    '  한두 문장으로 이 데이터가 무엇인지 설명. 여러 기관 자료를 연계했다면(예: 국민건강보험공단·건강보험심사평가원·통계청 자료를 연계) 그 수집 기관들도 여기에 포함.\n' +
+    '  활용 방안: 이 데이터셋으로 할 수 있는 연구·정책 활용을 3~4개, 쉼표로 구분한 짧은 명사구로 작성\n' +
+    '활용 방안은 목록의 설명·키워드·주요 항목에 근거해 그 데이터셋 성격에 맞게 구체적으로 도출하세요. ' +
+    '예를 들어 국민건강영양조사 기본 DB라면 "활용 방안: 건강 정책 수립 및 평가, 영양 상태 분석 및 개선 방안 도출, 질병 예방 및 관리 연구, 건강행태 추이 모니터링"처럼 씁니다. ' +
+    '모든 데이터셋에 똑같은 활용 방안을 반복하지 말고, 그 데이터로만 가능한 활용을 우선하세요. ' +
+    '데이터 유형(결합/단독 등)은 답변에 쓰지 마세요. ' +
+    '제목줄은 목록의 "/ 기간:" 같은 표기를 베끼지 말고 반드시 "- 데이터셋명 (제공기관, 수집기간)" 모양으로 쓰고, 수집기간이 "-"이면 괄호 안에 제공기관만 쓰세요. ' +
+    '활용 방안에도 영어 단어를 섞지 말고 한국어로만 쓰세요(예: mapping → 지도화). ' +
+    '데이터셋과 데이터셋 사이는 줄을 바꿔 구분하고, 위 세 줄(제목줄/설명줄/활용 방안줄) 형식을 반드시 지키세요. ' +
+    '데이터셋ID나 코드(예: CD003, DS-026 같은 영문+숫자 코드)는 목록에 없으니 답변에 절대 만들어 넣지 마세요. ' +
+    '목록에 없는 세부 내용은 지어내지 마세요.\n\n' +
+    '[등록 데이터셋 목록]\n' + context.slice(0,6000) +
+    '\n\n다시 한번 강조합니다: 답변은 오직 한국어로만 작성하세요.';
+}
+
+function toggleChat(force){
+  const panel = document.getElementById('chatPanel');
+  const open = typeof force === 'boolean' ? force : !panel.classList.contains('open');
+  panel.classList.toggle('open', open);
+  if(open) document.getElementById('chatInput').focus();
+}
+
+/* 기관명 줄임말 대응(질병청→질병관리청, 심평원→건강보험심사평가원 등).
+   기관명은 짧은 문자열이라, 글자가 순서대로만 나오면(사이에 다른 글자가 껴 있어도)
+   같은 기관으로 본다. haystack 전체에 이 방식을 쓰면 오탐이 커지므로 기관명에만 적용. */
+function orgMatches(d, tok){
+  const org = (d.org||'').toLowerCase();
+  if(!org || tok.length<2) return false;
+  if(org.includes(tok)) return true;
+  let i=0;
+  for(const c of org){ if(c===tok[i]) i++; if(i===tok.length) return true; }
+  return false;
+}
+
+/* "OO데이터/자료/정보 있어?"처럼 띄어쓰기 없이 붙여 쓴 흔한 접미어를 뗀
+   버전도 후보 토큰으로 같이 본다 (예: "질병청데이터" → "질병청"도 시도). */
+const GENERIC_SUFFIX = /(데이터셋|데이터|자료|정보|통계|현황|리스트|명단|디비|db)$/i;
+function expandTokens(toks){
+  const out = [];
+  toks.forEach(function(t){
+    out.push(t);
+    const stripped = t.replace(GENERIC_SUFFIX, '');
+    if(stripped && stripped.length>=2 && stripped!==t) out.push(stripped);
+  });
+  return out;
+}
+
+/* "데이터/자료/정보 있어?" 같은 단독 범용명사, "찾아줘/알려줘/해주세요" 같은
+   요청형 어미는 데이터셋 대부분(예: "데이터"는 전체의 87%)에 들어있어서
+   매칭 신호로 쓰면 안 된다. 이걸 걸러내지 않으면 완화매칭(2단계)에서 이런
+   채움말 매칭 점수가 실제 키워드 매칭과 비슷해져서, 결핵을 검색했는데 대장암
+   데이터셋이 같이 뜨는 식의 엉뚱한 결과가 섞인다. */
+const GENERIC_WHOLE = /^(데이터셋|데이터|자료|정보|통계|현황|리스트|명단|디비|db)$/i;
+const FILLER_TAIL = /(줘|줄래|줄까|주세요|주실래요?|주시겠어요?|해줘|해주세요|할래)$/;
+/* "결핵 관련 데이터"의 "관련"처럼 주제어가 아닌 연결어·질문어. 이게 AND 매칭에 끼면
+   우연히 설명에 "관련"이 들어간 데이터셋만 남는다(실제로 결핵 6건 중 병역판정검사 DB만 남았음). */
+const STOPWORDS = new Set(['관련','관련된','관한','대한','위한','있는','있어','있어요','있나요','있을까',
+  '있습니까','어떤','무슨','뭐','뭐가','뭐있어','좀','혹시','찾아','찾고','싶어','싶어요','추천','및','등',
+  '같은','어디','어디서','볼','수','있을까요','알고','주로','전체','모든']);
+function isMeaningfulToken(t){
+  return t.length>0 && !GENERIC_WHOLE.test(t) && !FILLER_TAIL.test(t) && !STOPWORDS.has(t);
+}
+
+/* 토큰 끝에 붙은 조사·연결어를 뗀다("결핵관련"→"결핵", "결핵에"→"결핵"). 남는 게 2글자 이상일 때만. */
+const PARTICLE_TAIL = /(관련된|관련|에서|으로|에|을|를|이|가|은|는|의|로|과|와)$/;
+function stripParticle(t){
+  const s = t.replace(PARTICLE_TAIL, '');
+  return s.length>=2 ? s : t;
+}
+
+/* 필드별 가중치: 이름·키워드에 걸린 데이터셋이 설명 구석이나 테이블명에만 걸린 것보다 위로 온다. */
+function fieldWeight(d, tok){
+  if((d.name||'').toLowerCase().includes(tok)) return 5;
+  if((d.keywords||'').toLowerCase().includes(tok)) return 4;
+  if(((d.desc||'')+' '+(d.itemInfo||'')).toLowerCase().includes(tok)) return 2;
+  return haystack(d).includes(tok) ? 1 : 0;
+}
+
+/* 질문과 관련된 데이터셋을 data.json에서 추려 챗봇 컨텍스트로 쓴다(가벼운 RAG).
+   주의: runSearch()는 검색 결과 페이지 DOM을 다시 그리는 용도라 값을 반환하지
+   않는다(부작용 함수). 챗봇에서는 화면을 건드리지 않는 별도 매칭을 쓴다. */
+function pickRelevantDatasets(q, limit){
+  limit = limit || 6;
+  const rawToks = q.toLowerCase().trim().replace(/^#/,'').split(/\s+/).filter(Boolean);
+  if(!rawToks.length) return [];
+
+  // 채움말/범용명사를 뺀 "의미 있는" 토큰만 매칭에 쓴다. 질문이 전부 채움말뿐이면
+  // (극히 드묾) 원래 토큰으로 되돌아간다.
+  const meaningful = rawToks.map(stripParticle).filter(isMeaningfulToken);
+  const qToks = meaningful.length ? meaningful : rawToks;
+  function weightOf(d, toks){
+    return toks.reduce(function(s, t){ return s + fieldWeight(d, t); }, 0);
+  }
+
+  // 1) 사이트 검색과 같은 방식: 모든 토큰이 그대로 다 들어있는 데이터셋(AND).
+  //    이름·키워드에 걸린 것부터 보여주도록 가중치 순으로 정렬한다.
+  const exact = DATASETS.filter(function(d){
+    const h = haystack(d);
+    return qToks.every(function(t){ return h.includes(t); });
+  });
+  if(exact.length){
+    return exact
+      .map(function(d){ return {d:d, w:weightOf(d, qToks)}; })
+      .sort(function(a,b){ return b.w-a.w; })
+      .slice(0, limit)
+      .map(function(x){ return x.d; });
+  }
+
+  // 2) 못 찾으면 접미어를 뗀 토큰까지 더해 하나라도 걸리면 인정(OR) + 기관명 줄임말 대응
+  //    "2025년"/"2025" 같은 연도 단독 토큰은 수집기간·보고서 파일명 등에 우연히 섞여
+  //    들어있는 경우가 많아(예: "2013년부터 2025년까지") 질병명 같은 진짜 주제어와
+  //    동급으로 점수를 주면 안 된다. 주제어 매칭 개수를 1순위로, 연도 매칭은 동점일 때만
+  //    보는 2순위로 쓴다(주제어가 전혀 없는 질의일 때만 연도 매칭 단독으로 인정).
+  const YEAR_TOKEN = /^\d{4}(년)?$/;
+  const allToks = expandTokens(qToks);
+  const topicToks = allToks.filter(function(t){ return !YEAR_TOKEN.test(t); });
+  const yearToks = allToks.filter(function(t){ return YEAR_TOKEN.test(t); });
+  const scored = DATASETS
+    .map(function(d){
+      const h = haystack(d);
+      let topicN = topicToks.filter(function(t){ return h.includes(t); }).length;
+      if(!topicN) topicN = topicToks.filter(function(t){ return orgMatches(d, t); }).length;
+      const yearN = yearToks.filter(function(t){ return h.includes(t); }).length;
+      return {d:d, topicN:topicN, yearN:yearN, w:weightOf(d, topicToks)};
+    })
+    .filter(function(x){ return topicToks.length ? x.topicN>0 : x.yearN>0; })
+    .sort(function(a,b){ return (b.topicN-a.topicN) || (b.w-a.w) || (b.yearN-a.yearN); })
+    .map(function(x){ return x.d; });
+  return scored.slice(0, limit);
+}
+
+/* AI가 지시를 무시하고 ID를 또 만들어 붙이는 경우를 대비한 마지막 안전장치.
+   [CD003], [DS-026], [JD012] 같은 "영문자+숫자" 대괄호 코드를 화면에서 지운다. */
+function stripDatasetIds(text){
+  return text.replace(/\[[A-Za-z]{1,4}-?\d{2,6}\]\s?/g, '');
+}
+
+/* AI에게 넘기는 텍스트에는 데이터셋ID(CD003, DS-026 등)를 넣지 않는다.
+   ID는 카드 클릭(openDetail)에만 필요하고, AI 답변에 코드가 그대로 노출되는
+   걸 막기 위해 이름/기관 등 사람이 읽는 정보만 준다. */
+function contextFromPicks(picks){
+  if(!picks.length) return '';
+  return picks.map(function(d){
+    const desc = (d.desc||'').slice(0,250);
+    // 유형(결합/단독)은 답변에 필요 없어 뺐다. 활용 방안을 도출할 근거로 주요 항목을 함께 준다.
+    const items = (d.itemInfo||'').slice(0,120);
+    return '- '+d.name+' ('+d.org+') / 기간: '+(d.period||'-')+' / 키워드: '+(d.keywords||'-')+' / 설명: '+desc+(items?' / 주요 항목: '+items:'');
+  }).join('\n');
+}
+
+/* 찾은 데이터셋을 클릭 가능한 카드로 보여준다. 클릭하면 기존 상세페이지(openDetail)로
+   바로 넘어간다 — 이때 챗봇 패널은 시야를 가리지 않도록 닫는다. */
+function appendChatDatasetCards(picks){
+  if(!picks || !picks.length) return;
+  const body = document.getElementById('chatBody');
+  const wrap = document.createElement('div');
+  wrap.className = 'chat-ds-cards';
+  picks.forEach(function(d){
+    const card = document.createElement('div');
+    card.className = 'chat-ds-card';
+    card.onclick = function(){ openDetail(d.id); toggleChat(false); };
+    const name = document.createElement('div');
+    name.className = 'chat-ds-card__name';
+    name.textContent = d.name;
+    const meta = document.createElement('div');
+    meta.className = 'chat-ds-card__meta';
+    meta.textContent = d.org + (d.period ? ' · '+d.period : '');
+    card.appendChild(name);
+    card.appendChild(meta);
+    wrap.appendChild(card);
+  });
+  body.appendChild(wrap);
+  body.scrollTop = body.scrollHeight;
+  document.getElementById('chatPanel').classList.add('chat-panel--wide'); // 결과 나오면 패널 확대
+}
+
+function appendChatMsg(text, cls){
+  const body = document.getElementById('chatBody');
+  const el = document.createElement('div');
+  el.className = 'chat-msg '+cls;
+  el.textContent = text;               // textContent만 사용 → XSS 걱정 없음
+  body.appendChild(el);
+  body.scrollTop = body.scrollHeight;
+  return el;
+}
+
+/* ══ OpenRouter 스트리밍 공통 로직 ══
+   챗봇 패널과 검색결과 페이지의 "대화형 AI 검색"이 같은 모델·같은 스트리밍/재시도
+   로직을 쓴다. 화면에 어떻게 그릴지는 콜백으로 호출부에 맡긴다.
+   opts: { systemPrompt, userQuery,
+           onDelta(fullTextSoFar), onStatus(text), onError(message), onDone() } */
+function streamOpenRouterAnswer(opts){
+  const onDelta = opts.onDelta || function(){};
+  const onStatus = opts.onStatus || function(){};
+  const onError = opts.onError || function(){};
+  const onDone = opts.onDone || function(){};
+
+  function buildRequestBody(model){
+    return JSON.stringify({
+      model: model,
+      messages: [
+        { role: 'system', content: opts.systemPrompt },
+        { role: 'user', content: opts.userQuery },
+      ],
+      max_tokens: 900,   // 데이터셋마다 활용 방안 줄이 추가돼 500이면 뒤쪽이 잘린다
+      temperature: 0.3,
+      stream: true,               // 완성될 때까지 기다리지 않고 생성되는 대로 바로 보여준다
+      reasoning: { enabled: false, exclude: true }, // reasoning 모델의 "생각 과정" 노출 억제 (OpenRouter 지원 시)
+    });
+  }
+
+  // 요청 만들기(컨텍스트 조립 포함)는 동기 코드라, 여기서 뭐가 터지면
+  // fetch가 시작도 안 하고 죽어서 "생각 중..."에 영원히 멈춘다. try/catch로 막는다.
+  try {
+    buildRequestBody(CHAT_MODEL);
+  } catch(e){
+    console.error(e);
+    onError('요청을 만드는 중 오류가 발생했습니다.');
+    onDone();
+    return;
+  }
+
+  const MAX_RETRIES = 2;
+  const RETRY_DELAY_MS = 4000;
+  let currentModel = CHAT_MODEL;
+  let usedFallback = false;
+
+  /* 한 번의 시도: 성공(스트림 데이터 수신)하면 true, 데이터 없이 끝나면 false를
+     resolve. 실패하면(status 붙은) 에러로 reject한다. */
+  function attemptOnce(model){
+    // 첫 응답이 30초 넘게 안 오면 무한 대기하지 않고 중단한다.
+    // 응답이 한 번이라도 오기 시작하면(스트리밍) 타임아웃은 해제된다.
+    const controller = new AbortController();
+    let timeoutId = setTimeout(function(){ controller.abort(); }, 30000);
+    let answer = '';
+    let gotAny = false;
+
+    return fetch(CHAT_PROXY_URL, {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: buildRequestBody(model),
+    })
+      .then(function(res){
+        if(!res.ok){
+          return res.json().catch(function(){ return null; }).then(function(errJson){
+            const detail = errJson && errJson.error && errJson.error.message ? errJson.error.message : '';
+            const e = new Error(detail || ('http_'+res.status));
+            e.status = res.status;
+            throw e;
+          });
+        }
+        if(!res.body) throw new Error('no_body');
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+
+        function pump(){
+          return reader.read().then(function(step){
+            if(step.done) return;
+            clearTimeout(timeoutId);          // 뭐든 도착했으면 타임아웃 취소
+            buf += decoder.decode(step.value, {stream:true});
+            const lines = buf.split('\n');
+            buf = lines.pop();                // 잘린 마지막 줄은 다음 청크로 이어붙인다
+            for(const line of lines){
+              const t = line.trim();
+              if(!t.startsWith('data:')) continue;
+              const payload = t.slice(5).trim();
+              if(payload === '[DONE]') return;
+              let json;
+              try { json = JSON.parse(payload); } catch(e){ continue; }
+              const delta = json.choices && json.choices[0] && json.choices[0].delta
+                ? (json.choices[0].delta.content || '') : '';
+              if(delta){
+                gotAny = true;
+                answer += delta;
+                onDelta(answer);
+              }
+            }
+            return pump();
+          });
+        }
+        return pump();
+      })
+      .then(function(){ return gotAny; })
+      .catch(function(err){
+        if(gotAny) return true;   // 스트리밍 도중 끊겼어도 지금까지 받은 답은 성공으로 취급
+        throw err;
+      })
+      .finally(function(){ clearTimeout(timeoutId); });
+  }
+
+  /* 429(무료 모델 혼잡) 또는 5xx(제공자 쪽 일시 오류)만 잠깐 기다렸다가 자동
+     재시도한다. 그래도 안 되면(그리고 아직 폴백을 안 썼으면) CHAT_MODEL_FALLBACK으로
+     한 번 더 처음부터 시도한다 — 같은 provider라도 SKU별로 따로 죽을 수 있어서
+     (실측 확인: 2026-09-23, mini는 503인데 pro는 정상), 완전 포기 전에 다른 모델을
+     한 번 더 써본다. 그 외 에러는 바로 포기. */
+  function attempt(retriesLeft){
+    return attemptOnce(currentModel).catch(function(err){
+      const retryable = err && (err.status === 429 || (err.status >= 500 && err.status < 600));
+      if(retryable && retriesLeft > 0){
+        const tryNo = MAX_RETRIES - retriesLeft + 1;
+        onStatus('무료 모델이 몰려 있어 '+(RETRY_DELAY_MS/1000)+'초 후 재시도합니다 ('+tryNo+'/'+MAX_RETRIES+')...');
+        return new Promise(function(resolve){ setTimeout(resolve, RETRY_DELAY_MS); })
+          .then(function(){ return attempt(retriesLeft-1); });
+      }
+      // 404(모델 자체가 사라짐)는 같은 모델 재시도는 의미 없지만 폴백 모델로는 넘어간다.
+      const fallbackable = retryable || (err && err.status === 404);
+      if(fallbackable && !usedFallback && CHAT_MODEL_FALLBACK && CHAT_MODEL_FALLBACK !== currentModel){
+        usedFallback = true;
+        currentModel = CHAT_MODEL_FALLBACK;
+        onStatus('다른 모델로 전환해 재시도합니다...');
+        return attempt(MAX_RETRIES);
+      }
+      throw err;
+    });
+  }
+
+  attempt(MAX_RETRIES)
+    .then(function(gotAny){
+      if(!gotAny) onError('답변을 가져오지 못했습니다. 잠시 후 다시 시도해주세요.');
+    })
+    .catch(function(err){
+      let msg;
+      if(err && err.name === 'AbortError'){
+        msg = '응답이 30초 넘게 오지 않아 중단했습니다. 잠시 후 다시 시도해주세요.';
+      } else if(err && err.status === 429){
+        msg = '무료 모델이 계속 많이 몰려 있습니다 (429). 잠시 후 다시 시도해주세요.';
+      } else if(err && err.status){
+        msg = '답변을 가져오지 못했습니다 (상태 '+err.status+'). '+(err.message||'');
+      } else {
+        msg = '서버에 연결하지 못했습니다. (네트워크/CORS 문제일 수 있음, 콘솔 확인)';
+      }
+      onError(msg);
+    })
+    .finally(onDone);
+}
+
+let chatBusy = false;
+function sendChat(){
+  if(chatBusy) return;
+  const input = document.getElementById('chatInput');
+  const q = input.value.trim();
+  if(!q) return;
+  input.value = '';
+  appendChatMsg(q, 'chat-msg--user');
+
+  // 사이트 자체 검색은 AI 응답과 무관하게 먼저 보여준다(느리거나 실패해도 결과는 바로 나옴).
+  const picks = pickRelevantDatasets(q);
+  appendChatDatasetCards(picks);
+
+  // "있다/없다" 판단은 이미 여기서 끝났다. 없으면 AI를 부를 필요도 없이 바로 답한다
+  // (소형 무료 모델이 목록을 무시하고 "없다"고 오답하는 걸 원천 차단).
+  if(!picks.length){
+    appendChatMsg('등록된 데이터에서 관련 데이터셋을 찾지 못했습니다. 다른 검색어로 다시 시도해보세요.', 'chat-msg--bot');
+    return;
+  }
+
+  const loading = appendChatMsg('생각 중...', 'chat-msg--bot');
+  chatBusy = true;
+  document.getElementById('chatSend').disabled = true;
+
+  streamOpenRouterAnswer({
+    systemPrompt: buildChatSystemPrompt(contextFromPicks(picks)),
+    userQuery: q,
+    onDelta: function(fullText){
+      loading.textContent = stripDatasetIds(fullText);
+      const body = document.getElementById('chatBody');
+      body.scrollTop = body.scrollHeight;
+    },
+    onStatus: function(text){ loading.textContent = text; },
+    onError: function(msg){
+      loading.textContent = msg;
+      loading.className = 'chat-msg chat-msg--err';
+    },
+    onDone: function(){
+      chatBusy = false;
+      document.getElementById('chatSend').disabled = false;
+    }
+  });
+}
+</script>
+</body>
+</html>
