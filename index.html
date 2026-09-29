@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap');
 
 /* ═══════════════════════════════════════
-   v3 
+   v3 원본 디자인 토큰 100% 유지
 ═══════════════════════════════════════ */
 :root {
   --navy:#0D2B55; --navy-dk:#071A38; --navy-md:#1A3F72;
@@ -349,10 +349,11 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 .rt tr:last-child td{border-bottom:none}
 .rt tbody tr{cursor:pointer;transition:background var(--ease)}
 .rt tbody tr:hover{background:var(--teal-lt)}
-.rt__name{font-weight:700;color:var(--navy);min-width:200px}
-.rt__org{min-width:130px}
+/* 데이터셋명·기관명은 한 줄로. 아주 긴 이름(약 26자 이상)만 …로 줄이고 마우스를 올리면 전체 이름(title)이 보인다. */
+.rt__name{font-weight:700;color:var(--navy);white-space:nowrap;max-width:340px;overflow:hidden;text-overflow:ellipsis}
+.rt__org{white-space:nowrap}
 .rt__nowrap{white-space:nowrap}
-.rt__kw{font-size:12px;color:var(--g50);min-width:180px}
+.rt__kw{font-size:12px;color:var(--g50);min-width:180px;word-break:keep-all}
 .rt__apply{white-space:nowrap;text-align:center;width:1%}
 .rt__apply-btn{display:inline-block;border:1.5px solid var(--g20);color:var(--g70);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;background:var(--white);cursor:pointer;font-family:inherit;text-decoration:none;transition:all var(--ease)}
 .rt__apply-btn:hover{border-color:var(--sky);color:var(--sky)}
@@ -1988,7 +1989,7 @@ function resultTableHtml(list){
         ? '<a class="rt__apply-btn" href="'+pf.url+'" target="_blank" rel="noopener" title="'+esc(pf.name)+'에서 신청" onclick="event.stopPropagation()">📋 신청</a>'
         : '<button class="rt__apply-btn" title="신청 방법 보기" onclick="event.stopPropagation();openDetail(this.parentNode.parentNode.dataset.id)">📋 신청 안내</button>';
       return '<tr data-id="'+esc(d.id)+'" onclick="openDetail(this.dataset.id)">'+
-        '<td class="rt__name">'+esc(d.name)+'</td>'+
+        '<td class="rt__name" title="'+esc(d.name)+'">'+esc(d.name)+'</td>'+
         '<td class="rt__org">'+V(d.org)+'</td>'+
         '<td class="rt__nowrap">'+V(d.period)+'</td>'+
         '<td class="rt__nowrap">'+V(d.lastUpdate)+'</td>'+
