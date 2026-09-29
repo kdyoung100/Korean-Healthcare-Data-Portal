@@ -332,17 +332,20 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 .rt tr:last-child td{border-bottom:none}
 .rt tbody tr{cursor:pointer;transition:background var(--ease)}
 .rt tbody tr:hover{background:var(--teal-lt)}
-.rt__no{width:44px;color:var(--g50);text-align:right}
 .rt__name{font-weight:700;color:var(--navy);min-width:200px}
 .rt__org{min-width:130px}
 .rt__nowrap{white-space:nowrap}
 .rt__kw{font-size:12px;color:var(--g50);min-width:180px}
+.rt__apply{white-space:nowrap;text-align:center;width:1%}
+.rt__apply-btn{display:inline-block;border:1.5px solid var(--g20);color:var(--g70);padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;background:var(--white);cursor:pointer;font-family:inherit;text-decoration:none;transition:all var(--ease)}
+.rt__apply-btn:hover{border-color:var(--sky);color:var(--sky)}
 .active-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:18px}
 .af-label{font-size:12px;font-weight:600;color:var(--g50)}
 .af-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:var(--sky-lt);border:1px solid #B3CEF0;font-size:12px;font-weight:500;color:var(--sky)}
 .af-chip__x{cursor:pointer;opacity:.6;transition:opacity var(--ease)}
 .af-chip__x:hover{opacity:1}
 .af-clear{font-size:12px;color:var(--amber);font-weight:500;cursor:pointer;margin-left:4px}
+.af-clear:hover{text-decoration:underline}
 .search-layout{display:grid;grid-template-columns:240px 1fr;gap:24px;padding-bottom:60px;align-items:start}
 /* 화면에 고정(sticky)되므로 패널이 화면보다 길면 아래가 잘린다 → 화면 높이로 제한하고 패널 안에서 따로 스크롤 */
 .filter-panel{background:var(--white);border:1.5px solid var(--g20);border-radius:var(--r-lg);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--g20) transparent;position:sticky;top:calc(var(--nav-h) + 70px);max-height:calc(100vh - var(--nav-h) - 90px)}
@@ -403,6 +406,8 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 .pg-btn{width:36px;height:36px;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:500;color:var(--g70);border:1.5px solid var(--g20);background:var(--white);transition:all var(--ease);cursor:pointer}
 .pg-btn:hover{border-color:var(--sky);color:var(--sky)}
 .pg-btn.on{background:var(--sky);border-color:var(--sky);color:#fff}
+.pg-btn:disabled{opacity:.35;cursor:default;border-color:var(--g20);color:var(--g70)}
+.pg-btn--arrow{font-size:16px}
 
 /* ── 대화형 AI 검색 (검색결과 페이지) ── */
 .ai-search-answer{background:var(--white);border:1.5px solid var(--teal);border-radius:var(--r-lg);padding:18px 22px;margin-bottom:20px}
@@ -1299,13 +1304,8 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
       <div class="view-toggle"><button class="view-btn on" id="viewBtnList" onclick="setResultView('list')" title="카드형으로 보기" aria-label="카드형으로 보기">☰</button><button class="view-btn" id="viewBtnTable" onclick="setResultView('table')" title="표로 보기" aria-label="표로 보기">⊞</button></div>
     </div>
   </div>
-  <div class="active-filters" style="display:none">
-    <span class="af-label">적용 필터 :</span>
-    <span class="af-chip">데이터 유형 : 임상 <span class="af-chip__x" onclick="this.parentElement.remove()">×</span></span>
-    <span class="af-chip">기관 : 국민건강보험공단 <span class="af-chip__x" onclick="this.parentElement.remove()">×</span></span>
-    <span class="af-chip">기간 : 2015~2023 <span class="af-chip__x" onclick="this.parentElement.remove()">×</span></span>
-    <span class="af-clear" onclick="document.querySelectorAll('.af-chip').forEach(c=>c.remove())">전체 초기화</span>
-  </div>
+  <!-- 적용 필터 칩: 왼쪽 필터 패널 선택 상태를 renderActiveFilters()가 그린다. 선택이 없으면 숨김. -->
+  <div class="active-filters" id="activeFilters" style="display:none"></div>
 
   <div class="search-layout">
     <!-- 필터 패널 -->
@@ -1337,14 +1337,7 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
     <div>
       <div class="result-list" id="resultList"></div>
 
-      <div class="pagination" id="pagination">
-        <button class="pg-btn" style="font-size:16px">‹</button>
-        <button class="pg-btn on">1</button>
-        <button class="pg-btn">2</button><button class="pg-btn">3</button><button class="pg-btn">4</button><button class="pg-btn">5</button>
-        <span style="padding:0 4px;color:var(--g50)">…</span>
-        <button class="pg-btn">13</button>
-        <button class="pg-btn" style="font-size:16px">›</button>
-      </div>
+      <div class="pagination" id="pagination" style="display:none"></div>
     </div>
   </div>
 </div><!-- /wrap -->
@@ -1501,8 +1494,14 @@ function buildOrgPlatform(){
 function platformOf(d){
   if(!d) return null;
   if(typeof d==='string') return platformById(d);
-  return platformById(d.id) || (d.org?ORG_PLATFORM[d.org]:null)
+  const p=platformById(d.id) || (d.org?ORG_PLATFORM[d.org]:null)
       || (/공통|단독/.test(String(d.type||''))?PLATFORMS.self:null);
+  // 직접 신청(URL 없음)이라도 엑셀 '데이터 신청절차'에 "경로: https://..." 가 적혀 있으면 그 주소를 신청 링크로 쓴다.
+  if(p===PLATFORMS.self){
+    const m=String(d.applyProcess||'').match(/경로\s*:\s*(https?:\/\/[^\s|]+)/);
+    if(m) return {name:d.org||p.name, url:m[1]};
+  }
+  return p;
 }
 /* 제공유형 표기: '공통' → '단독' (연구자가 기관 홈페이지에서 직접 받는 형태) */
 function typeLabel(t){
@@ -1818,6 +1817,39 @@ function resetFilters(){
   applyFiltersAndRerun();
 }
 
+/* 적용 필터 칩: 왼쪽 패널에서 체크된 항목·입력된 기간을 칩으로 보여준다.
+   칩의 ×를 누르면 패널의 그 항목을 해제하고 다시 검색한다(패널과 칩이 항상 같은 상태). */
+const FILTER_GROUPS=[['catFilterBody','구분'],['topicFilterBody','주제'],['orgFilterBody','기관']];
+function renderActiveFilters(){
+  const box=document.getElementById('activeFilters');
+  if(!box) return;
+  const chips=[];
+  FILTER_GROUPS.forEach(function(g){
+    checkedFilterLabels(g[0]).forEach(function(lb){
+      chips.push('<span class="af-chip">'+g[1]+' : '+esc(lb)+
+        ' <span class="af-chip__x" data-body="'+g[0]+'" data-label="'+esc(lb)+'" onclick="removeFilterChip(this.dataset.body,this.dataset.label)" title="필터 해제">×</span></span>');
+    });
+  });
+  const pf=document.getElementById('periodFrom'), pt=document.getElementById('periodTo');
+  const from=pf?pf.value.trim():'', to=pt?pt.value.trim():'';
+  if(from||to) chips.push('<span class="af-chip">기간 : '+esc(from||'처음')+'~'+esc(to||'현재')+
+    ' <span class="af-chip__x" data-body="period" onclick="removeFilterChip(this.dataset.body)" title="필터 해제">×</span></span>');
+  box.style.display=chips.length?'':'none';
+  box.innerHTML=chips.length?'<span class="af-label">적용 필터 :</span>'+chips.join('')+'<span class="af-clear" onclick="resetFilters()">전체 초기화</span>':'';
+}
+function removeFilterChip(bodyId, label){
+  if(bodyId==='period'){
+    const pf=document.getElementById('periodFrom'), pt=document.getElementById('periodTo');
+    if(pf) pf.value=''; if(pt) pt.value='';
+  } else {
+    document.querySelectorAll('#'+bodyId+' .filter-item.checked').forEach(function(el){
+      const lb=el.querySelector('.filter-item__label');
+      if(lb && lb.textContent===label) el.classList.remove('checked');
+    });
+  }
+  applyFiltersAndRerun();
+}
+
 /* 공백으로 끊어 모든 토큰이 들어있는 데이터셋만 남긴다(AND 검색) + 왼쪽 필터 패널 반영 */
 let LAST_QUERY = '';
 function runSearch(q){
@@ -1883,24 +1915,52 @@ function setResultView(v){
   document.getElementById('viewBtnTable').classList.toggle('on', v==='table');
   renderResults(document.getElementById('resultQuery').dataset.label);
 }
+/* 카드형·표형 모두 한 페이지에 RESULT_PAGE_SIZE개씩 보여주고 아래 번호(1 2 3 4 5 …)로 넘긴다.
+   검색·필터·정렬·보기 전환 때는 1페이지로 돌아가고, 번호 클릭(goResultPage)만 페이지를 옮긴다. */
+const RESULT_PAGE_SIZE=10;
+let RESULT_PAGE=1;
+function goResultPage(n){
+  renderResults(document.getElementById('resultQuery').dataset.label, n);
+  const head=document.querySelector('#page-search .result-head');
+  if(head) head.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function paginationHtml(page, pages){
+  // 현재 페이지를 가운데 두고 번호를 최대 5개 보여준다. 범위 밖이면 첫/끝 페이지와 …을 붙인다.
+  let start=Math.max(1, page-2);
+  const end=Math.min(pages, start+4);
+  start=Math.max(1, end-4);
+  const dots='<span style="padding:0 4px;color:var(--g50)">…</span>';
+  let h='<button class="pg-btn pg-btn--arrow" '+(page<=1?'disabled':'onclick="goResultPage('+(page-1)+')"')+' aria-label="이전 페이지">‹</button>';
+  if(start>1) h+='<button class="pg-btn" onclick="goResultPage(1)">1</button>'+(start>2?dots:'');
+  for(let i=start;i<=end;i++) h+='<button class="pg-btn'+(i===page?' on':'')+'" onclick="goResultPage('+i+')">'+i+'</button>';
+  if(end<pages) h+=(end<pages-1?dots:'')+'<button class="pg-btn" onclick="goResultPage('+pages+')">'+pages+'</button>';
+  h+='<button class="pg-btn pg-btn--arrow" '+(page>=pages?'disabled':'onclick="goResultPage('+(page+1)+')"')+' aria-label="다음 페이지">›</button>';
+  return h;
+}
 function resultTableHtml(list){
   const V=function(v){ const t=(v==null?'':String(v)).trim(); return t?esc(t):'-'; };
   return '<div class="rt-wrap"><table class="rt"><thead><tr>'+
-    '<th class="rt__no">No</th><th>데이터셋명</th><th>기관명</th><th>데이터 수집기간</th><th>최종 업데이트 일자</th><th>키워드</th>'+
+    '<th>데이터셋명</th><th>기관명</th><th>데이터 수집기간</th><th>최종 업데이트 일자</th><th>키워드</th><th class="rt__apply">신청</th>'+
     '</tr></thead><tbody>'+
     list.map(function(d,i){
       const kw=kwList(d).map(function(k){ return k.replace(/^#/,''); }).slice(0,5).join(', ');
+      // 신청 버튼은 카드형의 '📋 신청 안내'와 같은 규칙: 창구 URL이 있으면 새 탭, 없으면(제공기관 직접 신청) 상세페이지로.
+      const pf=platformOf(d);
+      const apply=(pf&&pf.url)
+        ? '<a class="rt__apply-btn" href="'+pf.url+'" target="_blank" rel="noopener" title="'+esc(pf.name)+'에서 신청" onclick="event.stopPropagation()">📋 신청</a>'
+        : '<button class="rt__apply-btn" title="신청 방법 보기" onclick="event.stopPropagation();openDetail(this.parentNode.parentNode.dataset.id)">📋 신청 안내</button>';
       return '<tr data-id="'+esc(d.id)+'" onclick="openDetail(this.dataset.id)">'+
-        '<td class="rt__no">'+(i+1)+'</td>'+
         '<td class="rt__name">'+esc(d.name)+'</td>'+
         '<td class="rt__org">'+V(d.org)+'</td>'+
         '<td class="rt__nowrap">'+V(d.period)+'</td>'+
         '<td class="rt__nowrap">'+V(d.lastUpdate)+'</td>'+
-        '<td class="rt__kw">'+V(kw)+'</td></tr>';
+        '<td class="rt__kw">'+V(kw)+'</td>'+
+        '<td class="rt__apply">'+apply+'</td></tr>';
     }).join('')+
     '</tbody></table></div>';
 }
-function renderResults(q){
+function renderResults(q, page){
+  renderActiveFilters();
   const rq=document.getElementById('resultQuery');
   rq.textContent = q||'전체';
   rq.dataset.label = q||'';
@@ -1913,7 +1973,12 @@ function renderResults(q){
     return;
   }
   const sorted=sortResults(CURRENT_RESULTS);
-  wrap.innerHTML = RESULT_VIEW==='table' ? resultTableHtml(sorted) : sorted.map(datasetCardHtml).join('');
+  const pages=Math.max(1, Math.ceil(sorted.length/RESULT_PAGE_SIZE));
+  RESULT_PAGE=Math.min(Math.max(1, page||1), pages);
+  const off=(RESULT_PAGE-1)*RESULT_PAGE_SIZE;
+  const pageItems=sorted.slice(off, off+RESULT_PAGE_SIZE);
+  wrap.innerHTML = RESULT_VIEW==='table' ? resultTableHtml(pageItems) : pageItems.map(datasetCardHtml).join('');
+  if(pagi && pages>1){ pagi.innerHTML=paginationHtml(RESULT_PAGE, pages); pagi.style.display=''; }
 }
 
 /* ══ 웹 검색결과 (Cloudflare Worker 경유) ══
@@ -1977,6 +2042,8 @@ function runAISearch(q){
   const wrap = document.getElementById('resultList');
   const pagi = document.getElementById('pagination');
   if(pagi) pagi.style.display = 'none';
+  const af = document.getElementById('activeFilters');   // AI 검색은 왼쪽 필터를 안 쓰므로 칩도 숨긴다
+  if(af) af.style.display = 'none';
 
   if(!q){
     document.getElementById('resultCount').textContent = 0;
