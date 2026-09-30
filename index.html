@@ -878,6 +878,14 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 .fb-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .fb-consent{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;color:var(--g70);cursor:pointer}
 .fb-consent input{margin-top:3px}
+.fb-note--locked .fb-note__body{color:var(--g50);font-size:12.5px}
+.fb-note__mine{font-size:11px;font-weight:700;color:var(--teal);background:var(--g05);border:1px solid var(--g10);border-radius:8px;padding:0 6px}
+.fb-log{font-size:12.5px;border-bottom:1px solid var(--g10);padding:10px 2px;line-height:1.6}
+.fb-log__head{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;color:var(--g50);font-size:12px}
+.fb-log__act{font-weight:700;border-radius:8px;padding:0 7px;font-size:11.5px}
+.fb-log__act--create{background:#E3F4E5;color:#1E6B2A}.fb-log__act--update{background:#E8EEF7;color:#1F3A5F}.fb-log__act--delete{background:#FDECEA;color:#B42318}
+.fb-log__who{color:var(--g90);font-weight:600}
+.fb-log__body{color:var(--g70);margin-top:2px;word-break:break-word}
 .fb-consent__detail{font-size:11.5px;color:var(--g50);line-height:1.6;margin:4px 0 0 20px}
 .fb-modal__err{color:#c62828;font-size:12.5px;min-height:18px;margin-top:8px}
 .fb-modal__actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
@@ -2096,12 +2104,14 @@ function removeFilterChip(bodyId, label){
 let LAST_QUERY = '';
 function runSearch(q){
   q=(q||'').trim().replace(/^#/,'');
+  NAV_SEARCH={ q:q, m:'normal' };
   LAST_QUERY = q;
   const toks=q.toLowerCase().split(/\s+/).filter(Boolean);
   const matched = !toks.length ? DATASETS.slice()
     : DATASETS.filter(d=>{ const h=haystack(d); return toks.every(t=>h.includes(t)); });
   CURRENT_RESULTS = applyFacetFilters(matched);
   renderResults(q);
+  if(document.getElementById('page-search').classList.contains('active')) navPush('search');
 }
 /* 검색결과 카드 한 장(HTML). 일반 검색과 대화형 AI 검색이 같이 쓴다. */
 /* ══ PubMed 관련 논문 ══
@@ -2675,6 +2685,8 @@ function setAiLayout(on){
 function runAISearch(q){
   setAiLayout(true);
   q = (q||'').trim();
+  NAV_SEARCH={ q:q, m:'ai' };
+  if(document.getElementById('page-search').classList.contains('active')) navPush('search');
   document.getElementById('resultQuery').textContent = q || '전체';
   const wrap = document.getElementById('resultList');
   const pagi = document.getElementById('pagination');
@@ -2936,7 +2948,10 @@ function renderInfoTable(d){
               상단 메뉴·푸터처럼 모든 페이지에 공통인 곳은 'page:_common'
      anchor : 정보표 행은 'row:<항목키>'(데이터명이 바뀌어도 유지), 그 밖에는 가장 가까운 id 요소 기준 CSS 경로
    화면 구조가 바뀌어 앵커를 못 찾는 메모는 왼쪽 아래 '이 화면의 수정 요청' 목록에만 나온다.
-   관리자는 주소 끝에 ?admin 을 붙여 열면 관리자 키를 묻고, 이메일 확인·답변·상태 변경·삭제를 할 수 있다. */
+   관리자는 주소 끝에 ?admin 을 붙여 열면 관리자 키를 묻고, 이메일 확인·답변·상태 변경·삭제를 할 수 있다.
+   메모는 비밀글: 방문자에게는 핀과 "비밀글" 표시만 보이고(서버가 내용을 아예 보내지 않음), 작성자는 등록 때 받은
+   토큰(localStorage 'fbMine')으로 자기 글과 답변만 본다. 작성·수정·삭제 기록은 D1 feedback_log 에 남고
+   관리자 창의 '기록' 탭에서 본다. */
 const FEEDBACK_URL = WEB_SEARCH_PROXY_URL + 'feedback';
 const FB_STATUS_LABEL = { open:'접수', review:'검토중', done:'반영완료' };
 const FB_PAGE_LABEL = { main:'메인', search:'검색결과', dataset:'데이터셋 상세', datamap:'데이터 맵', howto:'포털 서비스', community:'커뮤니티', notice:'알림·소식', about:'포털 소개', _common:'공통 영역(메뉴·푸터)' };
@@ -2960,6 +2975,12 @@ function fbDate(iso){
   const t=new Date(iso); if(isNaN(t)) return '';
   const p=n=>String(n).padStart(2,'0');
   return `${t.getFullYear()}.${p(t.getMonth()+1)}.${p(t.getDate())}`;
+}
+/* 내가 쓴 비밀글: {id: 토큰} — 이 브라우저에서만 내 글 내용을 볼 수 있게 */
+function fbMine(){ try { return JSON.parse(localStorage.getItem('fbMine')||'{}'); } catch(e){ return {}; } }
+function fbOwnParam(){
+  const m=fbMine(), ids=Object.keys(m);
+  return ids.length ? '&own='+encodeURIComponent(ids.map(i=>i+':'+m[i]).join(',')) : '';
 }
 function fbAdminHeaders(){ return { 'Content-Type':'application/json', 'X-Admin-Key': FB_ADMIN_KEY }; }
 function fbAdminFail(){
@@ -3065,7 +3086,7 @@ function loadFeedback(){
   const scopes=[fbScope(), FB_COMMON];
   const get=s=>fetch(FB_IS_ADMIN()
       ? FEEDBACK_URL+'/admin?ds='+encodeURIComponent(s)
-      : FEEDBACK_URL+'?ds='+encodeURIComponent(s),
+      : FEEDBACK_URL+'?ds='+encodeURIComponent(s)+fbOwnParam(),
     FB_IS_ADMIN()?{ headers:fbAdminHeaders() }:undefined).then(fbCheck).then(r=>r.json()).then(j=>j.items||[]);
   Promise.all(scopes.map(get))
     .then(lists=>{
@@ -3091,7 +3112,7 @@ function fbRender(){
     pin.type='button';
     pin.className='fb-pin'+(g.items.every(x=>x.status==='done')?' fb-pin--done':'');
     pin.textContent=g.items.length;
-    pin.title=`수정 요청 ${g.items.length}건 · ${g.label}`;
+    pin.title=`수정 요청 ${g.items.length}건(비밀글) · ${g.label}`;
     pin.onclick=ev=>{ ev.stopPropagation(); fbOpenGroup(i); };
     g.pin=pin;
     document.body.appendChild(pin);
@@ -3138,16 +3159,29 @@ function fbNoteHtml(it, labelHtml){
         <span class="fb-admin__email">✉ ${esc(it.name)} &lt;<a href="mailto:${esc(it.email)}">${esc(it.email)}</a>&gt;</span>
         <button class="fb-admin__del" type="button" onclick="deleteFb(${it.id})">삭제</button>
       </div>
-      <textarea id="fbReply${it.id}" placeholder="답변(공개됨)">${esc(it.reply||'')}</textarea>
+      <textarea id="fbReply${it.id}" placeholder="답변 (작성자와 관리자만 볼 수 있음)">${esc(it.reply||'')}</textarea>
       <div class="fb-admin__row">
         <select id="fbStatus${it.id}">${Object.keys(FB_STATUS_LABEL).map(k=>`<option value="${k}"${k===st?' selected':''}>${FB_STATUS_LABEL[k]}</option>`).join('')}</select>
         <button class="sr-btn-p" type="button" onclick="saveFbAdmin(${it.id})">저장</button>
       </div>
     </div>` : '';
+  if(it.locked){                      // 방문자: 비밀글 — 서버가 내용을 보내지 않는다
+    return `<div class="fb-note fb-note--locked${st==='done'?' fb-note--done':''}">
+      ${labelHtml||''}
+      <div class="fb-note__head">
+        <span class="fb-note__who">🔒 비밀글</span>
+        <span>${fbDate(it.createdAt)}</span>
+        <span class="fb-status fb-status--${st}">${FB_STATUS_LABEL[st]}</span>
+        ${it.hasReply?'<span class="fb-note__mine">답변 완료</span>':''}
+      </div>
+      <div class="fb-note__body">작성자와 관리자만 볼 수 있는 수정 요청입니다.</div>
+    </div>`;
+  }
+  const who = FB_IS_ADMIN() ? esc(it.name||'') : (it.mine ? '내 요청' : '');
   return `<div class="fb-note${st==='done'?' fb-note--done':''}">
     ${labelHtml||''}
     <div class="fb-note__head">
-      <span class="fb-note__who">${esc(it.name)}</span>
+      <span class="fb-note__who">${who}</span>${it.mine&&!FB_IS_ADMIN()?'<span class="fb-note__mine">🔒 나만 보기</span>':''}
       <span>${fbDate(it.createdAt)}</span>
       <span class="fb-status fb-status--${st}">${FB_STATUS_LABEL[st]}</span>
     </div>
@@ -3273,8 +3307,9 @@ function submitFb(){
       name, email, content, consent:true, website:document.getElementById('fbWebsite').value })
   })
     .then(r=>r.json().catch(()=>({})).then(j=>{ if(!r.ok) throw new Error(j.error||('HTTP '+r.status)); return j; }))
-    .then(()=>{
+    .then(j=>{
       try { localStorage.setItem('fbWho', JSON.stringify({name,email})); } catch(e){}
+      if(j && j.id && j.token){ try { const m=fbMine(); m[j.id]=j.token; localStorage.setItem('fbMine', JSON.stringify(m)); } catch(e){} }
       FB_FOCUS=t.scope+'|'+t.anchor;   // 방금 남긴 메모를 열어서 보여준다
       closeFbForm();
       loadFeedback();
@@ -3309,6 +3344,7 @@ function loadFbAdminList(){
   const box=document.getElementById('fbAdminList');
   document.querySelectorAll('#fbAdminFilters button').forEach(b=>b.classList.toggle('on', b.dataset.f===FB_ADMIN_FILTER));
   box.innerHTML='<div style="color:var(--g50);font-size:13px">불러오는 중…</div>';
+  if(FB_ADMIN_FILTER==='log'){ loadFbAdminLog(box); return; }
   const q=FB_ADMIN_FILTER==='all'?'':'?status='+FB_ADMIN_FILTER;
   fetch(FEEDBACK_URL+'/admin'+q, { headers: fbAdminHeaders() })
     .then(fbCheck).then(r=>r.json())
@@ -3319,6 +3355,30 @@ function loadFbAdminList(){
         : '<div style="color:var(--g50);font-size:13px">해당하는 수정 요청이 없습니다.</div>';
     })
     .catch(e=>{ box.innerHTML='<div style="color:#c62828;font-size:13px">불러오지 못했습니다: '+esc(e.message)+'</div>'; });
+}
+/* 관리자: 작성·수정·삭제 기록 (D1 feedback_log, 최근 500건) — 지운 메모도 기록에는 남는다 */
+function loadFbAdminLog(box){
+  const ACT={ create:'작성', update:'수정', delete:'삭제' };
+  const dt=iso=>{ const t=new Date(iso); if(isNaN(t)) return ''; const p=n=>String(n).padStart(2,'0');
+    return `${t.getFullYear()}.${p(t.getMonth()+1)}.${p(t.getDate())} ${p(t.getHours())}:${p(t.getMinutes())}`; };
+  fetch(FEEDBACK_URL+'/admin/log', { headers: fbAdminHeaders() })
+    .then(fbCheck).then(r=>r.json())
+    .then(j=>{
+      const L=j.items||[];
+      box.innerHTML = !L.length ? '<div style="color:var(--g50);font-size:13px">기록이 없습니다. (기록은 이 기능을 켠 뒤부터 쌓입니다)</div>'
+        : `<div style="font-size:12px;color:var(--g50);margin-bottom:6px">최근 ${L.length}건 · 최신순</div>` + L.map(l=>`<div class="fb-log">
+            <div class="fb-log__head">
+              <span class="fb-log__act fb-log__act--${esc(l.action)}">${ACT[l.action]||esc(l.action)}</span>
+              <span>${dt(l.loggedAt)}</span>
+              <span>${l.actor==='admin'?'관리자':'작성자'}</span>
+              <span>#${esc(l.fbId)}</span>
+              <span>${esc(l.dsName||l.ds||'')}${l.fieldLabel?' · '+esc(l.fieldLabel):''}</span>
+            </div>
+            <div class="fb-log__body"><span class="fb-log__who">${esc(l.name||'')}</span> &lt;${esc(l.email||'')}&gt; — ${esc(l.content||'')}</div>
+            ${l.action==='update'?`<div class="fb-log__body">상태: ${esc(FB_STATUS_LABEL[l.status]||l.status||'')}${l.reply?' · 답변: '+esc(l.reply):''}</div>`:''}
+          </div>`).join('');
+    })
+    .catch(e=>{ box.innerHTML='<div style="color:#c62828;font-size:13px">기록을 불러오지 못했습니다: '+esc(e.message)+'<br>Worker를 새 코드로 다시 배포했는지 확인하세요.</div>'; });
 }
 /* 관리자 목록에서 누르면 그 화면으로 가서 해당 핀을 열어준다 */
 function fbAdminGo(id){
@@ -3488,7 +3548,77 @@ function goPage(name) {
   const navKey = (name === 'search' || name === 'dataset') ? 'main' : name;
   document.querySelectorAll('.nav__tab[data-page="' + navKey + '"], .menu-panel__item[data-page="' + navKey + '"], .tool-dock__item[data-page="' + navKey + '"]').forEach(l => l.classList.add('on'));
   fbOnView(name);   // 수정요청 핀을 이 화면 기준으로 다시 불러온다
+  navPush(name);    // 브라우저 뒤로 가기용 기록
 }
+
+/* ══ 브라우저 뒤로/앞으로 가기 ══
+   화면 전환은 DOM 표시만 바꾸므로 그냥 두면 방문 기록이 안 쌓여, 뒤로 가기를 누르면 사이트 밖으로 나간다.
+   화면이 바뀔 때마다 history 에 {p:페이지, id:데이터셋, q:검색어, m:검색모드, y:스크롤}을 쌓고,
+   뒤로 가기(popstate)면 그 화면을 다시 보여준다. 주소 뒤에는 #/dataset/CD003, #/search?q=결핵&m=ai 처럼 남아
+   그 주소를 공유하면 같은 화면이 열린다. */
+let NAV_RESTORING = false;
+let NAV_SEARCH = { q:'', m:'normal' };      // 지금 검색결과 화면에 그려져 있는 검색
+function navHash(st){
+  if(st.p==='dataset') return '#/dataset/'+encodeURIComponent(st.id||'');
+  if(st.p==='search') return st.q ? '#/search?q='+encodeURIComponent(st.q)+(st.m==='ai'?'&m=ai':'') : '#/search';
+  return st.p==='main' ? location.pathname+location.search : '#/'+st.p;
+}
+function navFromHash(){
+  const h=location.hash||'';
+  if(!h.startsWith('#/')) return null;
+  const [path, qs]=h.slice(2).split('?');
+  const parts=path.split('/').map(decodeURIComponent);
+  const prm=new URLSearchParams(qs||'');
+  if(parts[0]==='dataset' && parts[1]) return { p:'dataset', id:parts[1] };
+  if(parts[0]==='search') return { p:'search', q:prm.get('q')||'', m:prm.get('m')==='ai'?'ai':'normal' };
+  if(PAGES[parts[0]]) return { p:parts[0] };
+  return null;
+}
+function navState(name){
+  const st={ p:name };
+  if(name==='dataset' && typeof CURRENT_DS!=='undefined' && CURRENT_DS) st.id=CURRENT_DS.id;
+  if(name==='search'){ st.q=NAV_SEARCH.q; st.m=NAV_SEARCH.m; }
+  return st;
+}
+function navSame(a, b){ return !!a && !!b && a.p===b.p && (a.id||'')===(b.id||'') && (a.q||'')===(b.q||'') && (a.m||'')===(b.m||''); }
+function navPush(name){
+  if(NAV_RESTORING || !PAGES[name]) return;
+  const st=navState(name);
+  if(navSame(history.state, st)) return;            // 필터만 바꾼 재검색 등은 기록을 늘리지 않는다
+  try {
+    if(history.state) history.replaceState(Object.assign({}, history.state, { y: window.scrollY }), '');   // 돌아왔을 때 스크롤 위치
+    history.pushState(st, '', navHash(st));
+  } catch(e){}
+}
+function navRestore(st){
+  if(!st || !st.p) st={ p:'main' };
+  NAV_RESTORING=true;
+  try {
+    if(st.p==='dataset' && DATASETS.some(d=>d.id===st.id)) openDetail(st.id);
+    else if(st.p==='search'){
+      // 지금 그려진 결과와 같으면 다시 검색하지 않는다(AI 검색을 또 부르지 않게)
+      if(st.q && (st.q!==NAV_SEARCH.q || (st.m||'normal')!==NAV_SEARCH.m)){
+        SEARCH_MODE = st.m==='ai' ? 'ai' : 'normal';
+        const inp=document.getElementById('searchInput'); if(inp) inp.value=st.q;
+        syncSbtabToSearchMode();
+        if(SEARCH_MODE==='ai') runAISearch(st.q); else runSearch(st.q);
+      }
+      goPage('search');
+    }
+    else goPage(PAGES[st.p] ? st.p : 'main');
+  } finally { NAV_RESTORING=false; }
+  const y=st.y||0;
+  setTimeout(()=>window.scrollTo({ top:y, behavior:'auto' }), 60);
+}
+window.addEventListener('popstate', e=>{
+  // 우리 기록(state)이 없고 #/ 주소도 아니면(페이지 안 앵커 등) 건드리지 않는다
+  const st = e.state || navFromHash();
+  if(!e.state && !location.hash.startsWith('#/') && location.hash) return;
+  closeResearcher && closeResearcher();
+  navRestore(st);
+});
+try { history.scrollRestoration='manual'; } catch(e){}
+try { if(!history.state) history.replaceState(navFromHash() || { p:'main' }, ''); } catch(e){}
 
 /* 전체 메뉴 슬라이드 패널 열기/닫기 */
 function toggleMenu(force){
@@ -3616,6 +3746,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
 // 데이터 로드 완료 후 메인 통계·검색칩·인기카드 등 데이터 기반 요소를 갱신
 function onDataReady(){
+  try { const st=navFromHash(); if(st && st.p!=='main') setTimeout(()=>navRestore(st), 0); } catch(e){}
   try {
     // 메인 히어로 통계: 등록 데이터셋 수 / 참여 기관 수 자동 갱신
     var n = DATASETS.length;
@@ -4124,7 +4255,7 @@ function sendChat(){
     <label class="fb-field">수정 요청 내용<textarea id="fbContent" maxlength="2000" placeholder="예) 이 수치가 2024년 기준으로 바뀌었습니다. / 이 버튼을 눌러도 반응이 없어요."></textarea></label>
     <input id="fbWebsite" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
     <label class="fb-consent"><input type="checkbox" id="fbConsent"> <span>개인정보 수집·이용에 동의합니다. (필수)</span></label>
-    <div class="fb-consent__detail">수집 항목: 이름, 이메일 · 목적: 요청자 본인 확인 · 보유 기간: 처리 완료 후 1년<br>이메일은 공개되지 않으며, 이름은 일부를 가려(예: 김**) 메모와 함께 표시됩니다.</div>
+    <div class="fb-consent__detail">수집 항목: 이름, 이메일 · 목적: 요청자 본인 확인 및 처리 이력 관리 · 보유 기간: 처리 완료 후 1년<br>수정 요청은 <b>비밀글</b>로 저장되어 작성자 본인(이 브라우저)과 관리자만 볼 수 있으며, 다른 방문자에게는 이름·내용이 표시되지 않습니다. 작성·처리 기록은 관리 목적으로 보관됩니다.</div>
     <div class="fb-modal__err" id="fbErr" role="alert"></div>
     <div class="fb-modal__actions">
       <button class="sr-btn-s" type="button" onclick="closeFbForm()">취소</button>
@@ -4141,6 +4272,7 @@ function sendChat(){
       <button type="button" data-f="review" onclick="setFbAdminFilter('review')">검토중</button>
       <button type="button" data-f="done" onclick="setFbAdminFilter('done')">반영완료</button>
       <button type="button" data-f="all" onclick="setFbAdminFilter('all')">전체</button>
+      <button type="button" data-f="log" onclick="setFbAdminFilter('log')">📜 기록</button>
     </div>
     <div id="fbAdminList"></div>
   </div>
