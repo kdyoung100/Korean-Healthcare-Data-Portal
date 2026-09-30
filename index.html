@@ -365,6 +365,9 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 .af-clear{font-size:12px;color:var(--amber);font-weight:500;cursor:pointer;margin-left:4px}
 .af-clear:hover{text-decoration:underline}
 .search-layout{display:grid;grid-template-columns:240px 1fr;gap:24px;padding-bottom:60px;align-items:start}
+/* 대화형 AI 검색: 필터·정렬·보기 전환은 쓰지 않으므로 숨기고 결과를 전체 폭으로 */
+#page-search.ai-mode .filter-panel,#page-search.ai-mode .result-head__right{display:none}
+#page-search.ai-mode .search-layout{grid-template-columns:1fr}
 /* 화면에 고정(sticky)되므로 패널이 화면보다 길면 아래가 잘린다 → 화면 높이로 제한하고 패널 안에서 따로 스크롤 */
 .filter-panel{background:var(--white);border:1.5px solid var(--g20);border-radius:var(--r-lg);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--g20) transparent;position:sticky;top:calc(var(--nav-h) + 70px);max-height:calc(100vh - var(--nav-h) - 90px)}
 .filter-panel__head{padding:16px 18px;border-bottom:1px solid var(--g10);display:flex;align-items:center;justify-content:space-between}
@@ -432,6 +435,47 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 .ai-search-answer__label{font-size:12.5px;font-weight:700;color:var(--teal);margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .ai-search-answer__body{font-size:13.5px;line-height:1.7;color:var(--g90);white-space:pre-wrap;word-break:break-word}
 .ai-search-answer__body--err{color:var(--rose)}
+/* AI 답변을 항목 카드로 (renderAnswerHtml) */
+.aa-on{white-space:normal !important}
+.aa-note{font-size:11px;font-weight:500;color:var(--g50);margin-left:auto}
+.aa-wait{display:inline-flex;align-items:center;gap:8px;color:var(--g50);font-size:13px}
+.aa-wait i{width:6px;height:6px;border-radius:50%;background:var(--teal);display:inline-block;animation:aaDot 1.2s infinite ease-in-out}
+.aa-wait i:nth-child(2){animation-delay:.15s}.aa-wait i:nth-child(3){animation-delay:.3s}
+@keyframes aaDot{0%,80%,100%{opacity:.25;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.aa-lead{font-size:14px;line-height:1.7;color:var(--g90);margin:0 0 12px}
+.aa-list{display:flex;flex-direction:column;gap:10px}
+.aa-item{background:var(--g05);border:1px solid var(--g10);border-radius:12px;padding:14px 18px}
+.aa-title{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-size:15px;font-weight:700;color:var(--navy);line-height:1.45}
+.aa-title .ai-ent{color:var(--navy);text-decoration:none;border-bottom:1.5px solid var(--sky)}
+.aa-title .ai-ent:hover{color:var(--sky)}
+.aa-meta{font-size:12px;font-weight:500;color:var(--g50)}
+.aa-badge{font-size:11.5px;font-weight:700;color:#C2410C;background:#FCEFE6;border-radius:10px;padding:1px 9px}
+.aa-desc{font-size:13.5px;line-height:1.7;color:var(--g90);margin:6px 0 0}
+.aa-row{display:flex;gap:12px;margin-top:10px;font-size:13px;line-height:1.6}
+.aa-k{flex:0 0 76px;font-size:12px;font-weight:700;color:var(--teal);padding-top:2px}
+.aa-v{flex:1;min-width:0;color:var(--g90)}
+.aa-chips{display:flex;flex-wrap:wrap;gap:6px}
+.aa-chip{background:var(--white);border:1px solid var(--g20);border-radius:14px;padding:2px 10px;font-size:12.5px;color:var(--g70)}
+.aa-chip .ai-ent{text-decoration:none}
+.aa-v ul{margin:0;padding-left:16px}
+.aa-v li{margin:1px 0}
+.aa-p{margin:0 0 8px;line-height:1.7}
+.aa-cursor::after{content:'';display:inline-block;width:7px;height:14px;margin-left:3px;background:var(--teal);vertical-align:-2px;animation:aaBlink 1s steps(1) infinite}
+@keyframes aaBlink{50%{opacity:0}}
+.aa-sum{margin-bottom:12px}
+.aa-sum .aa-lead{margin:0}
+.aa-sum--err{font-size:12.5px;color:var(--g50)}
+.aa-item--paper .aa-title{font-size:14.5px}
+.pp-sum{font-size:12.5px;color:var(--g70);line-height:1.6;margin-top:4px}
+.aa-item--paper .aa-title .ai-ent{border-bottom:none;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--sky)}
+.aa-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;margin-top:12px;font-size:12.5px;color:var(--g50)}
+.aa-foot a{color:var(--teal);font-weight:700;text-decoration:none}
+.aa-foot a:hover{text-decoration:underline}
+.chat-msg.aa-on{max-width:100%}
+.chat-msg .aa-item{padding:10px 12px}
+.chat-msg .aa-title{font-size:13.5px}
+.chat-msg .aa-row{flex-direction:column;gap:3px}
+.chat-msg .aa-k{flex:none}
 .ai-search-sub{font-size:13px;font-weight:700;color:var(--navy);margin:4px 0 12px}
 .ai-search-web{background:var(--g05);border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:16px 22px;margin-top:20px}
 .ai-search-web__label{font-size:13px;font-weight:600;color:var(--g70);margin-bottom:10px}
@@ -696,6 +740,160 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 .md-body .md-ul li.md-sub{padding-left:28px;color:var(--g70);font-size:12.5px}
 .md-body .md-ul li.md-sub:before{left:16px;background:var(--g40);width:3px;height:3px}
 .md-body .md-ul li strong{color:var(--g50);font-weight:600}
+
+/* ══ PubMed 관련 논문 ══ */
+.pp-card .ds-card__body{padding-top:6px}
+.pp-sub{font-size:12px;color:var(--g50);margin:-2px 0 6px}
+.pp-list{display:flex;flex-direction:column}
+.pp-item{padding:12px 0;border-bottom:1px solid var(--g10)}
+.pp-item:last-child{border-bottom:none}
+.pp-title{font-size:13.5px;font-weight:700;color:var(--sky);text-decoration:none;line-height:1.5}
+.pp-title:hover{text-decoration:underline}
+.pp-authors{font-size:12px;color:var(--g70);margin-top:3px;line-height:1.6}
+.pp-authors a{color:var(--g70);text-decoration:none;border-bottom:1px dotted var(--g50)}
+.pp-authors a:hover{color:var(--teal);border-bottom-color:var(--teal)}
+.pp-meta{font-size:11.5px;color:var(--g50);margin-top:2px}
+.pp-more{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:700;color:var(--teal);text-decoration:none}
+.pp-more:hover{text-decoration:underline}
+.pp-note{font-size:11px;color:var(--g50);margin-top:8px;line-height:1.6}
+.pp-badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:9px;background:#E3F4E5;color:#1E6B2A;font-size:10.5px;font-weight:700;vertical-align:1px}
+/* AI 검색: 데이터셋 카드 안에 '이 데이터로 연구된 논문'을 붙인다 (PubMed 논문연계 계획 4번 화면) */
+.sr-card--papers{flex-wrap:wrap}
+.sr-card__papers{flex-basis:100%;border-top:1px solid var(--g10);padding-top:14px;margin-top:-4px;cursor:default}
+.pp-ai__head{font-size:13px;font-weight:700;color:#C2410C;margin-bottom:10px}
+.pp-ai__head span{font-weight:500;color:var(--g50);font-size:12px;margin-left:6px}
+.pp-ai__list{display:flex;flex-direction:column;gap:8px}
+.pp-ai__item{background:#FCEFE6;border-radius:8px;padding:10px 16px}
+.pp-ai__item .pp-title{font-size:13px;font-weight:600;color:#1D4ED8;text-decoration:underline;text-underline-offset:2px}
+.pp-ai__item .pp-meta{font-size:11.5px;color:var(--g70);margin-top:3px}
+.pp-ai__item .pp-meta a{color:var(--g70);text-decoration:none}
+.pp-ai__item .pp-meta a:hover{color:var(--teal);text-decoration:underline}
+.sr-meta-paper{color:var(--sky);font-weight:600}
+/* ══ 연구자 (논문DB 저자 → data.json researchers) ══ */
+.rs-link{color:inherit;text-decoration:none;border-bottom:1px dotted currentColor;cursor:pointer}
+.rs-link:hover{color:var(--teal) !important;border-bottom-color:var(--teal)}
+.rs-inst{color:var(--g50);margin-left:2px}
+.rs-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.rs-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--g20);background:var(--white);border-radius:16px;padding:4px 11px;font:inherit;font-size:12px;color:var(--g70);cursor:pointer;transition:all var(--ease)}
+.rs-chip b{font-weight:700;color:var(--navy)}
+.rs-chip span{color:var(--g50)}
+.rs-chip em{font-style:normal;color:#C2410C;font-weight:700}
+.rs-chip:hover{border-color:var(--teal);background:var(--g05)}
+.pp-ai__rs{font-size:12.5px;font-weight:700;color:var(--navy);margin-top:14px}
+.pm-wrap{display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
+.pm-group{background:var(--white);border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:18px 22px}
+.pm-ds{font-size:15px;font-weight:700;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.pm-ds a{color:var(--navy);text-decoration:none}
+.pm-ds a:hover{text-decoration:underline}
+.pm-ds span{font-size:12px;font-weight:500;color:var(--g50)}
+.pm-ds i{color:var(--g20);font-style:normal}
+.pm-sub{font-size:13px;font-weight:700;color:#C2410C;margin:10px 0 8px}
+.pm-hide{display:none}
+.pm-open .pm-hide{display:block}
+.pm-more{margin-top:8px;border:none;background:none;color:var(--teal);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:0}
+.pm-none{font-size:12.5px;color:var(--g50);margin:4px 0 16px;line-height:1.6}
+.rs-pages{padding:8px 0 4px}
+.rs-pages__info{text-align:center;font-size:12px;color:var(--g50);margin-bottom:20px}
+#aiRsWrap,.pm-pagewrap{scroll-margin-top:calc(var(--nav-h) + 110px)}
+.rs-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-bottom:12px}
+.rs-card{background:var(--white);border:1.5px solid var(--g20);border-radius:var(--r-lg);padding:16px 18px;cursor:pointer;transition:all var(--ease)}
+.rs-card:hover{border-color:var(--teal);box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.rs-card__top{display:flex;justify-content:space-between;gap:10px}
+.rs-card__name{font-size:15px;font-weight:700;color:var(--navy)}
+.rs-card__inst{font-size:12px;color:var(--g70);margin-top:2px}
+.rs-card__n{font-size:12px;color:var(--g50);white-space:nowrap}
+.rs-card__n b{font-size:20px;color:#C2410C;margin-right:1px}
+.rs-card__role{font-size:11.5px;color:var(--g50);margin-top:6px}
+.rs-card__ds{font-size:12px;color:var(--g70);margin-top:8px;line-height:1.6}
+.rs-card__ds a{color:var(--teal);text-decoration:none;font-weight:600}
+.rs-card__ds a:hover{text-decoration:underline}
+.rs-card__papers{font-size:12px;margin-top:10px;line-height:1.55;border-top:1px solid var(--g10);padding-top:8px}
+.rs-card__papers a{color:#1D4ED8;text-decoration:none}
+.rs-card__papers a:hover{text-decoration:underline}
+.rs-card__papers span{color:var(--g50)}
+.rs-m__name{font-size:20px;font-weight:700;color:var(--navy)}
+.rs-m__inst{font-size:13px;color:var(--g70);margin-top:4px}
+.rs-m__stats{display:flex;gap:18px;margin-top:12px;font-size:12.5px;color:var(--g70)}
+.rs-m__stats b{font-size:18px;color:#C2410C;margin-right:2px}
+.rs-m__sec{font-size:13px;font-weight:700;color:var(--navy);margin:18px 0 8px}
+.rs-m__ds{display:flex;flex-wrap:wrap;gap:6px}
+.rs-m__ds a{font-size:12.5px;font-weight:600;color:var(--teal);background:var(--g05);border:1px solid var(--g10);border-radius:14px;padding:4px 11px;text-decoration:none}
+.rs-m__ds a:hover{border-color:var(--teal)}
+.rs-m__note{font-size:11px;color:var(--g50);margin-top:14px;line-height:1.6}
+/* AI 답변 속 데이터셋명·연구자·논문 제목 링크 */
+.ai-ent{color:#1D4ED8;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.ai-ent--rs{color:var(--teal)}
+/* ══ 수정요청 메모 (우클릭 → 핀 메모) ══ */
+.fb-pin{position:fixed;z-index:8900;min-width:24px;height:24px;padding:0 7px;border-radius:12px 12px 12px 3px;background:#FFD84D;border:1.5px solid #D9A900;color:#5C4400;font:700 11.5px/1 'Noto Sans KR',sans-serif;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center;transition:transform var(--ease)}
+.fb-pin[hidden]{display:none}
+.fb-pin:hover{transform:scale(1.12)}
+.fb-pin--done{background:#C7E8CA;border-color:#6BB472;color:#1E5A24}
+.fb-target{outline:2px dashed #D9A900 !important;outline-offset:3px;border-radius:4px}
+.fb-pressing{background-color:rgba(0,137,123,.10) !important;transition:background-color .5s}
+.fb-hint{font-size:11.5px;color:var(--g50);margin-top:10px}
+.fb-pop{position:fixed;z-index:9700;width:360px;max-width:calc(100vw - 24px);max-height:min(480px,calc(100vh - 24px));overflow-y:auto;background:var(--white);border:1px solid var(--g20);border-radius:12px;box-shadow:var(--sh-lg);padding:14px 14px 12px}
+.fb-pop[hidden]{display:none}
+.fb-pop--list{left:20px;bottom:80px;width:420px;max-height:calc(100vh - 120px)}
+.fb-pop__head{display:flex;gap:8px;align-items:flex-start;margin-bottom:2px}
+.fb-pop__title{flex:1;font-size:13px;font-weight:700;color:var(--navy);line-height:1.5;word-break:keep-all}
+.fb-pop__title span{font-size:12px;font-weight:500;color:var(--g50)}
+.fb-pop__x{background:none;border:none;font-size:20px;color:var(--g50);cursor:pointer;line-height:1}
+.fb-pop__add{width:100%;margin-top:10px;padding:8px}
+.fb-pop__empty{font-size:12.5px;color:var(--g50);line-height:1.7;padding:10px 2px}
+.fb-note{background:#FFF8D6;border:1px solid #F0DF9A;border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--g70);line-height:1.6;margin-top:8px}
+.fb-note--done{background:#F3F8F3;border-color:#CFE3D0}
+.fb-note__where{margin-bottom:4px;font-size:12px}
+.fb-note__field{font-weight:700;color:var(--navy)}
+.fb-note__field--go{cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.fb-note__scope{font-size:10.5px;color:var(--g50);border:1px solid var(--g20);border-radius:8px;padding:0 6px;margin-left:4px}
+.fb-note__head{display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--g50);margin-bottom:4px;flex-wrap:wrap}
+.fb-note__who{font-weight:700;color:var(--g70)}
+.fb-status{font-size:10.5px;font-weight:700;padding:1px 8px;border-radius:10px}
+.fb-status--open{background:var(--amber-lt);color:var(--amber)}
+.fb-status--review{background:var(--sky-lt);color:var(--sky)}
+.fb-status--done{background:var(--green-lt);color:var(--green)}
+.fb-note__body{white-space:pre-wrap;word-break:break-word}
+.fb-note__reply{margin-top:8px;padding:8px 10px;background:var(--white);border-radius:6px;border:1px solid var(--g10);white-space:pre-wrap;word-break:break-word}
+.fb-note__reply-who{display:block;color:var(--teal);font-size:11.5px;font-weight:700;margin-bottom:2px}
+.fb-admin{margin-top:8px;padding-top:8px;border-top:1px dashed #E8CF6A;display:flex;flex-direction:column;gap:6px}
+.fb-admin__row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fb-admin textarea{width:100%;min-height:54px;padding:7px 9px;border:1px solid var(--g20);border-radius:6px;font:inherit;font-size:12.5px;resize:vertical}
+.fb-admin select{padding:4px 6px;border:1px solid var(--g20);border-radius:6px;font:inherit;font-size:12px}
+.fb-admin__email{font-size:11.5px;color:var(--g70);word-break:break-all}
+.fb-admin__del{margin-left:auto;background:none;border:none;color:#c62828;font-size:12px;cursor:pointer;font-family:inherit}
+.fb-modal{position:fixed;inset:0;background:rgba(7,26,56,.5);z-index:9800;display:flex;align-items:center;justify-content:center;padding:16px}
+.fb-modal[hidden]{display:none}
+.fb-modal__box{position:relative;background:var(--white);border-radius:var(--r-lg);box-shadow:var(--sh-lg);width:440px;max-width:100%;max-height:calc(100vh - 32px);overflow-y:auto;padding:24px 24px 20px}
+.fb-modal__box--wide{width:760px}
+.fb-modal__x{position:absolute;top:12px;right:14px;background:none;border:none;font-size:22px;color:var(--g50);cursor:pointer;line-height:1}
+.fb-modal__title{font-size:17px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.fb-modal__target{font-size:12.5px;color:var(--g50);margin-bottom:10px;word-break:keep-all}
+.fb-modal__current{font-size:12.5px;background:var(--g05);border:1px solid var(--g10);border-radius:8px;padding:8px 10px;color:var(--g70);margin-bottom:14px;max-height:90px;overflow-y:auto;word-break:break-word}
+.fb-modal__current[hidden]{display:none}
+.fb-modal__current b{color:var(--navy);margin-right:6px}
+.fb-field{display:block;font-size:12.5px;font-weight:600;color:var(--g70);margin-bottom:10px}
+.fb-field input,.fb-field textarea{display:block;width:100%;margin-top:4px;padding:9px 11px;border:1.5px solid var(--g20);border-radius:8px;font:inherit;font-size:13.5px;font-weight:400;color:var(--g90);outline:none}
+.fb-field input:focus,.fb-field textarea:focus{border-color:var(--teal)}
+.fb-field textarea{resize:vertical;min-height:100px}
+.fb-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.fb-consent{display:flex;gap:7px;align-items:flex-start;font-size:12.5px;color:var(--g70);cursor:pointer}
+.fb-consent input{margin-top:3px}
+.fb-consent__detail{font-size:11.5px;color:var(--g50);line-height:1.6;margin:4px 0 0 20px}
+.fb-modal__err{color:#c62828;font-size:12.5px;min-height:18px;margin-top:8px}
+.fb-modal__actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.fb-modal__actions button{padding:9px 18px;font-size:13px}
+.fb-dock{position:fixed;left:20px;bottom:24px;z-index:9000;display:flex;flex-direction:column-reverse;gap:8px;align-items:flex-start}
+.fb-dock button{border:none;border-radius:22px;padding:10px 16px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:var(--sh-md)}
+.fb-dock button[hidden]{display:none}
+.fb-view-fab{background:#FFD84D;color:#5C4400}
+.fb-admin-fab{background:var(--navy);color:#fff}
+.fb-admin-list__filters{display:flex;gap:6px;margin:6px 0 12px;flex-wrap:wrap}
+.fb-admin-list__filters button{border:1.5px solid var(--g20);background:var(--white);border-radius:16px;padding:4px 12px;font:inherit;font-size:12px;cursor:pointer;color:var(--g70)}
+.fb-admin-list__filters button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.fb-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9100;background:var(--navy);color:#fff;padding:10px 12px 10px 18px;border-radius:22px;font-size:13px;box-shadow:var(--sh-md);display:flex;gap:12px;align-items:center;max-width:calc(100vw - 32px)}
+.fb-toast[hidden]{display:none}
+.fb-toast button{background:none;border:none;color:#9FC4E8;cursor:pointer;font:inherit;font-size:12.5px;white-space:nowrap}
+@media (max-width:640px){.fb-dock{left:12px;bottom:12px}.fb-pop--list{left:12px;bottom:64px}.fb-toast{bottom:84px}}
 </style>
 </head>
 <body>
@@ -1337,7 +1535,7 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
     <span>데이터셋 검색 결과</span>
   </div>
   <div class="result-head">
-    <div class="result-head__title">"<em id="resultQuery">건강검진</em>" 검색 결과 <span style="font-size:14px;font-weight:400;color:var(--g50);margin-left:8px">총 <strong style="color:var(--navy)" id="resultCount">0</strong>건</span></div>
+    <div class="result-head__title">"<em id="resultQuery">건강검진</em>" 검색 결과 <span style="font-size:14px;font-weight:400;color:var(--g50);margin-left:8px">총 <strong style="color:var(--navy)" id="resultCount">0</strong><span id="resultUnit">건</span></span></div>
     <div class="result-head__right">
       <select class="sort-select" id="sortSelect" onchange="renderResults(document.getElementById('resultQuery').dataset.label)"><option value="relevance">관련도순</option><option value="recent">최신 업데이트순</option><option value="views">조회수순</option><option value="name">이름순</option></select>
       <div class="view-toggle"><button class="view-btn on" id="viewBtnList" onclick="setResultView('list')" title="카드형으로 보기" aria-label="카드형으로 보기">☰</button><button class="view-btn" id="viewBtnTable" onclick="setResultView('table')" title="표로 보기" aria-label="표로 보기">⊞</button></div>
@@ -1425,6 +1623,7 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
       </div>
       <div class="ds-card__body">
         <div id="dsInfoTable"></div>
+        <div class="fb-hint">잘못되었거나 빠진 정보가 있나요? 해당 항목에서 우클릭(모바일은 길게 누르기)하면 수정 요청을 남길 수 있습니다.</div>
       </div>
     </div>
     <!-- 상세페이지(md) — 클릭 시 정보표를 대체 -->
@@ -1433,6 +1632,8 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
       <div id="dsGuide"></div>
     </div>
     <!-- 관련 데이터셋 (같은 제공기관) -->
+    <!-- 이 데이터로 연구된 논문 (PubMed, data.json 의 papers) -->
+    <div id="dsPapers"></div>
     <div id="dsRelated" style="margin-top:28px"></div>
   </div>
   <aside>
@@ -1499,6 +1700,8 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 <script>
 /* ══════════ 데이터 (엑셀 → 내장) ══════════ */
 let DATASETS = [];  // data.json 에서 자동 로드됩니다
+let RESEARCHERS = {};  // {연구자키: {name,short,insts,pmids,datasets,first,last}} — 논문DB 저자 시트에서 build.py 가 만든 색인
+let PAPERS = {};    // {데이터셋ID: {query,total,updatedAt,items}} — build.py 가 PubMed 에서 모은 논문
 
 /* ── 신청 창구 매핑 ──
    DS-###   (결합) → 보건의료 빅데이터 통합 플랫폼
@@ -1901,7 +2104,390 @@ function runSearch(q){
   renderResults(q);
 }
 /* 검색결과 카드 한 장(HTML). 일반 검색과 대화형 AI 검색이 같이 쓴다. */
-function datasetCardHtml(d){
+/* ══ PubMed 관련 논문 ══
+   data.json 의 papers(build.py 가 pubmed_queries.json 검색식으로 모은 것)를 그린다.
+   링크는 모두 PMID로 코드가 만든다 — AI 답변이 논문을 지어내도 가짜 링크가 붙지 않게. */
+const PUBMED = 'https://pubmed.ncbi.nlm.nih.gov/';
+function paperItemHtml(p, query){
+  const authors=(p.au&&p.au.length) ? auLineHtml(p,3,true)
+    : (p.authors||[]).slice(0,3).map(a=>
+    `<a href="${PUBMED}?term=${encodeURIComponent('('+a+'[Author]) AND ('+query+')')}" target="_blank" rel="noopener" title="이 저자의 관련 논문 (PubMed)">${esc(a)}</a>`).join(', ');
+  const more=(p.au&&p.au.length) ? '' : ((p.authorCount||0)>3?` 외 ${p.authorCount-3}명`:'');
+  return `<div class="pp-item">
+    <a class="pp-title" href="${PUBMED}${encodeURIComponent(p.pmid)}/" target="_blank" rel="noopener">${esc(p.title)}</a>${p.verified?'<span class="pp-badge" title="논문DB에서 이 데이터를 실제로 썼는지 검수한 논문">✓ 검수</span>':''}
+    ${p.sum?`<div class="pp-sum">${esc(p.sum)}</div>`:''}
+    ${authors?`<div class="pp-authors">${authors}${more}</div>`:''}
+    <div class="pp-meta">${esc(p.journal||'')}${p.year?' · '+esc(p.year):''} · PMID ${esc(p.pmid)}</div>
+  </div>`;
+}
+function paperListHtml(id, limit){
+  const P=PAPERS[id]; if(!P) return '';
+  const items=(P.items||[]).slice(0,limit||5);
+  const allOk=P.verified===P.total;
+  return `<div class="pp-sub">${allOk?'검수 완료 ':''}${P.total.toLocaleString()}편 · 최신순 ${items.length}편</div>
+    <div class="pp-list">${items.map(p=>paperItemHtml(allOk?Object.assign({},p,{verified:false}):p,P.query)).join('')}</div>
+    <a class="pp-more" href="${PUBMED}?term=${encodeURIComponent(P.query)}&sort=date" target="_blank" rel="noopener">PubMed 검색 결과 전체 보기 (검수 전 목록) →</a>
+    <div class="pp-note">${allOk
+      ? `PubMed에서 모은 논문 중 초록(필요 시 원문)을 읽고 이 데이터를 분석에 실제로 쓴 것만 남겼습니다(수집 ${esc(P.updatedAt||'-')}).`
+      : `검색식으로 자동 수집한 목록입니다(갱신 ${esc(P.updatedAt||'-')}). ✓ 검수 표시가 없는 논문은 이 데이터를 실제로 썼는지 원문에서 확인하세요.`}</div>`;
+}
+/* AI 검색 결과 카드 안에 붙는 논문 3편 (PubMed 논문연계 계획 4번 화면).
+   저자 "Kim J, Lee S, et al. · 저널 · 연도" — 저자를 누르면 그 저자의 관련 논문 검색. */
+function aiCardPapersHtml(d){
+  const P=PAPERS[d.id]; if(!P||!P.items.length) return '';
+  const stop='onclick="event.stopPropagation()"';
+  const item=p=>{
+    const badge=p.verified&&P.verified!==P.total;   // 전부 검수된 목록이면 배지는 생략
+    const au=auLineHtml(p,2);
+    return `<div class="pp-ai__item">
+      <a class="pp-title" href="${PUBMED}${encodeURIComponent(p.pmid)}/" target="_blank" rel="noopener" ${stop}>${esc(p.title)}</a>${badge?'<span class="pp-badge">✓ 검수</span>':''}
+      <div class="pp-meta">${au}${au?' · ':''}${esc(p.journal||'')}${p.year?' · '+esc(p.year):''}</div>
+    </div>`;
+  };
+  return `<div class="sr-card__papers" ${stop}>
+    <div class="pp-ai__head">이 데이터로 연구된 논문<span>${P.verified===P.total?'검수 완료 ':'약 '}${P.total.toLocaleString()}편 · 최신순</span></div>
+    <div class="pp-ai__list">${P.items.slice(0,3).map(item).join('')}</div>
+    ${researchersFor([d.id]).length?`<div class="pp-ai__rs">이 데이터로 연구한 연구자</div>${researcherChipsHtml(researchersFor([d.id]),5)}`:''}
+    <a class="pp-more" href="javascript:void(0)" onclick="event.stopPropagation();aiShowPapers('${d.id}')">이 데이터로 연구한 논문 ${P.total}편·연구자 모두 보기 →</a>
+  </div>`;
+}
+
+/* ══ 연구자 ══
+   RESEARCHERS[key] = {name, short, insts[], pmids[], datasets[], first, last}
+   key 는 paper_db.py _rkey 와 같은 규칙(영문 소문자·한글만). 같은 영문 이름은 한 사람으로 묶인다. */
+function rKey(name){ return String(name||'').toLowerCase().replace(/[^a-z가-힣]/g,''); }
+let _PAPER_IDX=null;
+function paperIndex(){                 // pmid → {p, dids}
+  if(_PAPER_IDX) return _PAPER_IDX;
+  _PAPER_IDX={};
+  Object.keys(PAPERS).forEach(function(did){
+    (PAPERS[did].items||[]).forEach(function(p){
+      const e=_PAPER_IDX[p.pmid]||(_PAPER_IDX[p.pmid]={p:p,dids:[]});
+      e.dids.push(did);
+    });
+  });
+  return _PAPER_IDX;
+}
+function dsById(id){ return DATASETS.find(function(d){ return d.id===id; }); }
+function papersOf(r){
+  const idx=paperIndex();
+  return r.pmids.map(function(id){ return idx[id]&&idx[id].p; }).filter(Boolean)
+    .sort(function(a,b){ return String(b.year).localeCompare(String(a.year)); });
+}
+function researcherLinkHtml(name, inst){
+  const k=rKey(name);
+  const label=esc(name)+(inst?`<span class="rs-inst">(${esc(inst)})</span>`:'');
+  return RESEARCHERS[k] ? `<a class="rs-link" href="javascript:void(0)" onclick="event.stopPropagation();openResearcher('${k}')" title="이 연구자의 논문·데이터 보기">${label}</a>` : `<span>${label}</span>`;
+}
+/* 논문 한 편의 저자 줄: "제1저자(기관), 둘째 저자, et al." — 이름을 누르면 연구자 카드 */
+function auLineHtml(p, n, allInst){
+  const au=p.au||[]; n=n||2;
+  if(!au.length) return esc((p.authors||[]).slice(0,n).join(', '));
+  return au.slice(0,n).map(function(a,i){ return researcherLinkHtml(a[0], (i===0||allInst)?a[1]:''); }).join(', ')
+    + ((p.authorCount||au.length)>n ? ', et al.' : '');
+}
+/* 이 데이터셋들로 연구한 연구자 — 논문 수 → 교신(마지막) 저자 → 제1저자 순 */
+function researchersFor(ids){
+  const set=new Set(ids);
+  return Object.keys(RESEARCHERS).map(function(k){ return Object.assign({key:k}, RESEARCHERS[k]); })
+    .filter(function(r){ return r.datasets.some(function(x){ return set.has(x); }); })
+    .sort(function(a,b){ return (b.pmids.length-a.pmids.length)||(b.last-a.last)||(b.first-a.first); });
+}
+function researcherChipsHtml(list, n){
+  if(!list.length) return '';
+  return `<div class="rs-chips">${list.slice(0,n).map(r=>
+    `<button type="button" class="rs-chip" onclick="event.stopPropagation();openResearcher('${r.key}')" title="${esc(r.name)}의 논문·데이터 보기"><b>${esc(r.name)}</b>${r.insts[0]?`<span>${esc(r.insts[0])}</span>`:''}<em>${r.pmids.length}편</em></button>`).join('')}</div>`;
+}
+/* 연구자 카드(모달): 소속, 논문 수, 쓴 데이터, 논문 전체, PubMed 저자 검색 */
+function openResearcher(k){
+  const r=RESEARCHERS[k]; if(!r) return;
+  const ps=papersOf(r);
+  const ds=r.datasets.map(dsById).filter(Boolean);
+  const parts=r.name.split(/\s+/), last=parts.pop();
+  const auTerm=(last+' '+parts.join(' ')).trim()+'[Author]';
+  document.getElementById('rsModalBody').innerHTML=`
+    <div class="rs-m__name">${esc(r.name)}</div>
+    <div class="rs-m__inst">${esc(r.insts.join(' · ')||'소속 정보 없음')}</div>
+    <div class="rs-m__stats"><span><b>${r.pmids.length}</b>편 · 이 포털 데이터로 쓴 검수 논문</span>${r.first?`<span><b>${r.first}</b>편 제1저자</span>`:''}${r.last?`<span><b>${r.last}</b>편 교신(마지막) 저자</span>`:''}</div>
+    <div class="rs-m__sec">연구에 쓴 데이터</div>
+    <div class="rs-m__ds">${ds.map(d=>`<a href="javascript:void(0)" onclick="closeResearcher();openDetail('${d.id}')">${esc(d.name)} <span style="color:var(--g50);font-weight:500">${esc(d.org)}</span></a>`).join('')}</div>
+    <div class="rs-m__sec">논문 ${ps.length}편</div>
+    <div class="pp-ai__list">${ps.map(p=>`<div class="pp-ai__item">
+      <a class="pp-title" href="${PUBMED}${encodeURIComponent(p.pmid)}/" target="_blank" rel="noopener">${esc(p.title)}</a>
+      ${p.sum?`<div class="pp-sum">${esc(p.sum)}</div>`:''}
+      <div class="pp-meta">${auLineHtml(p,3)}${(p.au||[]).slice(0,3).some(a=>rKey(a[0])===k)?'':` … <b style="color:var(--navy)">${esc(r.name)}</b>${(p.au||[]).length&&rKey(p.au[p.au.length-1][0])===k?' (교신)':''}`} · ${esc(p.journal||'')}${p.year?' · '+esc(p.year):''}</div></div>`).join('')}</div>
+    <a class="pp-more" href="${PUBMED}?term=${encodeURIComponent(auTerm)}&sort=date" target="_blank" rel="noopener">PubMed에서 ${esc(r.name)}의 전체 논문 보기 →</a>
+    <div class="rs-m__note">이 포털 데이터로 연구했다고 검수된 논문만 모았습니다. 소속은 논문에 적힌 것을 그대로 옮겼고, 영문 이름이 같은 다른 연구자가 섞일 수 있습니다.</div>`;
+  document.getElementById('rsModal').hidden=false;
+}
+function closeResearcher(){ const m=document.getElementById('rsModal'); if(m) m.hidden=true; }
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeResearcher(); });
+
+/* ══ 대화형 AI 검색: 질문 의도 ══
+   dataset    : "결핵 데이터 알려줘"               → 데이터셋 카드(+논문 3편·연구자)
+   paper      : "이 데이터로 연구한 논문과 연구자"   → 데이터별 논문 목록 + 연구자
+   researcher : "결핵을 연구한 연구자 찾아줘"        → 연구자 카드 (영문 이름을 직접 넣어도 됨) */
+const AI_RS_WORDS=/(연구자|연구진|연구팀|저자|교수|전문가|누가)/;
+const AI_PAPER_WORDS=/(논문|선행\s*연구|문헌|연구\s*(성과|사례|결과|실적))/;
+function aiIntent(q){
+  if(AI_PAPER_WORDS.test(q)) return 'paper';      // "논문과 연구자"도 논문 모드(연구자 같이 표시)
+  if(AI_RS_WORDS.test(q)) return 'researcher';
+  return 'dataset';
+}
+/* 의도를 나타내는 말을 떼고 주제어만 남긴다: "결핵을 연구한 연구자 찾아줘" → "결핵" */
+function aiTopicQuery(q){
+  const t=q.replace(/(연구자|연구진|연구팀|저자|교수|전문가|논문|선행\s*연구|문헌|연구\s*(성과|사례|결과|실적))(들)?/g,' ')
+    .replace(/(이|그|해당)\s*데이터(로|를|에서)?|연구(한|했던|된|하는)|활용한|사용한|쓴|누가/g,' ')
+    .replace(/(을|를|이|가|은|는|와|과|및|랑)?\s*(검색해\s*줘|찾아\s*줘|알려\s*줘|보여\s*줘|추천해\s*줘|해\s*줘|있어\??|있나요\??|있을까\??|누구야\??|누구\??)/g,' ')
+    .replace(/\s+/g,' ').trim();
+  return t || q;
+}
+/* 영문 이름으로 직접 찾기: "Young Ae Kang 논문" */
+function researchersByName(q){
+  const lat=(q.match(/[A-Za-z][A-Za-z\-]+/g)||[]).map(function(x){ return x.toLowerCase().replace(/-/g,''); });
+  if(!lat.length) return [];
+  const joined=lat.join('');
+  return Object.keys(RESEARCHERS).map(function(k){ return Object.assign({key:k}, RESEARCHERS[k]); })
+    .filter(function(r){
+      const parts=r.name.toLowerCase().replace(/-/g,'').split(/\s+/);
+      return rKey(r.name)===joined || (lat.length>=2 && lat.every(function(t){ return parts.indexOf(t)>=0; }));
+    })
+    .sort(function(a,b){ return b.pmids.length-a.pmids.length; });
+}
+let LAST_AI_PICKS=[];
+/* 카드의 "논문·연구자 모두 보기" → 그 데이터셋 하나로 논문 모드 검색 */
+function aiShowPapers(id){
+  const d=dsById(id); if(!d) return;
+  LAST_AI_PICKS=[d];
+  runAISearch('이 데이터로 연구한 논문과 연구자 알려줘');
+  window.scrollTo(0,0);
+}
+/* 질문 → {intent, picks(데이터셋), people(연구자)}. 챗봇과 AI 검색이 같이 쓴다. */
+function aiResolve(q, limit){
+  let intent=aiIntent(q), picks, people=[];
+  const byName=researchersByName(q);
+  if(byName.length){
+    intent='researcher'; people=byName;
+    const ids=new Set(); byName.forEach(function(r){ r.datasets.forEach(function(x){ ids.add(x); }); });
+    picks=Array.from(ids).map(dsById).filter(Boolean);
+  }else{
+    // "이 데이터로 연구한 논문" 처럼 앞 질문을 가리키면 직전 결과를 이어 쓴다
+    picks=(/(이|그|해당|위|방금)\s*데이터/.test(q) && LAST_AI_PICKS.length) ? LAST_AI_PICKS : pickRelevantDatasets(aiTopicQuery(q), limit);
+    if(intent==='researcher') people=researchersFor(picks.map(function(d){ return d.id; }));
+  }
+  if(picks.length) LAST_AI_PICKS=picks;
+  return {intent:intent, picks:picks, people:people};
+}
+/* 논문 목록 10편씩 페이지 (묶음마다 따로) */
+const AI_PM_PAGE_SIZE=10;
+let AI_PM_GROUPS=[];
+function aiPmPageHtml(gi, page){
+  const items=AI_PM_GROUPS[gi].P.items, N=AI_PM_PAGE_SIZE, pages=Math.max(1, Math.ceil(items.length/N));
+  page=Math.min(Math.max(1, page), pages);
+  const from=(page-1)*N;
+  return `<div class="pp-ai__list">${items.slice(from, from+N).map(p=>paperBoxHtml(p)).join('')}</div>${pages>1?`
+    <div class="pagination rs-pages">${paginationHtml(page, pages, 'aiPmPage', gi)}</div>
+    <div class="rs-pages__info" style="margin-bottom:4px">최신순 · ${from+1}–${Math.min(from+N, items.length)}번째 / 전체 ${items.length}편</div>`:''}`;
+}
+function aiPmPage(gi, n){
+  const w=document.getElementById('aiPm'+gi); if(!w) return;
+  w.innerHTML=aiPmPageHtml(gi, n);
+  w.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function paperBoxHtml(p, hidden){
+  return `<div class="pp-ai__item${hidden?' pm-hide':''}">
+    <a class="pp-title" href="${PUBMED}${encodeURIComponent(p.pmid)}/" target="_blank" rel="noopener">${esc(p.title)}</a>
+    ${p.sum?`<div class="pp-sum">${esc(p.sum)}</div>`:''}
+    <div class="pp-meta">${auLineHtml(p,2)} · ${esc(p.journal||'')}${p.year?' · '+esc(p.year):''}</div>
+  </div>`;
+}
+/* 논문 모드: 데이터별 논문 목록(5편 + 더 보기) + 그 데이터로 연구한 연구자.
+   CD003·DS-026 처럼 같은 논문 묶음을 가진 데이터셋은 한 묶음으로 보여준다. */
+function aiPaperModeHtml(picks){
+  const groups=[], byQ={}, none=[];
+  picks.forEach(function(d){
+    const P=PAPERS[d.id];
+    if(!P||!P.items.length){ none.push(d); return; }
+    const k=P.query||d.id;
+    if(byQ[k]){ byQ[k].ds.push(d); return; }
+    byQ[k]={P:P, ds:[d]}; groups.push(byQ[k]);
+  });
+  AI_PM_GROUPS=groups;
+  let html=groups.map(function(g, gi){
+    return `<div class="pm-group">
+      <div class="pm-ds">${g.ds.map(d=>`<a href="javascript:void(0)" onclick="openDetail('${d.id}')">${esc(d.name)}</a><span>${esc(d.org)}</span>`).join('<i>·</i>')}</div>
+      <div class="pm-sub">이 데이터로 연구된 논문 · 검수 완료 ${g.P.total}편 · 최신순</div>
+      <div id="aiPm${gi}" class="pm-pagewrap">${aiPmPageHtml(gi, 1)}</div>
+      <div class="pm-sub" style="margin-top:16px">이 데이터로 연구한 연구자</div>
+      ${researcherChipsHtml(researchersFor(g.ds.map(d=>d.id)),12)}
+    </div>`;
+  }).join('');
+  if(!groups.length) html+=`<div class="pm-none">찾은 데이터로 검수된 논문이 아직 없습니다. 논문 연결은 현재 결핵 신고자료로 시범 운영 중입니다.</div>`;
+  else if(none.length) html+=`<div class="pm-none">아직 검수된 논문이 없는 데이터: ${none.map(d=>esc(d.name)).join(', ')} (논문 연결은 결핵 신고자료 시범 운영 중)</div>`;
+  return html;
+}
+/* 연구자 모드: 연구자 카드 — 이름·기관·논문 수·쓴 데이터·대표 논문 2편. 누르면 연구자 카드(모달).
+   논문 수 순으로 12명씩 페이지를 나눈다(페이지 버튼은 일반 검색과 같은 paginationHtml). */
+const AI_RS_PAGE_SIZE=12;
+let AI_PEOPLE=[];
+function aiResearcherModeHtml(people){
+  AI_PEOPLE=people;
+  return `<div id="aiRsWrap">${aiRsPageHtml(1)}</div>`;
+}
+function aiRsPageHtml(page){
+  const N=AI_RS_PAGE_SIZE, pages=Math.max(1, Math.ceil(AI_PEOPLE.length/N));
+  page=Math.min(Math.max(1, page), pages);
+  const from=(page-1)*N;
+  const cards=AI_PEOPLE.slice(from, from+N).map(function(r){
+    const ps=papersOf(r), ds=r.datasets.map(dsById).filter(Boolean);
+    return `<div class="rs-card" onclick="openResearcher('${r.key}')">
+      <div class="rs-card__top"><div><div class="rs-card__name">${esc(r.name)}</div><div class="rs-card__inst">${esc(r.insts.join(' · ')||'소속 정보 없음')}</div></div>
+        <div class="rs-card__n"><b>${r.pmids.length}</b>편</div></div>
+      ${(r.first||r.last)?`<div class="rs-card__role">${[r.first?'제1저자 '+r.first+'편':'', r.last?'교신(마지막) 저자 '+r.last+'편':''].filter(Boolean).join(' · ')}</div>`:''}
+      <div class="rs-card__ds">사용 데이터: ${ds.map(d=>`<a href="javascript:void(0)" onclick="event.stopPropagation();openDetail('${d.id}')">${esc(d.name)}</a>`).join(', ')}</div>
+      <div class="rs-card__papers">${ps.slice(0,2).map(p=>`<a href="${PUBMED}${encodeURIComponent(p.pmid)}/" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(p.title)}</a> <span>${esc(p.year||'')}</span>`).join('<br>')}</div>
+    </div>`;
+  }).join('');
+  return `<div class="rs-list">${cards}</div>${pages>1?`
+    <div class="pagination rs-pages">${paginationHtml(page, pages, 'aiRsPage')}</div>
+    <div class="rs-pages__info">논문 수 순 · ${from+1}–${Math.min(from+N, AI_PEOPLE.length)}번째 / 전체 ${AI_PEOPLE.length}명</div>`:''}`;
+}
+function aiRsPage(n){
+  const w=document.getElementById('aiRsWrap'); if(!w) return;
+  w.innerHTML=aiRsPageHtml(n);
+  w.scrollIntoView({behavior:'smooth', block:'start'});
+}
+/* AI 답변 속 데이터셋명·연구자 이름·논문 제목을 클릭 가능한 링크로 바꾼다.
+   목록에 있는 이름과 글자가 정확히 같을 때만 — AI가 지어낸 이름에는 링크가 붙지 않는다. */
+function linkifyAnswer(text, picks){
+  let h=esc(stripDatasetIds(text));
+  const ents=[], ids=picks.map(function(d){ return d.id; });
+  picks.forEach(function(d){ ents.push({s:d.name, a:`<a class="ai-ent" href="javascript:void(0)" onclick="openDetail('${d.id}')">`}); });
+  researchersFor(ids).forEach(function(r){ ents.push({s:r.name, a:`<a class="ai-ent ai-ent--rs" href="javascript:void(0)" onclick="openResearcher('${r.key}')">`}); });
+  ids.forEach(function(id){ ((PAPERS[id]&&PAPERS[id].items)||[]).forEach(function(p){
+    ents.push({s:String(p.title||'').replace(/\.$/,''), a:`<a class="ai-ent" href="${PUBMED}${encodeURIComponent(p.pmid)}/" target="_blank" rel="noopener">`}); }); });
+  ents.sort(function(a,b){ return b.s.length-a.s.length; });
+  const slots=[];
+  ents.forEach(function(e){
+    const t=esc(e.s);
+    if(t.length<3 || h.indexOf(t)<0) return;
+    h=h.split(t).join('\u0000'+slots.length+'\u0000');
+    slots.push(e.a+t+'</a>');
+  });
+  return h.replace(/\u0000(\d+)\u0000/g, function(m,i){ return slots[+i]; });
+}
+/* AI 답변(정해진 줄 형식)을 항목 카드로 그린다. 스트리밍 중에도 매번 다시 그린다.
+     "- 제목 (기관, 기간)"        → 항목 카드 제목 (이름 링크 + 회색 보조정보 + "— 논문 N편" 배지)
+     "  활용 방안: a, b, c"       → 태그
+     "  주요 연구자: 이름(기관)…" → 칩(누르면 연구자 카드)
+     "  대표 논문: "…"; "…""      → 목록
+     "  그 밖의 라벨: 값"          → 라벨 줄 / 나머지 줄 → 설명 문단
+   형식을 벗어난 답변은 문단으로만 보여준다 — 모양이 깨져도 내용은 그대로 보인다. */
+function renderAnswerHtml(text, picks, streaming){
+  const L = function(t){ return linkifyAnswer(t, picks); };
+  const lines = stripDatasetIds(text).replace(/\*\*|__|^#+\s*/gm,'').split('\n');
+  const lead = [], items = [];
+  let cur = null;
+  lines.forEach(function(raw){
+    const t = raw.trim();
+    if(!t) return;
+    const top = /^[-•·*]\s+/.test(t) && !/^\s{2,}/.test(raw);
+    if(top){ cur = {title:t.replace(/^[-•·*]\s+/,''), desc:[], fields:[]}; items.push(cur); return; }
+    const f = t.match(/^([가-힣A-Za-z ]{2,8})\s*[:：]\s*(.+)$/);
+    if(cur && f) cur.fields.push({k:f[1].trim(), v:f[2].trim()});
+    else if(cur) cur.desc.push(t);
+    else lead.push(t);
+  });
+  const splitTop = function(v, sep){          // 괄호 밖의 구분자로만 자른다
+    const out=[]; let depth=0, buf='';
+    for(const ch of v){
+      if(ch==='('||ch==='（') depth++;
+      if(ch===')'||ch==='）') depth=Math.max(0,depth-1);
+      if(depth===0 && sep.indexOf(ch)>=0){ if(buf.trim()) out.push(buf.trim()); buf=''; continue; }
+      buf+=ch;
+    }
+    if(buf.trim()) out.push(buf.trim());
+    return out;
+  };
+  const fieldHtml = function(f){
+    let v;
+    if(/활용/.test(f.k)) v = `<div class="aa-chips">${splitTop(f.v, ',，、').map(x=>`<span class="aa-chip">${esc(x.replace(/[.。]$/,''))}</span>`).join('')}</div>`;
+    else if(/연구자/.test(f.k)) v = `<div class="aa-chips">${splitTop(f.v, ',，、').map(x=>`<span class="aa-chip">${L(x.replace(/[.。]$/,''))}</span>`).join('')}</div>`;
+    else if(/논문/.test(f.k) && f.v.indexOf(';')>0) v = `<ul>${splitTop(f.v, ';；').map(x=>`<li>${L(x)}</li>`).join('')}</ul>`;
+    else v = L(f.v);
+    return `<div class="aa-row"><span class="aa-k">${esc(f.k)}</span><div class="aa-v">${v}</div></div>`;
+  };
+  const titleHtml = function(t){
+    let badge = '';
+    const b = t.match(/\s*[—–-]\s*(논문\s*\d+\s*편.*)$/);
+    if(b){ badge = b[1]; t = t.slice(0, b.index); }
+    const m = t.match(/^(.*?)\s*[(（]([^()（）]*)[)）]\s*$/);
+    return `<div class="aa-title">${L(m?m[1]:t)}${m?`<span class="aa-meta">${esc(m[2])}</span>`:''}${badge?`<span class="aa-badge">${esc(badge)}</span>`:''}</div>`;
+  };
+  let html = '';
+  if(lead.length) html += lead.map(t=>`<p class="aa-lead">${L(t)}</p>`).join('');
+  if(items.length){
+    html += `<div class="aa-list">${items.map(it=>`<div class="aa-item">${titleHtml(it.title)}${it.desc.length?`<p class="aa-desc">${L(it.desc.join(' '))}</p>`:''}${it.fields.map(fieldHtml).join('')}</div>`).join('')}</div>`;
+  }
+  if(!html) html = `<p class="aa-p">${L(text)}</p>`;
+  return streaming ? html.replace(/(<\/(p|div|li|span)>)(?!.*<\/(p|div|li|span)>)/s, '<span class="aa-cursor"></span>$1') : html;
+}
+/* 논문 질문의 답변 카드: AI 글 형식에 기대지 않고 논문DB에서 바로 그린다(항상 카드로 나온다).
+   AI는 위에 2~3문장 요약만 쓴다(#aaSummary). 최신 n편 + "전체 보기"(아래 논문 목록으로 이동). */
+function paperAnswerCardsHtml(picks, n){
+  n = n || 5;
+  const seen = {}, list = [], none = [];
+  picks.forEach(function(d){
+    const P = PAPERS[d.id];
+    if(!P || !P.items.length){ none.push(d); return; }
+    P.items.forEach(function(p){
+      if(!seen[p.pmid]){ seen[p.pmid] = {p:p, ds:[]}; list.push(seen[p.pmid]); }
+      seen[p.pmid].ds.push(d);
+    });
+  });
+  if(!list.length) return '<p class="aa-lead">찾은 데이터로 검수된 논문이 아직 없습니다. 논문 연결은 현재 결핵 신고자료로 시범 운영 중입니다.</p>';
+  list.sort(function(a,b){ return String(b.p.year).localeCompare(String(a.p.year)); });
+  const cards = list.slice(0, n).map(function(e){
+    const p = e.p, au = p.au || [];
+    const people = au.slice(0,3).map(function(a){ return `<span class="aa-chip">${researcherLinkHtml(a[0], a[1])}</span>`; }).join('')
+      + ((p.authorCount||au.length) > 3 ? `<span class="aa-meta" style="align-self:center">외 ${(p.authorCount||au.length)-3}명</span>` : '');
+    return `<div class="aa-item aa-item--paper">
+      <div class="aa-title"><a class="ai-ent" href="${PUBMED}${encodeURIComponent(p.pmid)}/" target="_blank" rel="noopener">${esc(p.title)}</a><span class="aa-meta">${esc(p.journal||'')}${p.year?' · '+esc(p.year):''}</span></div>
+      ${p.sum?`<p class="aa-desc">${esc(p.sum)}</p>`:''}
+      ${people?`<div class="aa-row"><span class="aa-k">연구자</span><div class="aa-v"><div class="aa-chips">${people}</div></div></div>`:''}
+      <div class="aa-row"><span class="aa-k">사용 데이터</span><div class="aa-v">${e.ds.map(d=>`<a class="ai-ent" href="javascript:void(0)" onclick="openDetail('${d.id}')">${esc(d.name)}</a>`).join(', ')}</div></div>
+    </div>`;
+  }).join('');
+  return `<div class="aa-list">${cards}</div>
+    <div class="aa-foot"><span>검수된 논문 ${list.length}편 중 최신 ${Math.min(n, list.length)}편${none.length?` · 아직 검수된 논문이 없는 데이터 ${none.length}건`:''}</span>
+      <a href="javascript:void(0)" onclick="aiScrollTo('.pm-wrap')">논문 ${list.length}편·연구자 전체 보기 ↓</a></div>`;
+}
+function paperSummaryText(picks){
+  const seen = {}, names = [], years = [];
+  picks.forEach(function(d){
+    const P = PAPERS[d.id];
+    if(!P || !P.items.length) return;
+    names.push(d.name);
+    P.items.forEach(function(p){ if(!seen[p.pmid]){ seen[p.pmid]=1; if(/^\d{4}$/.test(p.year)) years.push(+p.year); } });
+  });
+  const n = Object.keys(seen).length;
+  if(!n) return '';
+  const span = years.length ? ` (${Math.min.apply(null,years)}~${Math.max.apply(null,years)}년)` : '';
+  const top = researchersFor(picks.map(function(d){ return d.id; })).slice(0,2)
+    .map(function(r){ return r.name+'('+(r.insts[0]||'소속 미상')+', '+r.pmids.length+'편)'; });
+  return names.join('·')+'로 연구해 검수된 논문은 '+n+'편'+span+'입니다.'
+    + (top.length ? ' 가장 많이 쓴 연구자는 '+top.join(', ')+'입니다.' : '');
+}
+function aiScrollTo(sel){ const el=document.querySelector(sel); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }
+/* 요약 한 문단만 남긴다(목록 줄이 섞여 와도 글머리표를 떼고 이어 붙인다) */
+function summaryHtml(text, picks, streaming){
+  const t = stripDatasetIds(text).replace(/\*\*|__/g,'').split('\n').map(function(x){ return x.trim().replace(/^[-•·*]\s+/,''); }).filter(Boolean).join(' ');
+  return `<p class="aa-lead">${linkifyAnswer(t, picks)}${streaming?'<span class="aa-cursor"></span>':''}</p>`;
+}
+const AA_WAIT = '<span class="aa-wait"><i></i><i></i><i></i> 등록된 데이터와 논문에서 답을 찾고 있어요</span>';
+
+function datasetCardHtml(d, withPapers){
+  const papers = withPapers ? aiCardPapersHtml(d) : '';
   const c=typeColor(d.type);
   const pf=platformOf(d);
   const pfMeta = !pf ? ''
@@ -1909,7 +2495,7 @@ function datasetCardHtml(d){
              : `<span class="sr-meta-item">🏠 ${esc(pf.name)}</span>`;
   const tags=kwList(d).slice(0,5).map(k=>'<span class="sr-tag">#'+esc(k)+'</span>').join('');
   const nT=(d.tables&&d.tables.length)?d.tables.length:null;
-  return `<div class="sr-card" onclick="openDetail('${d.id}')">
+  return `<div class="sr-card${papers?' sr-card--papers':''}" onclick="openDetail('${d.id}')">
     <div class="sr-card__left">
       <div class="sr-card__top"><span class="sr-type" style="background:${c.bg};color:${c.fg}">${esc(typeLabel(d.type))}</span><span style="font-size:11.5px;color:var(--g50)">${esc(d.org)}</span></div>
       <div class="sr-card__title">${esc(d.name)}</div>
@@ -1918,6 +2504,7 @@ function datasetCardHtml(d){
       <div class="sr-card__meta">
         ${pfMeta}
         ${nT?`<span class="sr-meta-item">🗂 ${nT}개 테이블</span>`:''}
+        ${PAPERS[d.id]?`<span class="sr-meta-item sr-meta-paper">📄 관련 논문 ${PAPERS[d.id].total.toLocaleString()}편</span>`:''}
         ${d.lastUpdate?`<span class="sr-meta-item">📅 ${esc(d.lastUpdate)}</span>`:''}
         ${d.updateCycle?`<span class="sr-meta-item">🔄 ${esc(d.updateCycle)}</span>`:''}
       </div>
@@ -1925,6 +2512,7 @@ function datasetCardHtml(d){
     <div class="sr-card__right">
       <div class="sr-actions"><button class="sr-btn-p" onclick="event.stopPropagation();openDetail('${d.id}')">상세 보기</button><button class="sr-btn-s" onclick="event.stopPropagation();${(pf&&pf.url)?`window.open('${pf.url}','_blank','noopener')`:`openDetail('${d.id}')`}">📋 신청 안내</button></div>
     </div>
+    ${papers}
   </div>`;
 }
 /* 검색결과 정렬(정렬 선택 상자). 원본 CURRENT_RESULTS는 건드리지 않고 복사본을 정렬한다.
@@ -1963,17 +2551,19 @@ function goResultPage(n){
   const head=document.querySelector('#page-search .result-head');
   if(head) head.scrollIntoView({behavior:'smooth', block:'start'});
 }
-function paginationHtml(page, pages){
+function paginationHtml(page, pages, fn, pre){
+  fn = fn || 'goResultPage';   // 누르면 부를 함수 이름 (AI 검색: 연구자 aiRsPage, 논문 aiPmPage)
+  const go = function(n){ return 'onclick="'+fn+'('+(pre!=null?pre+',':'')+n+')"'; };   // pre: 앞 인자(논문 묶음 번호)
   // 현재 페이지를 가운데 두고 번호를 최대 5개 보여준다. 범위 밖이면 첫/끝 페이지와 …을 붙인다.
   let start=Math.max(1, page-2);
   const end=Math.min(pages, start+4);
   start=Math.max(1, end-4);
   const dots='<span style="padding:0 4px;color:var(--g50)">…</span>';
-  let h='<button class="pg-btn pg-btn--arrow" '+(page<=1?'disabled':'onclick="goResultPage('+(page-1)+')"')+' aria-label="이전 페이지">‹</button>';
-  if(start>1) h+='<button class="pg-btn" onclick="goResultPage(1)">1</button>'+(start>2?dots:'');
-  for(let i=start;i<=end;i++) h+='<button class="pg-btn'+(i===page?' on':'')+'" onclick="goResultPage('+i+')">'+i+'</button>';
-  if(end<pages) h+=(end<pages-1?dots:'')+'<button class="pg-btn" onclick="goResultPage('+pages+')">'+pages+'</button>';
-  h+='<button class="pg-btn pg-btn--arrow" '+(page>=pages?'disabled':'onclick="goResultPage('+(page+1)+')"')+' aria-label="다음 페이지">›</button>';
+  let h='<button class="pg-btn pg-btn--arrow" '+(page<=1?'disabled':go(page-1))+' aria-label="이전 페이지">‹</button>';
+  if(start>1) h+='<button class="pg-btn" '+go(1)+'>1</button>'+(start>2?dots:'');
+  for(let i=start;i<=end;i++) h+='<button class="pg-btn'+(i===page?' on':'')+'" '+go(i)+'>'+i+'</button>';
+  if(end<pages) h+=(end<pages-1?dots:'')+'<button class="pg-btn" '+go(pages)+'>'+pages+'</button>';
+  h+='<button class="pg-btn pg-btn--arrow" '+(page>=pages?'disabled':go(page+1))+' aria-label="다음 페이지">›</button>';
   return h;
 }
 function resultTableHtml(list){
@@ -1999,6 +2589,7 @@ function resultTableHtml(list){
     '</tbody></table></div>';
 }
 function renderResults(q, page){
+  setAiLayout(false);
   renderActiveFilters();
   const rq=document.getElementById('resultQuery');
   rq.textContent = q||'전체';
@@ -2016,7 +2607,7 @@ function renderResults(q, page){
   RESULT_PAGE=Math.min(Math.max(1, page||1), pages);
   const off=(RESULT_PAGE-1)*RESULT_PAGE_SIZE;
   const pageItems=sorted.slice(off, off+RESULT_PAGE_SIZE);
-  wrap.innerHTML = RESULT_VIEW==='table' ? resultTableHtml(pageItems) : pageItems.map(datasetCardHtml).join('');
+  wrap.innerHTML = RESULT_VIEW==='table' ? resultTableHtml(pageItems) : pageItems.map(d=>datasetCardHtml(d)).join('');
   if(pagi && pages>1){ pagi.innerHTML=paginationHtml(RESULT_PAGE, pages); pagi.style.display=''; }
 }
 
@@ -2075,7 +2666,14 @@ function renderWebSearchResults(containerId, query){
 
 /* ══ 대화형 AI 검색 (검색결과 페이지) ══ */
 let aiSearchBusy = false;
+/* 검색결과 페이지 레이아웃: AI 검색이면 필터 열을 접고 결과를 전체 폭으로 */
+function setAiLayout(on){
+  const pg = document.getElementById('page-search');
+  if(pg) pg.classList.toggle('ai-mode', !!on);
+  if(!on){ const u=document.getElementById('resultUnit'); if(u) u.textContent='건'; }
+}
 function runAISearch(q){
+  setAiLayout(true);
   q = (q||'').trim();
   document.getElementById('resultQuery').textContent = q || '전체';
   const wrap = document.getElementById('resultList');
@@ -2090,16 +2688,30 @@ function runAISearch(q){
     return;
   }
 
-  const picks = pickRelevantDatasets(q, 8);
-  document.getElementById('resultCount').textContent = picks.length;
+  const R = aiResolve(q, 8), picks = R.picks, intent = R.intent, people = R.people;
+  document.getElementById('resultCount').textContent = intent==='researcher' ? people.length : picks.length;
+  document.getElementById('resultUnit').textContent = intent==='researcher' ? '명' : '건';
+
+  // 의도별 본문: 연구자 → 연구자 카드 / 논문 → 데이터별 논문·연구자 / 데이터 → 카드 안에 논문 3편·연구자
+  let main = '';
+  if(intent==='researcher'){
+    main = people.length
+      ? `<div class="ai-search-sub">👤 관련 데이터로 연구한 연구자 (${people.length}명)</div>${aiResearcherModeHtml(people)}`
+      : `<div class="pm-none">이 주제의 데이터로 검수된 논문이 아직 없어 연구자를 보여드릴 수 없습니다. 논문 연결은 현재 결핵 신고자료로 시범 운영 중입니다.</div>`;
+  }else if(intent==='paper' && picks.length){
+    main = `<div class="ai-search-sub">📄 이 데이터로 연구된 논문과 연구자</div><div class="pm-wrap">${aiPaperModeHtml(picks)}</div>`;
+  }
+  const dsList = picks.length ? `<div class="ai-search-sub">🗄 ${intent==='dataset'?'우리 포털의 관련 데이터셋':'관련 데이터셋'} (${picks.length}건)</div>
+    <div class="result-list" id="aiSearchDsResults">${picks.map(d=>datasetCardHtml(d, intent==='dataset')).join('')}</div>` : '';
 
   wrap.innerHTML = `
     <div class="ai-search-answer">
-      <div class="ai-search-answer__label">AI 검색 도우미</div>
-      <div class="ai-search-answer__body" id="aiSearchAnswerBody">${picks.length ? '생각 중...' : '등록된 데이터에서 관련 데이터셋을 찾지 못했습니다. 다른 검색어로 다시 시도해보세요.'}</div>
+      <div class="ai-search-answer__label">✨ AI 검색 도우미<span class="aa-note">포털에 등록된 데이터·검수 논문만 근거로 답합니다</span></div>
+      <div class="ai-search-answer__body${picks.length?' aa-on':''}" id="aiSearchAnswerBody">${!picks.length ? '등록된 데이터에서 관련 데이터셋을 찾지 못했습니다. 다른 검색어로 다시 시도해보세요.'
+        : intent==='paper' ? `${paperSummaryText(picks)?`<div class="aa-sum"><p class="aa-lead">${linkifyAnswer(paperSummaryText(picks), picks)}</p></div>`:''}${paperAnswerCardsHtml(picks)}` : AA_WAIT}</div>
     </div>
-    ${picks.length ? `<div class="ai-search-sub">🗄 우리 포털의 관련 데이터셋 (${picks.length}건)</div>
-    <div class="result-list" id="aiSearchDsResults">${picks.map(datasetCardHtml).join('')}</div>` : ''}
+    ${main}
+    ${dsList}
     <div class="ai-search-web">
       <div class="ai-search-web__label">🔎 웹 검색 결과</div>
       <div id="aiSearchWebResults" class="ai-search-web__results"></div>
@@ -2107,25 +2719,38 @@ function runAISearch(q){
 
   renderWebSearchResults('aiSearchWebResults', q);
 
-  if(!picks.length || aiSearchBusy) return;
+  // 논문 질문은 논문DB만으로 답한다(요약 문장·논문 카드·한줄요약 모두 데이터에서) — AI를 부르지 않는다
+  if(!picks.length || intent==='paper' || aiSearchBusy) return;
   aiSearchBusy = true;
 
+  let answerText = '';
   streamOpenRouterAnswer({
-    systemPrompt: buildChatSystemPrompt(contextFromPicks(picks)),
+    systemPrompt: buildChatSystemPrompt(contextFromPicks(picks, intent, people), intent),
     userQuery: q,
     onDelta: function(fullText){
+      answerText = fullText;
+      if(intent==='paper'){ const sm=document.getElementById('aaSummary'); if(sm) sm.innerHTML = summaryHtml(fullText, picks, true); return; }
       const el = document.getElementById('aiSearchAnswerBody');
-      if(el) el.textContent = stripDatasetIds(fullText);
+      if(el){ el.classList.add('aa-on'); el.innerHTML = renderAnswerHtml(fullText, picks, true); }
     },
     onStatus: function(text){
+      if(intent==='paper'){ const sm=document.getElementById('aaSummary'); if(sm) sm.textContent = text; return; }
       const el = document.getElementById('aiSearchAnswerBody');
       if(el) el.textContent = text;
     },
     onError: function(msg){
+      // 논문 질문은 카드가 이미 있으니 요약 자리만 조용히 알린다
+      if(intent==='paper'){ const sm=document.getElementById('aaSummary'); if(sm){ sm.className='aa-sum aa-sum--err'; sm.textContent='AI 요약을 불러오지 못했습니다. 아래 논문 카드는 검수된 논문DB에서 바로 가져온 것입니다.'; } return; }
       const el = document.getElementById('aiSearchAnswerBody');
-      if(el){ el.textContent = msg; el.classList.add('ai-search-answer__body--err'); }
+      if(el){ el.classList.remove('aa-on'); el.textContent = msg; el.classList.add('ai-search-answer__body--err'); }
     },
-    onDone: function(){ aiSearchBusy = false; }
+    onDone: function(){
+      aiSearchBusy = false;
+      // 다 받은 답변에서 데이터셋명·연구자·논문 제목을 링크로 바꾼다
+      const el = document.getElementById('aiSearchAnswerBody');
+      if(intent==='paper'){ const sm=document.getElementById('aaSummary'); if(sm && answerText && !sm.classList.contains('aa-sum--err')) sm.innerHTML = summaryHtml(answerText, picks, false); return; }
+      if(el && answerText && !el.classList.contains('ai-search-answer__body--err')) el.innerHTML = renderAnswerHtml(answerText, picks, false);
+    }
   });
 }
 
@@ -2217,6 +2842,12 @@ function openDetail(id){
   renderInfoTable(d);
   // 관련 데이터셋 (같은 제공기관)
   renderRelated(d);
+  // 이 데이터로 연구된 논문
+  const pp=document.getElementById('dsPapers');
+  if(pp) pp.innerHTML = PAPERS[d.id] ? `<div class="ds-card pp-card" style="margin-top:20px">
+      <div class="ds-card__head"><div class="ds-card__title"><span class="ds-card__title-bar"></span>이 데이터로 연구된 논문</div></div>
+      <div class="ds-card__body">${paperListHtml(d.id, 5)}${researchersFor([d.id]).length?`<div class="pp-ai__rs">이 데이터로 연구한 연구자</div>${researcherChipsHtml(researchersFor([d.id]),10)}`:''}</div>
+    </div>` : '';
 
   // md 뷰 초기화, 정보표 보이기
   const gc=document.getElementById('dsGuide');
@@ -2269,30 +2900,469 @@ function renderInfoTable(d){
   const tbs=(d.tables||[]).filter(t=>t.en||t.ko);
   const tableList = tbs.length ? tbs.map(t=>esc(t.en||t.ko)).join(', ') : '<span class="iv-empty">-</span>';
   const rows=[
-    ['기관명', V(d.org)],
-    ['데이터명', V(d.name)],
-    ['수집 시작연도', V(d.startYear)],
-    ['수집 종료연도', V(d.endYear)],
-    ['데이터 수집기간', V(d.period)],
-    ['데이터 항목정보(Item)', V(d.itemInfo)],
-    ['제공 테이블 목록', tableList],
-    ['테이블 수', V(d.tableCount!=null&&String(d.tableCount).trim()!==''?d.tableCount:(tbs.length||''))],
-    ['컬럼 수', V(d.columnCount)],
-    ['데이터 파일 수', V(d.fileCount)],
-    ['환자 수', V(d.patientCount)],
-    ['최종 업데이트 일자', V(d.lastUpdate)],
-    ['업데이트 주기', V(d.updateCycle)],
-    ['주요 키워드', V(d.keywords)],
-    ['데이터 샘플정보(Sample)', V(d.sampleInfo)],
-    ['신청 창구', (function(){ const p=platformOf(d);
+    ['org', '기관명', V(d.org)],
+    ['name', '데이터명', V(d.name)],
+    ['startYear', '수집 시작연도', V(d.startYear)],
+    ['endYear', '수집 종료연도', V(d.endYear)],
+    ['period', '데이터 수집기간', V(d.period)],
+    ['itemInfo', '데이터 항목정보(Item)', V(d.itemInfo)],
+    ['tables', '제공 테이블 목록', tableList],
+    ['tableCount', '테이블 수', V(d.tableCount!=null&&String(d.tableCount).trim()!==''?d.tableCount:(tbs.length||''))],
+    ['columnCount', '컬럼 수', V(d.columnCount)],
+    ['fileCount', '데이터 파일 수', V(d.fileCount)],
+    ['patientCount', '환자 수', V(d.patientCount)],
+    ['lastUpdate', '최종 업데이트 일자', V(d.lastUpdate)],
+    ['updateCycle', '업데이트 주기', V(d.updateCycle)],
+    ['keywords', '주요 키워드', V(d.keywords)],
+    ['sampleInfo', '데이터 샘플정보(Sample)', V(d.sampleInfo)],
+    ['platform', '신청 창구', (function(){ const p=platformOf(d);
         if(!p) return '<span class="iv-empty">-</span>';
         return p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="color:var(--teal);font-weight:700">${esc(p.name)}</a>`:esc(p.name); })()],
-    ['데이터 신청절차', V(d.applyProcess)],
-    ['비고', V(d.note)],
+    ['applyProcess', '데이터 신청절차', V(d.applyProcess)],
+    ['note', '비고', V(d.note)],
   ];
   wrap.innerHTML=`<table class="info-table"><tbody>${
-    rows.map(r=>`<tr><th>${r[0]}</th><td>${r[1]}</td></tr>`).join('')
+    rows.map(r=>`<tr data-field="${r[0]}" data-label="${esc(r[1])}"><th>${r[1]}</th><td>${r[2]}</td></tr>`).join('')
   }</tbody></table>`;
+}
+
+/* ══ 수정요청 메모 ══
+   사이트 어디서든 우클릭(모바일은 길게 누르기)하면 이름·이메일·내용 입력창이 뜨고,
+   남긴 메모는 그 요소 오른쪽 위에 노란 핀으로 붙는다. 핀을 누르면 메모와 관리자 답변이 보인다.
+   (Shift+우클릭은 브라우저 기본 메뉴, 입력칸·링크·글자 선택 중에는 기본 동작 유지)
+   저장은 Cloudflare Worker의 /feedback 라우트(D1) — cloudflare-worker.js, 수정요청_안내.md 참고.
+   메모 위치 = scope + anchor
+     scope  : 데이터셋 상세면 데이터셋 ID(CD003 …), 그 밖의 페이지는 'page:<페이지명>',
+              상단 메뉴·푸터처럼 모든 페이지에 공통인 곳은 'page:_common'
+     anchor : 정보표 행은 'row:<항목키>'(데이터명이 바뀌어도 유지), 그 밖에는 가장 가까운 id 요소 기준 CSS 경로
+   화면 구조가 바뀌어 앵커를 못 찾는 메모는 왼쪽 아래 '이 화면의 수정 요청' 목록에만 나온다.
+   관리자는 주소 끝에 ?admin 을 붙여 열면 관리자 키를 묻고, 이메일 확인·답변·상태 변경·삭제를 할 수 있다. */
+const FEEDBACK_URL = WEB_SEARCH_PROXY_URL + 'feedback';
+const FB_STATUS_LABEL = { open:'접수', review:'검토중', done:'반영완료' };
+const FB_PAGE_LABEL = { main:'메인', search:'검색결과', dataset:'데이터셋 상세', datamap:'데이터 맵', howto:'포털 서비스', community:'커뮤니티', notice:'알림·소식', about:'포털 소개', _common:'공통 영역(메뉴·푸터)' };
+const FB_COMMON = 'page:_common';
+// 우클릭을 가로채지 않을 곳
+const FB_SKIP = '.fb-modal, .fb-pop, .fb-pin, .fb-dock, .fb-toast, input, textarea, select, [contenteditable], a[href]';
+const FB_INLINE = /^(span|b|strong|i|em|u|small|sup|sub|mark|code|br|svg|path|use|g|circle|rect|line|polyline|polygon|ellipse)$/i;
+let FB_PAGE = 'main';
+let FB_ITEMS = [];
+let FB_GROUPS = [];      // [{key, scope, anchor, label, items, el}]
+let FB_TARGET = null;    // 입력창이 가리키는 곳 {scope, anchor, label, snippet}
+let FB_POP = null;       // 열린 팝오버: {mode:'group', key} | {mode:'list'}
+let FB_FOCUS = null;     // 관리자 목록에서 이동할 때 열어줄 그룹 key
+let FB_LOAD_SEQ = 0;
+let FB_ADMIN_KEY = '';
+try { FB_ADMIN_KEY = sessionStorage.getItem('fbAdminKey') || ''; } catch(e){}
+const FB_IS_ADMIN = () => !!FB_ADMIN_KEY;
+
+function fbDate(iso){
+  if(!iso) return '';
+  const t=new Date(iso); if(isNaN(t)) return '';
+  const p=n=>String(n).padStart(2,'0');
+  return `${t.getFullYear()}.${p(t.getMonth()+1)}.${p(t.getDate())}`;
+}
+function fbAdminHeaders(){ return { 'Content-Type':'application/json', 'X-Admin-Key': FB_ADMIN_KEY }; }
+function fbAdminFail(){
+  FB_ADMIN_KEY='';
+  try { sessionStorage.removeItem('fbAdminKey'); } catch(e){}
+  alert('관리자 키가 올바르지 않습니다. 주소 끝에 ?admin 을 붙여 다시 열어 주세요.');
+  fbRenderDock();
+}
+function fbCheck(r){
+  if(r.status===401){ fbAdminFail(); throw new Error('unauthorized'); }
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r;
+}
+
+function fbScope(){ return (FB_PAGE==='dataset' && CURRENT_DS) ? CURRENT_DS.id : 'page:'+FB_PAGE; }
+function fbScopeLabel(scope){
+  if(scope.startsWith('page:')){ const k=scope.slice(5); return FB_PAGE_LABEL[k]||k; }
+  const d=(typeof DATASETS!=='undefined'?DATASETS:[]).find(x=>x.id===scope);
+  return '데이터셋 상세 · '+(d?d.name:scope);
+}
+function fbPageRoot(){ const p=PAGES[FB_PAGE]; return p?document.getElementById(p.id):null; }
+function fbSnippet(el){
+  const t=(el.innerText||el.getAttribute('alt')||el.getAttribute('aria-label')||el.title||'').replace(/\s+/g,' ').trim();
+  return t.length>200 ? t.slice(0,200)+'…' : t;
+}
+function fbPath(el){
+  const parts=[];
+  while(el && el!==document.body && el!==document.documentElement){
+    if(el.id) { parts.unshift('#'+CSS.escape(el.id)); return parts.join(' > '); }
+    const p=el.parentElement; if(!p) break;
+    parts.unshift(`${el.tagName.toLowerCase()}:nth-child(${Array.prototype.indexOf.call(p.children,el)+1})`);
+    el=p;
+  }
+  return 'body > '+parts.join(' > ');
+}
+/* 눌린 요소 → 메모를 붙일 위치 */
+function fbAnchorOf(target){
+  const tr=target.closest('#dsInfoTable tr[data-field]');
+  if(tr) return { scope:fbScope(), anchor:'row:'+tr.dataset.field, el:tr, label:'상세 정보 · '+tr.dataset.label, snippet:fbSnippet(tr.querySelector('td')||tr) };
+  let el=target;
+  while(el.parentElement && el.parentElement!==document.body && FB_INLINE.test(el.tagName)) el=el.parentElement;
+  const root=fbPageRoot();
+  const scope=(root && root.contains(el)) ? fbScope() : FB_COMMON;
+  const snippet=fbSnippet(el);
+  const short=snippet.length>40 ? snippet.slice(0,40)+'…' : snippet;
+  return { scope, anchor:fbPath(el), el, label:short||('<'+el.tagName.toLowerCase()+'>'), snippet };
+}
+function fbResolve(anchor){
+  if(anchor.startsWith('row:')) return document.querySelector(`#dsInfoTable tr[data-field="${CSS.escape(anchor.slice(4))}"]`);
+  try { return document.querySelector(anchor); } catch(e){ return null; }
+}
+function fbVisible(el){ return !!(el && el.isConnected && el.getClientRects().length); }
+
+function fbMark(el){
+  document.querySelectorAll('.fb-target').forEach(x=>x.classList.remove('fb-target'));
+  if(el) el.classList.add('fb-target');
+}
+function fbOpenAt(target){
+  const a=fbAnchorOf(target);
+  fbMark(a.el);
+  openFbForm(a);
+}
+
+/* ── 우클릭 / 길게 누르기 ── */
+document.addEventListener('contextmenu', e=>{
+  const t=e.target;
+  if(e.shiftKey || !(t instanceof Element) || t.closest(FB_SKIP)) return;
+  const sel=window.getSelection && String(window.getSelection()).trim();
+  if(sel) return;   // 글자를 선택해 복사하려는 중이면 기본 메뉴
+  e.preventDefault();
+  fbCancelPress();
+  fbOpenAt(t);
+});
+let FB_PRESS=null;
+function fbCancelPress(){
+  if(!FB_PRESS) return;
+  clearTimeout(FB_PRESS.timer);
+  FB_PRESS.el.classList.remove('fb-pressing');
+  FB_PRESS=null;
+}
+document.addEventListener('pointerdown', e=>{
+  if(e.pointerType!=='touch') return;   // 마우스는 우클릭으로 충분
+  const t=e.target;
+  if(!(t instanceof Element) || t.closest(FB_SKIP)) return;
+  fbCancelPress();
+  const el=fbAnchorOf(t).el;
+  el.classList.add('fb-pressing');
+  FB_PRESS={ x:e.clientX, y:e.clientY, el, timer:setTimeout(()=>{ fbCancelPress(); fbOpenAt(t); },600) };
+}, { passive:true });
+document.addEventListener('pointermove', e=>{
+  if(FB_PRESS && (Math.abs(e.clientX-FB_PRESS.x)>10 || Math.abs(e.clientY-FB_PRESS.y)>10)) fbCancelPress();
+}, { passive:true });
+['pointerup','pointercancel'].forEach(ev=>document.addEventListener(ev, fbCancelPress, { passive:true }));
+
+/* ── 불러오기 / 핀 그리기 ── */
+function fbOnView(name){
+  FB_PAGE=name;
+  fbClosePop();
+  loadFeedback();
+}
+function loadFeedback(){
+  const seq=++FB_LOAD_SEQ;
+  const scopes=[fbScope(), FB_COMMON];
+  const get=s=>fetch(FB_IS_ADMIN()
+      ? FEEDBACK_URL+'/admin?ds='+encodeURIComponent(s)
+      : FEEDBACK_URL+'?ds='+encodeURIComponent(s),
+    FB_IS_ADMIN()?{ headers:fbAdminHeaders() }:undefined).then(fbCheck).then(r=>r.json()).then(j=>j.items||[]);
+  Promise.all(scopes.map(get))
+    .then(lists=>{
+      if(seq!==FB_LOAD_SEQ) return;   // 그 사이 다른 화면으로 이동함
+      FB_ITEMS=[].concat(...lists).sort((a,b)=>a.id-b.id);
+      fbRender();
+    })
+    .catch(err=>console.warn('수정요청 메모를 불러오지 못했습니다:', err));
+}
+function fbRender(){
+  const map=new Map();
+  FB_ITEMS.forEach(it=>{
+    const key=it.ds+'|'+it.field;
+    if(!map.has(key)) map.set(key,{ key, scope:it.ds, anchor:it.field, label:it.fieldLabel||it.field, items:[] });
+    map.get(key).items.push(it);
+  });
+  FB_GROUPS=[...map.values()];
+  document.querySelectorAll('.fb-pin').forEach(p=>p.remove());
+  FB_GROUPS.forEach((g,i)=>{
+    g.el=fbResolve(g.anchor);
+    if(!g.el) return;
+    const pin=document.createElement('button');
+    pin.type='button';
+    pin.className='fb-pin'+(g.items.every(x=>x.status==='done')?' fb-pin--done':'');
+    pin.textContent=g.items.length;
+    pin.title=`수정 요청 ${g.items.length}건 · ${g.label}`;
+    pin.onclick=ev=>{ ev.stopPropagation(); fbOpenGroup(i); };
+    g.pin=pin;
+    document.body.appendChild(pin);
+  });
+  fbPlacePins();
+  fbRenderDock();
+  if(FB_FOCUS){
+    const i=FB_GROUPS.findIndex(g=>g.key===FB_FOCUS);
+    FB_FOCUS=null;
+    if(i>=0 && fbVisible(FB_GROUPS[i].el)){
+      FB_GROUPS[i].el.scrollIntoView({ block:'center' });
+      setTimeout(()=>{ fbPlacePins(); fbOpenGroup(i); },350);
+    } else if(FB_ITEMS.length) fbOpenList();
+    return;
+  }
+  // 열려 있던 팝오버는 새 데이터로 다시 그린다
+  if(FB_POP){
+    if(FB_POP.mode==='list') fbOpenList();
+    else { const i=FB_GROUPS.findIndex(g=>g.key===FB_POP.key); if(i>=0) fbOpenGroup(i); else fbClosePop(); }
+  }
+}
+function fbPlacePins(){
+  FB_GROUPS.forEach(g=>{
+    if(!g.pin) return;
+    if(!fbVisible(g.el)){ g.pin.hidden=true; return; }
+    const r=g.el.getBoundingClientRect();
+    const off = r.bottom<0 || r.top>window.innerHeight;
+    g.pin.hidden=off;
+    g.pin.style.top=Math.max(4, r.top-10)+'px';
+    g.pin.style.left=Math.min(window.innerWidth-34, Math.max(4, r.right-18))+'px';
+  });
+  if(FB_POP && FB_POP.mode==='group') fbPositionPop();
+}
+let FB_RAF=0;
+const fbSchedulePlace=()=>{ if(!FB_RAF) FB_RAF=requestAnimationFrame(()=>{ FB_RAF=0; fbPlacePins(); }); };
+window.addEventListener('scroll', fbSchedulePlace, { passive:true, capture:true });
+window.addEventListener('resize', fbSchedulePlace);
+setInterval(fbPlacePins, 1000);   // 이미지 로딩·목록 갱신 등으로 레이아웃이 바뀌어도 따라가게
+
+function fbNoteHtml(it, labelHtml){
+  const st=FB_STATUS_LABEL[it.status]?it.status:'open';
+  const admin = FB_IS_ADMIN() ? `<div class="fb-admin">
+      <div class="fb-admin__row">
+        <span class="fb-admin__email">✉ ${esc(it.name)} &lt;<a href="mailto:${esc(it.email)}">${esc(it.email)}</a>&gt;</span>
+        <button class="fb-admin__del" type="button" onclick="deleteFb(${it.id})">삭제</button>
+      </div>
+      <textarea id="fbReply${it.id}" placeholder="답변(공개됨)">${esc(it.reply||'')}</textarea>
+      <div class="fb-admin__row">
+        <select id="fbStatus${it.id}">${Object.keys(FB_STATUS_LABEL).map(k=>`<option value="${k}"${k===st?' selected':''}>${FB_STATUS_LABEL[k]}</option>`).join('')}</select>
+        <button class="sr-btn-p" type="button" onclick="saveFbAdmin(${it.id})">저장</button>
+      </div>
+    </div>` : '';
+  return `<div class="fb-note${st==='done'?' fb-note--done':''}">
+    ${labelHtml||''}
+    <div class="fb-note__head">
+      <span class="fb-note__who">${esc(it.name)}</span>
+      <span>${fbDate(it.createdAt)}</span>
+      <span class="fb-status fb-status--${st}">${FB_STATUS_LABEL[st]}</span>
+    </div>
+    <div class="fb-note__body">${esc(it.content)}</div>
+    ${it.reply?`<div class="fb-note__reply"><span class="fb-note__reply-who">↳ 관리자 답변${it.repliedAt?' · '+fbDate(it.repliedAt):''}</span>${esc(it.reply)}</div>`:''}
+    ${admin}
+  </div>`;
+}
+
+/* ── 팝오버: 핀 하나의 메모 / 이 화면 전체 목록 ── */
+function fbPopEl(){ return document.getElementById('fbPop'); }
+function fbOpenGroup(i){
+  const g=FB_GROUPS[i]; if(!g) return;
+  FB_POP={ mode:'group', key:g.key };
+  const pop=fbPopEl();
+  pop.classList.remove('fb-pop--list');
+  pop.innerHTML=`<div class="fb-pop__head">
+      <div class="fb-pop__title">${esc(fbScopeLabel(g.scope))}<br><span>${esc(g.label)}</span></div>
+      <button class="fb-pop__x" type="button" onclick="fbClosePop()" aria-label="닫기">×</button>
+    </div>
+    ${g.items.map(it=>fbNoteHtml(it)).join('')}
+    <button class="sr-btn-s fb-pop__add" type="button" onclick="fbAddTo(${i})">＋ 여기에 의견 추가</button>`;
+  pop.hidden=false;
+  fbMark(g.el);
+  fbPositionPop();
+}
+function fbPositionPop(){
+  const pop=fbPopEl(); const g=FB_GROUPS.find(x=>x.key===(FB_POP&&FB_POP.key));
+  if(!g || !g.pin || g.pin.hidden){ return; }
+  const r=g.pin.getBoundingClientRect(), w=pop.offsetWidth, h=pop.offsetHeight;
+  let left=Math.min(window.innerWidth-w-12, Math.max(12, r.right-w));
+  let top=r.bottom+6;
+  if(top+h>window.innerHeight-12) top=Math.max(12, r.top-h-6);
+  pop.style.left=left+'px'; pop.style.top=top+'px'; pop.style.bottom='';
+}
+function fbOpenList(){
+  FB_POP={ mode:'list' };
+  const pop=fbPopEl();
+  pop.classList.add('fb-pop--list');
+  pop.style.left=''; pop.style.top=''; pop.style.bottom='';
+  const body = FB_GROUPS.length ? FB_GROUPS.map((g,i)=>{
+      const where = g.el ? `<span class="fb-note__field fb-note__field--go" onclick="fbGoto(${i})">📍 ${esc(g.label)}</span>`
+                         : `<span class="fb-note__field" title="화면이 바뀌어 위치를 찾을 수 없습니다">${esc(g.label)} (위치 없음)</span>`;
+      return g.items.map(it=>fbNoteHtml(it, `<div class="fb-note__where">${where}${g.scope===FB_COMMON?' <span class="fb-note__scope">공통 영역</span>':''}</div>`)).join('');
+    }).join('') : '<div class="fb-pop__empty">이 화면에 남겨진 수정 요청이 없습니다.<br>궁금하거나 잘못된 곳을 우클릭(모바일은 길게 누르기)해 보세요.</div>';
+  pop.innerHTML=`<div class="fb-pop__head">
+      <div class="fb-pop__title">이 화면의 수정 요청 (${FB_ITEMS.length})<br><span>${esc(fbScopeLabel(fbScope()))}</span></div>
+      <button class="fb-pop__x" type="button" onclick="fbClosePop()" aria-label="닫기">×</button>
+    </div>${body}`;
+  pop.hidden=false;
+  fbMark(null);
+}
+function fbGoto(i){
+  const g=FB_GROUPS[i]; if(!g || !fbVisible(g.el)) return;
+  g.el.scrollIntoView({ block:'center', behavior:'smooth' });
+  setTimeout(()=>{ fbPlacePins(); fbOpenGroup(i); },450);
+}
+function fbAddTo(i){
+  const g=FB_GROUPS[i]; if(!g) return;
+  openFbForm({ scope:g.scope, anchor:g.anchor, label:g.label, snippet:g.el?fbSnippet(g.el):'' });
+}
+function fbClosePop(){
+  const pop=fbPopEl(); if(pop) pop.hidden=true;
+  FB_POP=null;
+  fbMark(null);
+}
+document.addEventListener('click', e=>{
+  if(!FB_POP) return;
+  if(e.target.closest('.fb-pop, .fb-pin, .fb-dock, .fb-modal')) return;
+  fbClosePop();
+});
+
+/* 왼쪽 아래: 이 화면의 수정 요청 / 관리자 버튼 */
+function fbRenderDock(){
+  const v=document.getElementById('fbViewFab'), a=document.getElementById('fbAdminFab');
+  if(v){ v.hidden=!FB_ITEMS.length && !FB_IS_ADMIN(); v.textContent=`📝 이 화면의 수정 요청 ${FB_ITEMS.length}`; }
+  if(a) a.hidden=!FB_IS_ADMIN();
+}
+function fbToggleList(){ if(FB_POP && FB_POP.mode==='list') fbClosePop(); else fbOpenList(); }
+
+/* ── 입력창 ── */
+function openFbForm(target){
+  const modal=document.getElementById('fbModal');
+  if(!modal.hidden && FB_TARGET && FB_TARGET.anchor===target.anchor) return;   // 길게 누르기 + contextmenu가 겹쳐도 한 번만
+  FB_TARGET={ scope:target.scope, anchor:target.anchor, label:target.label, snippet:target.snippet };
+  document.getElementById('fbTarget').textContent=`${fbScopeLabel(target.scope)} · ${target.label}`;
+  const cur=document.getElementById('fbCurrent');
+  if(target.snippet){ cur.hidden=false; cur.innerHTML='<b>선택한 내용</b>'+esc(target.snippet); }
+  else cur.hidden=true;
+  let saved={};
+  try { saved=JSON.parse(localStorage.getItem('fbWho')||'{}'); } catch(e){}
+  document.getElementById('fbName').value=saved.name||'';
+  document.getElementById('fbEmail').value=saved.email||'';
+  document.getElementById('fbContent').value='';
+  document.getElementById('fbWebsite').value='';
+  document.getElementById('fbConsent').checked=false;
+  document.getElementById('fbErr').textContent='';
+  document.getElementById('fbSubmit').disabled=false;
+  modal.hidden=false;
+  setTimeout(()=>document.getElementById(saved.name?'fbContent':'fbName').focus(),30);
+}
+function closeFbForm(){
+  document.getElementById('fbModal').hidden=true;
+  FB_TARGET=null;
+  if(!FB_POP) fbMark(null);
+}
+function submitFb(){
+  const t=FB_TARGET; if(!t) return;
+  const err=document.getElementById('fbErr');
+  const name=document.getElementById('fbName').value.trim();
+  const email=document.getElementById('fbEmail').value.trim();
+  const content=document.getElementById('fbContent').value.trim();
+  const consent=document.getElementById('fbConsent').checked;
+  if(!name){ err.textContent='이름을 입력해 주세요.'; return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ err.textContent='이메일 형식이 올바르지 않습니다.'; return; }
+  if(!content){ err.textContent='수정 요청 내용을 입력해 주세요.'; return; }
+  if(!consent){ err.textContent='개인정보 수집·이용에 동의해 주세요.'; return; }
+  const btn=document.getElementById('fbSubmit');
+  btn.disabled=true; err.textContent='';
+  fetch(FEEDBACK_URL, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ ds:t.scope, dsName:fbScopeLabel(t.scope), field:t.anchor, fieldLabel:t.label,
+      name, email, content, consent:true, website:document.getElementById('fbWebsite').value })
+  })
+    .then(r=>r.json().catch(()=>({})).then(j=>{ if(!r.ok) throw new Error(j.error||('HTTP '+r.status)); return j; }))
+    .then(()=>{
+      try { localStorage.setItem('fbWho', JSON.stringify({name,email})); } catch(e){}
+      FB_FOCUS=t.scope+'|'+t.anchor;   // 방금 남긴 메모를 열어서 보여준다
+      closeFbForm();
+      loadFeedback();
+    })
+    .catch(e=>{ err.textContent='등록하지 못했습니다: '+e.message; btn.disabled=false; });
+}
+
+/* ── 관리자 ── */
+function fbAfterAdminChange(){
+  loadFeedback();
+  if(!document.getElementById('fbAdminModal').hidden) loadFbAdminList();
+}
+function saveFbAdmin(id){
+  const reply=document.getElementById('fbReply'+id).value;
+  const status=document.getElementById('fbStatus'+id).value;
+  fetch(FEEDBACK_URL+'/admin/update', { method:'POST', headers:fbAdminHeaders(), body:JSON.stringify({id,reply,status}) })
+    .then(fbCheck).then(fbAfterAdminChange)
+    .catch(e=>alert('저장하지 못했습니다: '+e.message));
+}
+function deleteFb(id){
+  if(!confirm('이 수정 요청을 삭제할까요? 되돌릴 수 없습니다.')) return;
+  fetch(FEEDBACK_URL+'/admin/delete', { method:'POST', headers:fbAdminHeaders(), body:JSON.stringify({id}) })
+    .then(fbCheck).then(fbAfterAdminChange)
+    .catch(e=>alert('삭제하지 못했습니다: '+e.message));
+}
+let FB_ADMIN_FILTER='open';
+let FB_ADMIN_ITEMS=[];
+function openFbAdminList(){ fbClosePop(); document.getElementById('fbAdminModal').hidden=false; loadFbAdminList(); }
+function closeFbAdminList(){ document.getElementById('fbAdminModal').hidden=true; }
+function setFbAdminFilter(f){ FB_ADMIN_FILTER=f; loadFbAdminList(); }
+function loadFbAdminList(){
+  const box=document.getElementById('fbAdminList');
+  document.querySelectorAll('#fbAdminFilters button').forEach(b=>b.classList.toggle('on', b.dataset.f===FB_ADMIN_FILTER));
+  box.innerHTML='<div style="color:var(--g50);font-size:13px">불러오는 중…</div>';
+  const q=FB_ADMIN_FILTER==='all'?'':'?status='+FB_ADMIN_FILTER;
+  fetch(FEEDBACK_URL+'/admin'+q, { headers: fbAdminHeaders() })
+    .then(fbCheck).then(r=>r.json())
+    .then(j=>{
+      FB_ADMIN_ITEMS=j.items||[];
+      box.innerHTML = FB_ADMIN_ITEMS.length ? FB_ADMIN_ITEMS.map(it=>fbNoteHtml(it,
+          `<div class="fb-note__where"><span class="fb-note__field fb-note__field--go" onclick="fbAdminGo(${it.id})">📍 ${esc(it.dsName||fbScopeLabel(it.ds))} · ${esc(it.fieldLabel||'')}</span></div>`)).join('')
+        : '<div style="color:var(--g50);font-size:13px">해당하는 수정 요청이 없습니다.</div>';
+    })
+    .catch(e=>{ box.innerHTML='<div style="color:#c62828;font-size:13px">불러오지 못했습니다: '+esc(e.message)+'</div>'; });
+}
+/* 관리자 목록에서 누르면 그 화면으로 가서 해당 핀을 열어준다 */
+function fbAdminGo(id){
+  const it=FB_ADMIN_ITEMS.find(x=>x.id===id); if(!it) return;
+  closeFbAdminList();
+  FB_FOCUS=it.ds+'|'+it.field;
+  if(it.ds===FB_COMMON) loadFeedback();
+  else if(it.ds.startsWith('page:')) goPage(it.ds.slice(5));
+  else openDetail(it.ds);
+}
+
+/* ?admin 으로 열면 관리자 키를 묻는다 (키는 이 탭에서만 기억) */
+(function initFeedback(){
+  try {
+    const u=new URL(location.href);
+    if(u.searchParams.has('admin')){
+      const k=prompt('수정요청 관리자 키를 입력하세요');
+      if(k){ FB_ADMIN_KEY=k.trim(); try { sessionStorage.setItem('fbAdminKey', FB_ADMIN_KEY); } catch(e){} }
+      u.searchParams.delete('admin');
+      history.replaceState(null,'',u.pathname+u.search+u.hash);
+    }
+  } catch(e){}
+  document.addEventListener('DOMContentLoaded',()=>{
+    fbRenderDock();
+    loadFeedback();
+    // 처음 온 사람에게 한 번만 사용법 안내
+    let seen=false;
+    try { seen=!!localStorage.getItem('fbHintSeen'); } catch(e){}
+    if(!seen) setTimeout(()=>{
+      const t=document.getElementById('fbToast'); if(!t) return;
+      t.hidden=false;
+      setTimeout(()=>fbHideToast(), 9000);
+    },1500);
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Escape') return;
+    if(!document.getElementById('fbModal').hidden) closeFbForm();
+    else if(!document.getElementById('fbAdminModal').hidden) closeFbAdminList();
+    else if(FB_POP) fbClosePop();
+  });
+})();
+function fbHideToast(){
+  const t=document.getElementById('fbToast'); if(t) t.hidden=true;
+  try { localStorage.setItem('fbHintSeen','1'); } catch(e){}
 }
 
 /* 관련 데이터셋: 같은 제공기관의 다른 데이터셋 최대 3개 */
@@ -2417,6 +3487,7 @@ function goPage(name) {
   document.querySelectorAll('.nav__tab[data-page], .menu-panel__item[data-page], .tool-dock__item[data-page]').forEach(l => l.classList.remove('on'));
   const navKey = (name === 'search' || name === 'dataset') ? 'main' : name;
   document.querySelectorAll('.nav__tab[data-page="' + navKey + '"], .menu-panel__item[data-page="' + navKey + '"], .tool-dock__item[data-page="' + navKey + '"]').forEach(l => l.classList.add('on'));
+  fbOnView(name);   // 수정요청 핀을 이 화면 기준으로 다시 불러온다
 }
 
 /* 전체 메뉴 슬라이드 패널 열기/닫기 */
@@ -2530,6 +3601,8 @@ document.addEventListener("DOMContentLoaded", function(){
       // 상세 본문이 data.json 안에 함께 들어온다. 캐시를 미리 채워 두면
       // 상세를 열 때 guides/*.md 를 따로 받지 않는다. (없으면 예전처럼 fetch)
       if(json && json.guides) Object.assign(GUIDE_CACHE, json.guides);
+      PAPERS = (json && json.papers) || {};
+      RESEARCHERS = (json && json.researchers) || {};
       CURRENT_RESULTS = DATASETS.slice();
       buildOrgPlatform();
       onDataReady();
@@ -2574,34 +3647,53 @@ const CHAT_MODEL = 'qwen/qwen3.8-27b:free';
 // provider가 다른 모델을 골라야 한쪽이 통째로 죽어도 살아남는다.
 const CHAT_MODEL_FALLBACK = 'nvidia/nemotron-3-super-120b-a12b:free';
 
-function buildChatSystemPrompt(context){
-  // "있는지 없는지" 판단은 이미 우리 코드(pickRelevantDatasets)가 끝냈다.
-  // 이 함수는 picks.length>0 일 때만 호출되므로, 모델에게 존재 여부를 다시
-  // 판단하게 하지 않고 "이미 확인된 목록"이라고 못 박아 설명만 시킨다.
-  // NVIDIA Nemotron 계열은 "detailed thinking off"를 시스템 프롬프트에 넣어야
-  // 사고 과정(thinking process)을 안 뱉고 바로 최종 답만 낸다(모델 자체 관례).
-  return 'detailed thinking off\n\n' +
+function buildChatSystemPrompt(context, mode){
+  // "있는지 없는지" 판단은 이미 우리 코드(aiResolve / pickRelevantDatasets)가 끝냈다.
+  // 모델에게 존재 여부를 다시 판단하게 하지 않고 "이미 확인된 목록"이라고 못 박아 설명만 시킨다.
+  // mode: dataset(데이터 소개) / paper(이 데이터로 나온 논문·연구자) / researcher(연구자 소개)
+  // NVIDIA Nemotron 계열은 "detailed thinking off"를 시스템 프롬프트에 넣어야 사고 과정을 안 뱉는다.
+  mode = mode || 'dataset';
+  const head =
     '당신은 "보건의료데이터 중개 포털"의 검색 도우미입니다. ' +
-    '사용자의 질문이 영어 등 다른 언어로 오더라도 반드시 한국어로만 답변하세요. 영어 단어나 문장을 섞지 마세요. ' +
-    '내부적으로 추론 과정을 서술하지 말고 최종 답변만 바로 출력하세요. ' +
-    '아래 [등록 데이터셋 목록]은 시스템이 이미 사용자 질문과 관련 있다고 확인해서 찾아준 실제 데이터셋입니다. ' +
-    '이 목록에 있는 항목은 확실히 존재하므로 "없다"거나 "찾지 못했다"고 답하지 마세요. ' +
-    '이 목록을 근거로 어떤 데이터셋들이 있는지 한국어로 설명하세요. ' +
-    '사람이 읽기 편하도록 데이터셋마다 아래 형식을 그대로 지켜서 줄바꿈해 작성하세요(굵게 표시나 마크다운 기호 **, # 은 절대 쓰지 마세요 — 화면에 별표가 그대로 글자로 보입니다):\n' +
-    '- 데이터셋명 (제공기관, 수집기간)\n' +
-    '  한두 문장으로 이 데이터가 무엇인지 설명. 여러 기관 자료를 연계했다면(예: 국민건강보험공단·건강보험심사평가원·통계청 자료를 연계) 그 수집 기관들도 여기에 포함.\n' +
-    '  활용 방안: 이 데이터셋으로 할 수 있는 연구·정책 활용을 3~4개, 쉼표로 구분한 짧은 명사구로 작성\n' +
-    '활용 방안은 목록의 설명·키워드·주요 항목에 근거해 그 데이터셋 성격에 맞게 구체적으로 도출하세요. ' +
-    '예를 들어 국민건강영양조사 기본 DB라면 "활용 방안: 건강 정책 수립 및 평가, 영양 상태 분석 및 개선 방안 도출, 질병 예방 및 관리 연구, 건강행태 추이 모니터링"처럼 씁니다. ' +
-    '모든 데이터셋에 똑같은 활용 방안을 반복하지 말고, 그 데이터로만 가능한 활용을 우선하세요. ' +
-    '데이터 유형(결합/단독 등)은 답변에 쓰지 마세요. ' +
-    '제목줄은 목록의 "/ 기간:" 같은 표기를 베끼지 말고 반드시 "- 데이터셋명 (제공기관, 수집기간)" 모양으로 쓰고, 수집기간이 "-"이면 괄호 안에 제공기관만 쓰세요. ' +
-    '활용 방안에도 영어 단어를 섞지 말고 한국어로만 쓰세요(예: mapping → 지도화). ' +
-    '데이터셋과 데이터셋 사이는 줄을 바꿔 구분하고, 위 세 줄(제목줄/설명줄/활용 방안줄) 형식을 반드시 지키세요. ' +
-    '데이터셋ID나 코드(예: CD003, DS-026 같은 영문+숫자 코드)는 목록에 없으니 답변에 절대 만들어 넣지 마세요. ' +
-    '목록에 없는 세부 내용은 지어내지 마세요.\n\n' +
-    '[등록 데이터셋 목록]\n' + context.slice(0,6000) +
-    '\n\n다시 한번 강조합니다: 답변은 오직 한국어로만 작성하세요.';
+    '반드시 한국어로 답하세요. 단, 사람 이름·논문 제목·학술지명은 목록에 적힌 영문 그대로 옮기세요(번역하거나 바꾸지 마세요). ' +
+    '내부 추론 과정을 쓰지 말고 최종 답변만 출력하세요. ' +
+    '아래 목록은 시스템이 사용자 질문과 관련 있다고 이미 확인한 실제 데이터·논문·연구자입니다. 목록에 있는 것은 확실히 존재하므로 "없다"고 하지 마세요. ' +
+    '굵게 표시나 마크다운 기호(**, #)는 절대 쓰지 마세요 — 화면에 별표가 그대로 보입니다. ' +
+    '데이터셋ID나 코드(예: CD003, DS-026 같은 영문+숫자 코드)는 답변에 절대 쓰지 마세요. ' +
+    '목록에 없는 데이터·논문·저자·기관·수치는 절대 지어내지 마세요.\n';
+  let fmt;
+  if(mode==='researcher'){
+    fmt =
+      '사용자는 이 주제를 연구한 연구자를 알고 싶어 합니다. [연구자 목록]의 연구자를 논문 수가 많은 순으로 최대 5명 소개하세요. ' +
+      '첫 줄에 "관련 데이터로 연구한 연구자입니다." 라고 쓰고, 연구자마다 아래 형식을 지키세요:\n' +
+      '- 이름 (기관) — 논문 N편\n' +
+      '  사용 데이터: 데이터셋명\n' +
+      '  대표 논문: "논문 제목" (연도)\n' +
+      '[연구자 목록]이 없으면 "이 주제의 데이터로 검수된 논문이 아직 없어 연구자 정보를 드릴 수 없습니다."라고만 답하세요.\n';
+  }else if(mode==='paper'){
+    fmt =
+      '사용자는 이 데이터로 나온 논문을 알고 싶어 합니다. 논문 카드는 화면에 따로 나오므로, 당신은 2~3문장짜리 짧은 요약 한 문단만 쓰세요. ' +
+      '담을 내용: 어떤 데이터로 검수된 논문이 몇 편 있는지, 목록의 논문 제목들로 보아 주로 어떤 주제를 다루는지, 논문을 많이 쓴 연구자 1~2명(기관). ' +
+      '글머리표(-), 번호, 줄바꿈, 제목줄 없이 한 문단으로만 쓰세요. 논문 제목을 하나하나 나열하지 마세요. ' +
+      '"검수된 관련 논문: 없음"인 데이터는 언급하지 않아도 됩니다.\n';
+  }else{
+    fmt =
+      '목록을 근거로 어떤 데이터셋들이 있는지 설명하세요. 데이터셋마다 아래 형식을 그대로 지켜 줄바꿈하세요:\n' +
+      '- 데이터셋명 (제공기관, 수집기간)\n' +
+      '  한두 문장으로 이 데이터가 무엇인지 설명. 여러 기관 자료를 연계했다면(예: 국민건강보험공단·건강보험심사평가원·통계청 자료를 연계) 그 수집 기관들도 여기에 포함.\n' +
+      '  활용 방안: 이 데이터셋으로 할 수 있는 연구·정책 활용을 3~4개, 쉼표로 구분한 짧은 명사구로 작성\n' +
+      '목록에 "검수된 관련 논문"이 있는 데이터셋은 활용 방안줄 다음에 두 줄을 덧붙이세요:\n' +
+      '  관련 연구: 이 데이터로 검수된 논문 N편 — 예: "논문 제목" (연도, 제1저자·기관)\n' +
+      '  주요 연구자: 이름(기관), 이름(기관)\n' +
+      '활용 방안은 목록의 설명·키워드·주요 항목에 근거해 그 데이터셋 성격에 맞게 구체적으로 도출하세요. ' +
+      '예를 들어 국민건강영양조사 기본 DB라면 "활용 방안: 건강 정책 수립 및 평가, 영양 상태 분석 및 개선 방안 도출, 질병 예방 및 관리 연구, 건강행태 추이 모니터링"처럼 씁니다. ' +
+      '모든 데이터셋에 똑같은 활용 방안을 반복하지 말고, 그 데이터로만 가능한 활용을 우선하세요. 활용 방안은 한국어로만 쓰세요(예: mapping → 지도화). ' +
+      '데이터 유형(결합/단독 등)은 쓰지 마세요. 제목줄은 목록의 "/ 기간:" 같은 표기를 베끼지 말고 반드시 "- 데이터셋명 (제공기관, 수집기간)" 모양으로 쓰고, 수집기간이 "-"이면 괄호 안에 제공기관만 쓰세요. ' +
+      '데이터셋과 데이터셋 사이는 줄을 바꿔 구분하세요.\n';
+  }
+  return 'detailed thinking off\n\n' + head + fmt +
+    '\n[등록 데이터셋 목록]\n' + context.slice(0,7000) +
+    '\n\n다시 한번 강조합니다: 답변은 한국어로 쓰고, 목록에 없는 것은 만들지 마세요.';
 }
 
 function toggleChat(force){
@@ -2732,14 +3824,37 @@ function stripDatasetIds(text){
 /* AI에게 넘기는 텍스트에는 데이터셋ID(CD003, DS-026 등)를 넣지 않는다.
    ID는 카드 클릭(openDetail)에만 필요하고, AI 답변에 코드가 그대로 노출되는
    걸 막기 위해 이름/기관 등 사람이 읽는 정보만 준다. */
-function contextFromPicks(picks){
+function contextFromPicks(picks, mode, people){
   if(!picks.length) return '';
-  return picks.map(function(d){
-    const desc = (d.desc||'').slice(0,250);
+  mode = mode || 'dataset';
+  const paperLine = function(p){
+    const a=(p.au||[])[0];
+    return '"'+p.title+'" ('+p.year+(a?', 제1저자 '+a[0]+(a[1]?'·'+a[1]:''):'')+')';
+  };
+  let out = picks.map(function(d){
+    const desc = (d.desc||'').slice(0, mode==='dataset'?250:120);
     // 유형(결합/단독)은 답변에 필요 없어 뺐다. 활용 방안을 도출할 근거로 주요 항목을 함께 준다.
-    const items = (d.itemInfo||'').slice(0,120);
-    return '- '+d.name+' ('+d.org+') / 기간: '+(d.period||'-')+' / 키워드: '+(d.keywords||'-')+' / 설명: '+desc+(items?' / 주요 항목: '+items:'');
+    const items = mode==='dataset' ? (d.itemInfo||'').slice(0,120) : '';
+    // 검수된 논문이 있으면 대표 논문(제1저자·기관)과 주요 연구자를 근거로 준다. 링크는 화면에서 코드가 붙인다.
+    const P = PAPERS[d.id];
+    let papers = '';
+    if(P && P.items.length){
+      const rs = researchersFor([d.id]).slice(0, mode==='dataset'?3:5)
+        .map(function(r){ return r.name+'('+(r.insts[0]||'소속 미상')+', '+r.pmids.length+'편)'; }).join(', ');
+      papers = ' / 검수된 관련 논문 '+P.total+'편: '+P.items.slice(0, mode==='paper'?12:3).map(paperLine).join('; ')+' / 주요 연구자: '+rs;
+    }else if(mode!=='dataset'){
+      papers = ' / 검수된 관련 논문: 없음';
+    }
+    return '- '+d.name+' ('+d.org+') / 기간: '+(d.period||'-')+' / 키워드: '+(d.keywords||'-')+' / 설명: '+desc+(items?' / 주요 항목: '+items:'')+papers;
   }).join('\n');
+  if(mode==='researcher' && people && people.length){
+    out += '\n\n[연구자 목록]\n' + people.slice(0,8).map(function(r){
+      const p = papersOf(r)[0];
+      const ds = r.datasets.map(dsById).filter(Boolean).map(function(d){ return d.name; }).join(', ');
+      return '- '+r.name+' ('+(r.insts.join(', ')||'소속 미상')+') / 논문 '+r.pmids.length+'편 / 사용 데이터: '+ds+(p?' / 대표 논문: "'+p.title+'" ('+p.year+')':'');
+    }).join('\n');
+  }
+  return out;
 }
 
 /* 찾은 데이터셋을 클릭 가능한 카드로 보여준다. 클릭하면 기존 상세페이지(openDetail)로
@@ -2942,7 +4057,7 @@ function sendChat(){
   appendChatMsg(q, 'chat-msg--user');
 
   // 사이트 자체 검색은 AI 응답과 무관하게 먼저 보여준다(느리거나 실패해도 결과는 바로 나옴).
-  const picks = pickRelevantDatasets(q);
+  const R = aiResolve(q), picks = R.picks;
   appendChatDatasetCards(picks);
 
   // "있다/없다" 판단은 이미 여기서 끝났다. 없으면 AI를 부를 필요도 없이 바로 답한다
@@ -2951,16 +4066,26 @@ function sendChat(){
     appendChatMsg('등록된 데이터에서 관련 데이터셋을 찾지 못했습니다. 다른 검색어로 다시 시도해보세요.', 'chat-msg--bot');
     return;
   }
+  if(R.intent==='paper'){                      // 논문 질문은 논문DB로 바로 답한다
+    const m = appendChatMsg('', 'chat-msg--bot');
+    m.classList.add('aa-on');
+    const sm = paperSummaryText(picks);
+    m.innerHTML = (sm?`<p class="aa-lead">${linkifyAnswer(sm, picks)}</p>`:'') + paperAnswerCardsHtml(picks, 3);
+    return;
+  }
 
   const loading = appendChatMsg('생각 중...', 'chat-msg--bot');
+  let chatText = '';
   chatBusy = true;
   document.getElementById('chatSend').disabled = true;
 
   streamOpenRouterAnswer({
-    systemPrompt: buildChatSystemPrompt(contextFromPicks(picks)),
+    systemPrompt: buildChatSystemPrompt(contextFromPicks(picks, R.intent, R.people), R.intent),
     userQuery: q,
     onDelta: function(fullText){
-      loading.textContent = stripDatasetIds(fullText);
+      chatText = fullText;
+      loading.classList.add('aa-on');
+      loading.innerHTML = R.intent==='paper' ? summaryHtml(fullText, picks, true) + paperAnswerCardsHtml(picks, 3) : renderAnswerHtml(fullText, picks, true);
       const body = document.getElementById('chatBody');
       body.scrollTop = body.scrollHeight;
     },
@@ -2972,9 +4097,59 @@ function sendChat(){
     onDone: function(){
       chatBusy = false;
       document.getElementById('chatSend').disabled = false;
+      if(chatText && loading.className.indexOf('chat-msg--err')<0)
+        loading.innerHTML = R.intent==='paper' ? summaryHtml(chatText, picks, false) + paperAnswerCardsHtml(picks, 3) : renderAnswerHtml(chatText, picks, false);
     }
   });
 }
 </script>
+
+<!-- ══════════ 연구자 카드 (openResearcher) ══════════ -->
+<div class="fb-modal" id="rsModal" hidden onclick="if(event.target===this)closeResearcher()">
+  <div class="fb-modal__box fb-modal__box--wide" role="dialog" aria-modal="true" aria-label="연구자 정보">
+    <button class="fb-modal__x" type="button" onclick="closeResearcher()" aria-label="닫기">×</button>
+    <div id="rsModalBody"></div>
+  </div>
+</div>
+
+<!-- ══════════ 수정요청 메모 입력창 / 관리자 목록 ══════════ -->
+<div class="fb-modal" id="fbModal" hidden onclick="if(event.target===this)closeFbForm()">
+  <div class="fb-modal__box" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+    <button class="fb-modal__x" type="button" onclick="closeFbForm()" aria-label="닫기">×</button>
+    <div class="fb-modal__title" id="fbTitle">수정 요청 남기기</div>
+    <div class="fb-modal__target" id="fbTarget"></div>
+    <div class="fb-modal__current" id="fbCurrent"></div>
+    <label class="fb-field">이름<input id="fbName" maxlength="40" autocomplete="name"></label>
+    <label class="fb-field">이메일<input id="fbEmail" type="email" maxlength="120" autocomplete="email" placeholder="본인 확인용 이메일"></label>
+    <label class="fb-field">수정 요청 내용<textarea id="fbContent" maxlength="2000" placeholder="예) 이 수치가 2024년 기준으로 바뀌었습니다. / 이 버튼을 눌러도 반응이 없어요."></textarea></label>
+    <input id="fbWebsite" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <label class="fb-consent"><input type="checkbox" id="fbConsent"> <span>개인정보 수집·이용에 동의합니다. (필수)</span></label>
+    <div class="fb-consent__detail">수집 항목: 이름, 이메일 · 목적: 요청자 본인 확인 · 보유 기간: 처리 완료 후 1년<br>이메일은 공개되지 않으며, 이름은 일부를 가려(예: 김**) 메모와 함께 표시됩니다.</div>
+    <div class="fb-modal__err" id="fbErr" role="alert"></div>
+    <div class="fb-modal__actions">
+      <button class="sr-btn-s" type="button" onclick="closeFbForm()">취소</button>
+      <button class="sr-btn-p" type="button" id="fbSubmit" onclick="submitFb()">등록</button>
+    </div>
+  </div>
+</div>
+<div class="fb-modal" id="fbAdminModal" hidden onclick="if(event.target===this)closeFbAdminList()">
+  <div class="fb-modal__box fb-modal__box--wide" role="dialog" aria-modal="true" aria-labelledby="fbAdminTitle">
+    <button class="fb-modal__x" type="button" onclick="closeFbAdminList()" aria-label="닫기">×</button>
+    <div class="fb-modal__title" id="fbAdminTitle">수정 요청 관리</div>
+    <div class="fb-admin-list__filters" id="fbAdminFilters">
+      <button type="button" data-f="open" onclick="setFbAdminFilter('open')">접수</button>
+      <button type="button" data-f="review" onclick="setFbAdminFilter('review')">검토중</button>
+      <button type="button" data-f="done" onclick="setFbAdminFilter('done')">반영완료</button>
+      <button type="button" data-f="all" onclick="setFbAdminFilter('all')">전체</button>
+    </div>
+    <div id="fbAdminList"></div>
+  </div>
+</div>
+<div class="fb-pop" id="fbPop" hidden></div>
+<div class="fb-dock">
+  <button class="fb-view-fab" id="fbViewFab" type="button" hidden onclick="fbToggleList()">📝 이 화면의 수정 요청 0</button>
+  <button class="fb-admin-fab" id="fbAdminFab" type="button" hidden onclick="openFbAdminList()">🔑 수정 요청 관리</button>
+</div>
+<div class="fb-toast" id="fbToast" hidden role="status">💡 잘못된 정보나 불편한 곳이 있으면 그곳을 우클릭(모바일은 길게 누르기)해 수정 요청을 남겨 주세요.<button type="button" onclick="fbHideToast()">닫기</button></div>
 </body>
 </html>

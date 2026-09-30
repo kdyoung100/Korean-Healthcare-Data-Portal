@@ -14,7 +14,7 @@
 상세 본문이 data.json 안에 들어가고, index.html 이 그걸로 GUIDE_CACHE 를
 미리 채우므로 상세를 열 때 따로 받아오지 않는다.
 """
-import json, re, sys
+import json, os, re, sys
 from datetime import datetime
 from pathlib import Path
 
@@ -357,6 +357,26 @@ def fill_period(rec):
     return True
 
 
+# ── PubMed 논문 연결 ───────────────────────────────────────────────
+# 논문은 논문DB.xlsx 에서 읽는다(paper_db.py fetch 로 모으고, 검수 후 커밋).
+# 빌드는 PubMed 를 부르지 않는다 — 검수 안 된 논문이 CI 에서 몰래 늘어나지 않게.
+PUBMED_MAX = 200                    # 데이터셋당 data.json 에 넣을 논문 수 (연구자 검색에 전부 필요)
+SHOW_STATUS = {"확인"}             # 사이트에 보일 검수상태. 검수 전 논문까지 보이려면 {"확인", "미검수"}
+
+
+def build_papers(dataset_ids):
+    """→ (papers, researchers). 논문DB.xlsx 가 없으면 둘 다 빈 값"""
+    if not (BASE / "논문DB.xlsx").exists():
+        return {}, {}
+    from paper_db import load_for_build
+    papers, researchers = load_for_build(dataset_ids, SHOW_STATUS, PUBMED_MAX)
+    if papers:
+        print(f"[논문] 논문DB 연결 {len(papers)}개 데이터셋: "
+              + ", ".join(f"{k} {v['total']}편(검수 {v['verified']})" for k, v in papers.items())
+              + f" / 연구자 {len(researchers)}명")
+    return papers, researchers
+
+
 def main():
     bodies, titles = build_guides()
 
@@ -410,12 +430,15 @@ def main():
     if period_filled:
         print(f"[안내] 데이터 수집기간이 비어 있어 시작·종료연도로 채운 데이터셋 {len(period_filled)}개")
 
+    papers, researchers = build_papers(seen_ids)
     payload = {
         "generatedAt": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "source": src.name,
         "count": len(datasets),
         "datasets": datasets,
         "guides": bodies,               # {자료집ID: markdown 본문}
+        "papers": papers,               # {데이터셋ID: PubMed 논문} (논문DB.xlsx)
+        "researchers": researchers,     # {연구자키: 이름·기관·논문PMID·데이터셋} (논문DB.xlsx 저자 시트)
     }
     with open(OUT, "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, separators=(",", ":"))

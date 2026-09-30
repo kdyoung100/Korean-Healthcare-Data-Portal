@@ -1,12 +1,10 @@
-[README.md](https://github.com/user-attachments/files/32735317/README.md)
 # 보건의료데이터 중개 포털 (프로토타입)
-
-https://kdyoung100.github.io/Korean-Healthcare-Data-Portal/
 
 흩어져 있는 보건의료 데이터셋(공공데이터·임상데이터)을 한 곳에서 검색하고,
 데이터셋별 범위·분석환경·신청 방법을 확인한 뒤 실제 신청 창구
 (K-CURE, 보건의료 빅데이터 통합 플랫폼, 의료데이터 중심병원 등)로 연결해 주는 정적 웹사이트입니다.
 
+- 사이트: https://kdyoung100.github.io/Korean-Healthcare-Data-Portal/
 - 서버 없이 **GitHub Pages**로 서비스합니다.
 - 데이터는 **엑셀 2개**로 관리하고, 푸시하면 GitHub Actions가 자동으로 `data.json`을 만들어 배포합니다.
 

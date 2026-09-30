@@ -11,12 +11,15 @@ on:
       - "자료입력양식*.xlsx"                # 원본 ① 상세 내용
       - "중개포털_데이터_리스트*.xlsx"      # 원본 ② 검색 목록
       - "자료집ID.json"                    # 발급한 번호 기록
+      - "논문DB.xlsx"                      # 데이터셋별 PubMed 논문 (수집·검수 결과)
+      - "paper_db.py"
       - "build.py"
       - "index.html"
       - "chatbot-icon.png"
       - ".github/workflows/deploy.yml"
   # Actions 탭 → 이 워크플로 → [Run workflow] 버튼 하나로도 다시 돌아간다.
   workflow_dispatch:
+  # PubMed 논문은 CI 에서 모으지 않는다. 로컬에서 paper_db.py fetch → 검수 → 논문DB.xlsx 커밋.
 
 permissions:
   contents: write      # 자료집ID.json 자동 커밋에 필요 (원래는 read 였다)
