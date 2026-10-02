@@ -46,7 +46,8 @@ WIDTH = {"PMID": 11, "데이터셋ID": 14, "검수상태": 9, "검수근거": 40
          "제목": 60, "저자": 30, "저자수": 7, "저널": 22, "발행연도": 8, "발행일": 12, "DOI": 24,
          "초록": 60, "수집일": 11, "메모": 24}
 Q_COLS = ["데이터셋ID", "검색식", "PubMed 전체건수", "조회일"]
-A_COLS = ["PMID", "순서", "이름", "약칭", "소속", "기관"]
+A_COLS = ["PMID", "순서", "이름", "약칭", "ORCID", "소속", "기관"]
+FIX_COLS = ["PMID", "이름", "연구자ID", "메모"]      # '연구자보정' 시트 — 사람이 적는다. fetch 가 보존한다
 FILL = {"확인": "E3F4E5", "제외": "F4E3E3", "보류": "FFF4D6"}
 
 
@@ -111,6 +112,7 @@ INST_KO = {
     "Pusan National University Yangsan Hospital": "양산부산대학교병원", "Ulsan University Hospital": "울산대학교병원",
     "Yongin Severance Hospital": "용인세브란스병원", "Konyang University": "건양대학교", "Dankook University": "단국대학교",
     "National Evidence-based Collaborating Agency": "한국보건의료연구원",
+    "National Evidence-Based Healthcare Collaborating Agency": "한국보건의료연구원",
     "Korea University College of Health Science": "고려대학교",
 }
 # 한글 소속("질병관리청 감염병정책국 결핵정책과")은 첫 기관 단위까지만
@@ -138,6 +140,12 @@ def institution(aff):
     return INST_KO.get(pick, pick)
 
 
+def _orcid(s):
+    """'https://orcid.org/0000-0002-1825-0097' · '0000000218250097' → '0000-0002-1825-0097'"""
+    d = re.sub(r"[^0-9Xx]", "", (s or "").split("orcid.org/")[-1]).upper()
+    return "-".join(d[i:i + 4] for i in range(0, 16, 4)) if len(d) == 16 else ""
+
+
 def _details(pmids):
     """PMID → 서지정보 + 초록. efetch XML 한 번으로 다 나온다."""
     out = {}
@@ -155,8 +163,9 @@ def _details(pmids):
                     continue
                 authors.append(name)
                 aff = " / ".join(txt(x) for x in au.findall("AffiliationInfo/Affiliation"))
+                orcid = next((_orcid(txt(x)) for x in au.findall("Identifier") if x.get("Source") == "ORCID"), "")
                 detail.append({"순서": len(authors), "이름": f"{fore} {last}".strip() if last and fore else name,
-                               "약칭": name, "소속": aff, "기관": institution(aff)})
+                               "약칭": name, "ORCID": orcid, "소속": aff, "기관": institution(aff)})
             parts = []
             for ab in a.findall(".//Abstract/AbstractText"):
                 label = ab.get("Label")
@@ -223,11 +232,29 @@ def load_db():
     return rows, queries
 
 
+def load_fixes():
+    """'연구자보정' 시트 → [{PMID, 이름, 연구자ID, 메모}] (사람이 적은 동명이인 보정)"""
+    if not DB.exists():
+        return []
+    wb = openpyxl.load_workbook(DB, data_only=True)
+    if "연구자보정" not in wb.sheetnames:
+        return []
+    it = wb["연구자보정"].iter_rows(values_only=True)
+    head = [_norm(h) for h in next(it, [])]
+    out = []
+    for r in it:
+        rec = {h: _norm(v) for h, v in zip(head, r) if h}
+        if rec.get("이름") and rec.get("연구자ID"):
+            out.append(rec)
+    return out
+
+
 def _sort_key(r):
     return (r.get("발행일") or r.get("발행연도") or "", r["PMID"])
 
 
 def save_db(rows, queries):
+    fixes = load_fixes()                  # 통째로 다시 쓰므로, 사람이 적은 보정 시트는 먼저 읽어 둔다
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "논문"
@@ -260,11 +287,20 @@ def save_db(rows, queries):
     for r in sorted(rows.values(), key=_sort_key, reverse=True):
         for a in r.get("_authors", []):
             au.append([r["PMID"]] + [a.get(c, "") for c in A_COLS[1:]])
-    for i, w in enumerate([11, 6, 24, 14, 70, 30], 1):
+    for i, w in enumerate([11, 6, 24, 14, 21, 70, 30], 1):
         au.cell(1, i).font, au.cell(1, i).fill = bold, PatternFill("solid", fgColor="1F3A5F")
         au.column_dimensions[au.cell(1, i).column_letter].width = w
     au.freeze_panes = "A2"
     au.auto_filter.ref = au.dimensions
+
+    fx = wb.create_sheet("연구자보정")    # 동명이인 보정 — 사람이 적는다 (fetch 가 그대로 둔다)
+    fx.append(FIX_COLS)
+    for f in fixes:
+        fx.append([f.get(c, "") for c in FIX_COLS])
+    for i, w in enumerate([11, 24, 24, 50], 1):
+        fx.cell(1, i).font, fx.cell(1, i).fill = bold, PatternFill("solid", fgColor="1F3A5F")
+        fx.column_dimensions[fx.cell(1, i).column_letter].width = w
+    fx.freeze_panes = "A2"
 
     qs = wb.create_sheet("검색식")
     qs.append(Q_COLS)
@@ -284,7 +320,15 @@ def save_db(rows, queries):
         "제목·저자·초록 등 나머지 칸은 다음 수집 때 PubMed 값으로 다시 채워진다(고쳐도 소용없음).",
         "행을 지우지 말 것 — 지우면 다음 수집 때 '미검수'로 다시 들어온다. 빼려면 '제외'로 바꾼다.",
         "검색식은 pubmed_queries.json 에서 고친다. '검색식' 시트는 마지막 수집 기록일 뿐이다.",
-        "'저자' 시트: 논문별 저자 이름·소속(PubMed 그대로)과 뽑아낸 기관명. 사이트의 연구자 검색에 쓰인다. 수집 때마다 다시 만들어진다.",
+        "'저자' 시트: 논문별 저자 이름·ORCID·소속(PubMed 그대로)과 뽑아낸 기관명. 사이트의 연구자 검색에 쓰인다. 수집 때마다 다시 만들어진다.",
+        "",
+        "연구자 묶기(동명이인): 기본은 영문 이름이 같으면 한 사람. 같은 이름에 ORCID 가 여럿이면 기관이 겹치는 ORCID 끼리 한 사람으로 묶고",
+        "  (ORCID 중복 등록이 흔하다), 기관이 안 겹치는 무리가 2개 이상일 때만 나눈다. ORCID 없는 논문은 기관이 같은 쪽에 붙이고,",
+        "  못 정하면 이름 그대로 둔다. 애매한 사례는 build.py 실행 때 '[연구자 확인]'으로 출력된다.",
+        "'연구자보정' 시트로 직접 고친다: 한 행 = PMID + 이름(저자 시트의 '이름' 그대로) + 연구자ID(아무 영문/한글 이름표).",
+        "  연구자ID 가 같은 행끼리 한 사람이 된다. PMID 를 비우면 그 이름의 모든 논문에 적용된다.",
+        "  예) 다른 사람 분리: 12345678 / Jieun Kim / jieunkim-snu   · 표기 다른 같은 사람 합치기: (빈칸) / Kim J / jieunkim",
+        "  이 시트는 다시 수집해도 지워지지 않는다.",
     ]:
         g.append([line])
     g.column_dimensions["A"].width = 120
@@ -413,6 +457,90 @@ def _rkey(name):
     return re.sub(r"[^a-z가-힣]", "", name.lower())
 
 
+def _assign_keys(shown, fixes):
+    """저자 한 명(PMID, 순서) → 연구자키. 동명이인 처리:
+    1) '연구자보정' 시트가 최우선 (PMID+이름, 또는 이름만) — 연구자ID 가 같으면 한 사람
+    2) 같은 이름에 ORCID 가 여럿이면 기관이 겹치는 ORCID 끼리 한 사람으로 묶고(ORCID 중복 등록이 흔하다),
+       기관이 안 겹치는 무리가 2개 이상일 때만 나눈다 (키 = 이름키-ORCID끝4자리).
+       ORCID 없는 논문은 그 기관이 한 무리에만 있으면 거기 붙이고, 아니면 이름키 그대로
+    3) 나머지는 이름키 (영문 소문자·한글만)
+    → (keys, notes)  notes = 사람이 확인할 만한 동명 사례 (build 때 출력)"""
+    slug = lambda s: re.sub(r"[^a-z0-9가-힣-]", "", s.lower())
+    by_pn = {(f["PMID"], _rkey(f["이름"])): slug(f["연구자ID"]) for f in fixes if f.get("PMID")}
+    by_n = {_rkey(f["이름"]): slug(f["연구자ID"]) for f in fixes if not f.get("PMID")}
+    groups = {}
+    for r, _ in shown:
+        for a in r.get("_authors", []):
+            nk = _rkey(a.get("이름", ""))
+            if nk:
+                groups.setdefault(nk, []).append((r["PMID"], a))
+    keys, notes = {}, []
+    # ORCID 점검: 같은 ORCID가 서로 다른 이름에 붙어 있으면 PubMed 쪽 오류로 보고, 가장 많이 붙은 이름만 믿는다
+    # (예: 한 논문에서 6번 저자 Hee Jin Kim의 ORCID가 7번 저자 Hee-Sun Kim에게도 붙어 있었음)
+    owner = {}
+    for nk, lst in groups.items():
+        for _, a in lst:
+            if a.get("ORCID"):
+                owner.setdefault(a["ORCID"], {}).setdefault(nk, 0)
+                owner[a["ORCID"]][nk] += 1
+    bad = set()                                         # ORCID를 무시할 (PMID, 순서)
+    for o, cnt in owner.items():
+        if len(cnt) > 1:
+            best = max(cnt, key=cnt.get)
+            others = [g for g in cnt if g != best]
+            for g in others:
+                for pmid, a in groups[g]:
+                    if a.get("ORCID") == o:
+                        bad.add((pmid, str(a.get("순서", ""))))
+            notes.append(f"ORCID {o}가 다른 이름에도 붙어 있음 → {groups[best][0][1]['이름']} 것으로 보고 "
+                         + ", ".join(groups[g][0][1]["이름"] for g in others) + " 쪽은 무시 (PubMed 오류로 보임)")
+    orc = lambda pmid, a: "" if (pmid, str(a.get("순서", ""))) in bad else a.get("ORCID", "")
+    for nk, lst in groups.items():
+        insts = {}                                      # ORCID → 그 사람이 쓴 기관들
+        for pmid, a in lst:
+            if orc(pmid, a):
+                insts.setdefault(orc(pmid, a), set()).update({a["기관"]} if a.get("기관") else set())
+        clusters = []                                   # [(ORCID 들, 기관들)] — 기관이 겹치면 합친다
+        for o, s in insts.items():
+            hit = [c for c in clusters if c[1] & s]
+            for c in hit:
+                clusters.remove(c)
+            clusters.append(({o}.union(*[c[0] for c in hit]), set(s).union(*[c[1] for c in hit])))
+        manual = any((pmid, nk) in by_pn for pmid, _ in lst) or nk in by_n
+        if len(insts) >= 2 and not manual:
+            notes.append(f"{lst[0][1]['이름']}: ORCID {len(insts)}개 → "
+                         + ("기관이 겹쳐 한 사람으로 둠" if len(clusters) == 1 else f"{len(clusters)}명으로 나눔"))
+        for pmid, a in lst:
+            k = by_pn.get((pmid, nk)) or by_n.get(nk)
+            if not k and len(clusters) >= 2:
+                c = next((c for c in clusters if orc(pmid, a) in c[0]), None)
+                if c is None and a.get("기관"):
+                    same = [c for c in clusters if a["기관"] in c[1]]
+                    c = same[0] if len(same) == 1 else None
+                k = f"{nk}-{sorted(c[0])[0][-4:].lower()}" if c else ""
+            keys[(pmid, str(a.get("순서", "")))] = k or nk
+    # 이니셜만 있는 이름(H J Kim)이 같은 약칭·같은 기관의 전체 이름(Hee Jin Kim)과 겹치면 같은 사람일 수 있다 → 확인 목록
+    full = {}
+    for nk, lst in groups.items():
+        for pmid, a in lst:
+            k = keys[(pmid, str(a.get("순서", "")))]
+            if not re.match(r"^([A-Z]\.?[\s-]*)+\s+\S+$", a.get("이름", "")):
+                full.setdefault(k, (a["이름"], a.get("약칭", ""), set()))[2].add(a.get("기관", ""))
+    seen = set()
+    for nk, lst in groups.items():
+        for pmid, a in lst:
+            k = keys[(pmid, str(a.get("순서", "")))]
+            if k in seen or k in full or (pmid, nk) in by_pn or nk in by_n:
+                continue
+            if re.match(r"^([A-Z]\.?[\s-]*)+\s+\S+$", a.get("이름", "")):
+                seen.add(k)
+                inst = a.get("기관", "")
+                cand = [v for v in full.values() if v[1] == a.get("약칭") and inst and any(i and (i in inst or inst in i) for i in v[2])]
+                if len(cand) == 1:
+                    notes.append(f"이니셜 이름 {a['이름']}({inst}, PMID {pmid})이 {cand[0][0]}과 같은 사람일 수 있음")
+    return keys, notes, bad
+
+
 def load_for_build(dataset_ids, show_status, max_items):
     """논문DB.xlsx → data.json 의 papers {데이터셋ID: {...}} 와 researchers {연구자키: {...}}"""
     rows, queries = load_db()
@@ -434,6 +562,11 @@ def load_for_build(dataset_ids, show_status, max_items):
     def authors_of(r):
         return sorted(r.get("_authors", []), key=lambda a: int(a.get("순서") or 0))
 
+    keys, notes, bad_orcid = _assign_keys(shown, load_fixes())
+    for n in notes:
+        print(f"[연구자 확인] {n} — 다르면 논문DB.xlsx '연구자보정' 시트에 적는다")
+    akey = lambda r, a: keys.get((r["PMID"], str(a.get("순서", "")))) or _rkey(a.get("이름", ""))
+
     def item(r):
         au = authors_of(r)
         return {
@@ -441,8 +574,8 @@ def load_for_build(dataset_ids, show_status, max_items):
             "title": r.get("제목", ""),
             "authors": [a.strip() for a in r.get("저자", "").split(";") if a.strip()][:6],
             "authorCount": int(r["저자수"]) if str(r.get("저자수", "")).isdigit() else 0,
-            # 연구자 링크용 [정식 이름, 기관] — 앞 6명 + 마지막(교신) 저자
-            "au": [[a["이름"], a.get("기관", "")] for a in (au[:6] + au[-1:] if len(au) > 6 else au)],
+            # 연구자 링크용 [정식 이름, 기관, 연구자키] — 앞 6명 + 마지막(교신) 저자
+            "au": [[a["이름"], a.get("기관", ""), akey(r, a)] for a in (au[:6] + au[-1:] if len(au) > 6 else au)],
             "journal": r.get("저널", ""),
             "year": r.get("발행연도", ""),
             "doi": r.get("DOI", ""),
@@ -461,16 +594,18 @@ def load_for_build(dataset_ids, show_status, max_items):
             "items": [item(r) for r in rs[:max_items]],
         }
 
-    # 연구자 색인: 사이트에 보이는 논문의 모든 저자. 같은 이름은 한 사람으로 묶고 기관으로 구별해 보여준다.
+    # 연구자 색인: 사이트에 보이는 논문의 모든 저자. 묶는 기준은 _assign_keys (ORCID·연구자보정 시트)
     people = {}
     for r, dids in shown:
         au = authors_of(r)
         for i, a in enumerate(au):
-            k = _rkey(a.get("이름", ""))
-            if not k:
+            if not _rkey(a.get("이름", "")):
                 continue
-            p = people.setdefault(k, {"name": a["이름"], "short": a.get("약칭", ""), "insts": {},
+            k = akey(r, a)
+            p = people.setdefault(k, {"name": a["이름"], "short": a.get("약칭", ""), "insts": {}, "orcids": {},
                                       "pmids": [], "datasets": set(), "first": 0, "last": 0})
+            if a.get("ORCID") and (r["PMID"], str(a.get("순서", ""))) not in bad_orcid:
+                p["orcids"][a["ORCID"]] = p["orcids"].get(a["ORCID"], 0) + 1
             if r["PMID"] in p["pmids"]:
                 continue
             p["pmids"].append(r["PMID"])
@@ -482,7 +617,8 @@ def load_for_build(dataset_ids, show_status, max_items):
     researchers = {k: {"name": p["name"], "short": p["short"],
                        "insts": [x for x, _ in sorted(p["insts"].items(), key=lambda t: -t[1])][:3],
                        "pmids": p["pmids"], "datasets": sorted(p["datasets"]),
-                       "first": p["first"], "last": p["last"]}
+                       "first": p["first"], "last": p["last"],
+                       "orcid": max(p["orcids"], key=p["orcids"].get) if p["orcids"] else ""}
                    for k, p in people.items()}
     return papers, researchers
 
