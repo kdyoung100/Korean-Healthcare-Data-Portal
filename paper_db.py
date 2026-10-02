@@ -9,6 +9,7 @@
     python paper_db.py stats                 # 상태별 건수
     python paper_db.py nosummary [파일.json]  # '확인' 인데 한줄요약이 빈 논문을 뽑는다 (초록 포함)
     python paper_db.py summary 요약.json      # 한줄요약을 반영한다  [{"pmid": "...", "summary": "..."}]
+    python paper_db.py check                 # 동명이인 확인 대상을 '연구자확인' 시트에 채운다 (판정 칸은 보존)
 
   검색식 : pubmed_queries.json  (데이터셋ID → PubMed 검색식)
   DB     : 논문DB.xlsx          (한 행 = 논문 1편. 커밋할 것 — CI 는 PubMed 를 부르지 않고 이 파일만 읽는다)
@@ -48,6 +49,9 @@ WIDTH = {"PMID": 11, "데이터셋ID": 14, "검수상태": 9, "검수근거": 40
 Q_COLS = ["데이터셋ID", "검색식", "PubMed 전체건수", "조회일"]
 A_COLS = ["PMID", "순서", "이름", "약칭", "ORCID", "소속", "기관"]
 FIX_COLS = ["PMID", "이름", "연구자ID", "메모"]      # '연구자보정' 시트 — 사람이 적는다. fetch 가 보존한다
+CHK_COLS = ["확인ID", "연구자키", "이름", "사유", "논문수", "기관", "ORCID", "PMID", "대상 연구자키", "판정", "판정자", "판정일", "메모"]
+CHK_KEEP = ["판정", "판정자", "판정일", "메모"]      # '연구자확인' 시트에서 사람이 적는 칸 — check 가 덮어쓰지 않는다
+JUDGE = ["같은 사람", "다른 사람"]
 FILL = {"확인": "E3F4E5", "제외": "F4E3E3", "보류": "FFF4D6"}
 
 
@@ -114,7 +118,35 @@ INST_KO = {
     "National Evidence-based Collaborating Agency": "한국보건의료연구원",
     "National Evidence-Based Healthcare Collaborating Agency": "한국보건의료연구원",
     "Korea University College of Health Science": "고려대학교",
+    "Chonnam National University": "전남대학교", "Chonnam National University Medical School": "전남대학교",
+    "Chonnam National University Hospital": "전남대학교병원", "Chonnam National University Hwasun Hospital": "화순전남대학교병원",
+    "Yeungnam University": "영남대학교", "Yeungnam University Medical Center": "영남대학교병원",
+    "Yeungnam University College of Medicine": "영남대학교", "Mokdong Hospital": "이대목동병원",
+    "Ewha Womans University Mokdong Hospital": "이대목동병원", "Ewha Womans University Medical Center": "이화여자대학교의료원",
+    "Hallym University Dongtan Sacred Heart Hospital": "동탄성심병원",
 }
+# 동일인 판정용 '기관 계열' — 병원은 소속 대학으로, 개편된 기관은 지금 이름으로 본다 (화면 표시는 그대로)
+INST_FAMILY = {
+    "질병관리본부": "질병관리청", "대한결핵협회 결핵연구원": "대한결핵협회", "이대목동병원": "이화여자대학교",
+    "이화여자대학교의료원": "이화여자대학교", "세브란스병원": "연세대학교", "용인세브란스병원": "연세대학교",
+    "서울대학교병원": "서울대학교", "분당서울대학교병원": "서울대학교", "서울성모병원": "가톨릭대학교",
+    "인천성모병원": "가톨릭대학교", "대전성모병원": "가톨릭대학교", "의정부성모병원": "가톨릭대학교",
+    "삼성서울병원": "성균관대학교", "서울아산병원": "울산대학교", "울산대학교병원": "울산대학교",
+    "부산대학교병원": "부산대학교", "양산부산대학교병원": "부산대학교", "고려대학교 구로병원": "고려대학교",
+    "일산백병원": "인제대학교", "강동성심병원": "한림대학교", "동탄성심병원": "한림대학교",
+    "화순전남대학교병원": "전남대학교", "전남대학교병원": "전남대학교", "영남대학교병원": "영남대학교",
+}
+
+
+def inst_family(name):
+    n = (name or "").strip()
+    if n in INST_FAMILY:
+        return INST_FAMILY[n]
+    m = re.match(r"^(\S+대학교)(병원|의료원|\s.*)?$", n)
+    if m:
+        return m.group(1)
+    m = re.match(r"^(.*?University)\b", n)
+    return m.group(1) if m else n
 # 한글 소속("질병관리청 감염병정책국 결핵정책과")은 첫 기관 단위까지만
 _KO_ORG = r"^(\S*?(청|본부|대학교|대학|병원|공단|연구원|협회|의료원|센터|연구소))(\s|$)"
 
@@ -137,6 +169,8 @@ def institution(aff):
         or (cands[0] if cands else (parts[0] if parts else ""))
     pick = re.sub(r"\s+(College|School|Graduate School) of (Medicine|Public Health|Nursing|Pharmacy)\b.*$", "", pick, flags=re.I)
     pick = re.sub(r"^The\s+", "", pick)
+    head = re.sub(r"\s+and\s+.*$", "", pick)            # 'Yeungnam University and Regional Center …' → 앞 기관
+    pick = head if head in INST_KO else pick
     return INST_KO.get(pick, pick)
 
 
@@ -221,6 +255,8 @@ def load_db():
         for r in it:
             rec = {h: _norm(v) for h, v in zip(head, r) if h}
             if rec.get("PMID") in rows:
+                if rec.get("소속"):
+                    rec["기관"] = institution(rec["소속"])   # 사전을 고치면 재수집 없이 반영되게 읽을 때 다시 계산
                 rows[rec["PMID"]].setdefault("_authors", []).append(rec)
     if "검색식" in wb.sheetnames:
         it = wb["검색식"].iter_rows(values_only=True)
@@ -249,12 +285,30 @@ def load_fixes():
     return out
 
 
+def load_checks():
+    """'연구자확인' 시트 → {확인ID: {열: 값}}"""
+    if not DB.exists():
+        return {}
+    wb = openpyxl.load_workbook(DB, data_only=True)
+    if "연구자확인" not in wb.sheetnames:
+        return {}
+    it = wb["연구자확인"].iter_rows(values_only=True)
+    head = [_norm(h) for h in next(it, [])]
+    out = {}
+    for r in it:
+        rec = {h: _norm(v) for h, v in zip(head, r) if h}
+        if rec.get("확인ID"):
+            out[rec["확인ID"]] = rec
+    return out
+
+
 def _sort_key(r):
     return (r.get("발행일") or r.get("발행연도") or "", r["PMID"])
 
 
-def save_db(rows, queries):
+def save_db(rows, queries, checks=None):
     fixes = load_fixes()                  # 통째로 다시 쓰므로, 사람이 적은 보정 시트는 먼저 읽어 둔다
+    checks = load_checks() if checks is None else checks
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "논문"
@@ -302,6 +356,28 @@ def save_db(rows, queries):
         fx.column_dimensions[fx.cell(1, i).column_letter].width = w
     fx.freeze_panes = "A2"
 
+    ck = wb.create_sheet("연구자확인")    # 동명이인 확인 대상 — check 가 채우고, 사람이 '판정'을 적는다
+    ck.append(CHK_COLS)
+    for c in sorted(checks.values(), key=lambda c: (bool(c.get("판정")), c.get("사유", ""), c.get("이름", ""))):
+        ck.append([int(c[col]) if col == "논문수" and str(c.get(col, "")).isdigit() else c.get(col, "") for col in CHK_COLS])
+    for i, w in enumerate([30, 18, 20, 36, 7, 34, 26, 30, 18, 11, 11, 11, 30], 1):
+        ck.cell(1, i).font, ck.cell(1, i).fill = bold, PatternFill("solid", fgColor="1F3A5F")
+        ck.column_dimensions[ck.cell(1, i).column_letter].width = w
+    for col in CHK_KEEP:
+        ck.cell(1, CHK_COLS.index(col) + 1).fill = PatternFill("solid", fgColor="B45309")
+    jc = CHK_COLS.index("판정") + 1
+    for row in range(2, ck.max_row + 1):
+        for col in (4, 6, 8):
+            ck.cell(row, col).alignment = wrap
+        if not ck.cell(row, jc).value:
+            ck.cell(row, jc).fill = PatternFill("solid", fgColor="FFF4D6")
+    jv = DataValidation(type="list", formula1='"' + ",".join(JUDGE) + '"', allow_blank=True)
+    ck.add_data_validation(jv)
+    jl = ck.cell(1, jc).column_letter
+    jv.add(f"{jl}2:{jl}1000")
+    ck.freeze_panes = "D2"
+    ck.auto_filter.ref = ck.dimensions
+
     qs = wb.create_sheet("검색식")
     qs.append(Q_COLS)
     for did, q in queries.items():
@@ -329,6 +405,12 @@ def save_db(rows, queries):
         "  연구자ID 가 같은 행끼리 한 사람이 된다. PMID 를 비우면 그 이름의 모든 논문에 적용된다.",
         "  예) 다른 사람 분리: 12345678 / Jieun Kim / jieunkim-snu   · 표기 다른 같은 사람 합치기: (빈칸) / Kim J / jieunkim",
         "  이 시트는 다시 수집해도 지워지지 않는다.",
+        "",
+        "'연구자확인' 시트: 동명이인일 수 있는 연구자 목록 (python paper_db.py check · fetch 때 자동으로 채움).",
+        "  사유: ORCID 2개 이상 · 기관 계열 2곳 이상인데 ORCID 없음 · 이니셜 이름 · PubMed ORCID 오류(자동 처리, 기록만).",
+        "  '판정' 칸(주황 머리글)에 같은 사람 / 다른 사람 을 고른다. 비어 있으면 '대기'.",
+        "  다른 사람 → 다음 빌드부터 ORCID(없으면 기관 계열)별로 나눈다. 이니셜 이름에 같은 사람 → '대상 연구자키'로 합친다.",
+        "  판정한 줄은 다시 채워도 그대로 남는다. 대상에서 빠지면 메모에 '(해당 없음)'이 붙는다.",
     ]:
         g.append([line])
     g.column_dimensions["A"].width = 120
@@ -371,7 +453,7 @@ def cmd_fetch():
         old = {x.strip() for x in r.get("데이터셋ID", "").split(",") if x.strip()}
         r["데이터셋ID"] = ", ".join(sorted(old | dids))
         r.update(info[pmid])                        # 서지정보만 갱신 (검수 칸은 그대로)
-    save_db(rows, queries)
+    save_db(rows, queries, collect_checks(rows))
     print(f"[완료] {DB.name}: 전체 {len(rows)}편 / 이번에 새로 들어온 논문 {new}편 (미검수)")
     cmd_stats(rows)
 
@@ -443,6 +525,38 @@ def cmd_summary(path):
     print(f"[한줄요약 반영] {done}편")
 
 
+def collect_checks(rows=None):
+    """검수 '확인' 논문 기준 확인 대상 → 기존 시트의 판정 칸을 살려 합친 {확인ID: 행}"""
+    if rows is None:
+        rows, _ = load_db()
+    shown = [(r, []) for r in rows.values() if r.get("검수상태") == "확인"]
+    old = load_checks()
+    _, _, _, cases = _assign_keys(shown, load_fixes(), old)
+    today = datetime.now().strftime("%Y-%m-%d")
+    out = {}
+    for c in cases:
+        prev = old.get(c["확인ID"], {})
+        row = {**c, **{k: prev[k] for k in CHK_KEEP if prev.get(k)}}
+        if row.get("판정자") == "자동" and not row.get("판정일"):
+            row["판정일"] = today
+        out[c["확인ID"]] = row
+    for cid, prev in old.items():                       # 대상에서 빠졌어도 사람이 판정한 줄은 남긴다
+        if cid not in out and prev.get("판정") and prev.get("판정자") != "자동":
+            memo = prev.get("메모", "")
+            out[cid] = {**prev, "메모": memo if "(해당 없음)" in memo else (memo + " (해당 없음)").strip()}
+    return out
+
+
+def cmd_check():
+    rows, queries = load_db()
+    checks = collect_checks(rows)
+    save_db(rows, queries, checks)
+    wait = [c for c in checks.values() if not c.get("판정")]
+    print(f"[연구자확인] {len(checks)}건 (판정 대기 {len(wait)}건) → {DB.name} '연구자확인' 시트")
+    for c in wait:
+        print(f"    · {c['이름']}: {c['사유']}")
+
+
 def cmd_stats(rows=None):
     if rows is None:
         rows, _ = load_db()
@@ -457,16 +571,22 @@ def _rkey(name):
     return re.sub(r"[^a-z가-힣]", "", name.lower())
 
 
-def _assign_keys(shown, fixes):
+def _assign_keys(shown, fixes, checks=None):
     """저자 한 명(PMID, 순서) → 연구자키. 동명이인 처리:
     1) '연구자보정' 시트가 최우선 (PMID+이름, 또는 이름만) — 연구자ID 가 같으면 한 사람
     2) 같은 이름에 ORCID 가 여럿이면 기관이 겹치는 ORCID 끼리 한 사람으로 묶고(ORCID 중복 등록이 흔하다),
        기관이 안 겹치는 무리가 2개 이상일 때만 나눈다 (키 = 이름키-ORCID끝4자리).
        ORCID 없는 논문은 그 기관이 한 무리에만 있으면 거기 붙이고, 아니면 이름키 그대로
     3) 나머지는 이름키 (영문 소문자·한글만)
-    → (keys, notes)  notes = 사람이 확인할 만한 동명 사례 (build 때 출력)"""
+    4) '연구자확인' 시트 판정: 다른 사람 → ORCID(없으면 기관 계열)별로 나눔 · 이니셜 이름에 같은 사람 → 대상과 합침
+    → (keys, notes, bad, cases)  notes = 확인할 만한 사례 문장, cases = '연구자확인' 시트에 쓸 확인 대상"""
+    checks = checks or {}
+    split = {c["연구자키"] for c in checks.values() if c.get("판정") == "다른 사람" and not c["확인ID"].startswith("이니셜")}
+    joins = {(c["PMID"].split(",")[0].strip(), _rkey(c["이름"])): c["대상 연구자키"] for c in checks.values()
+             if c.get("판정") == "같은 사람" and c["확인ID"].startswith("이니셜") and c.get("대상 연구자키")}
     slug = lambda s: re.sub(r"[^a-z0-9가-힣-]", "", s.lower())
     by_pn = {(f["PMID"], _rkey(f["이름"])): slug(f["연구자ID"]) for f in fixes if f.get("PMID")}
+    by_pn.update({k: v for k, v in joins.items() if k not in by_pn})
     by_n = {_rkey(f["이름"]): slug(f["연구자ID"]) for f in fixes if not f.get("PMID")}
     groups = {}
     for r, _ in shown:
@@ -474,7 +594,7 @@ def _assign_keys(shown, fixes):
             nk = _rkey(a.get("이름", ""))
             if nk:
                 groups.setdefault(nk, []).append((r["PMID"], a))
-    keys, notes = {}, []
+    keys, notes, cases = {}, [], []
     # ORCID 점검: 같은 ORCID가 서로 다른 이름에 붙어 있으면 PubMed 쪽 오류로 보고, 가장 많이 붙은 이름만 믿는다
     # (예: 한 논문에서 6번 저자 Hee Jin Kim의 ORCID가 7번 저자 Hee-Sun Kim에게도 붙어 있었음)
     owner = {}
@@ -494,12 +614,18 @@ def _assign_keys(shown, fixes):
                         bad.add((pmid, str(a.get("순서", ""))))
             notes.append(f"ORCID {o}가 다른 이름에도 붙어 있음 → {groups[best][0][1]['이름']} 것으로 보고 "
                          + ", ".join(groups[g][0][1]["이름"] for g in others) + " 쪽은 무시 (PubMed 오류로 보임)")
+            for g in others:
+                pm = [pmid for pmid, a in groups[g] if a.get("ORCID") == o]
+                cases.append({"확인ID": f"ORCID오류:{g}:{o}", "연구자키": g, "이름": groups[g][0][1]["이름"],
+                              "사유": f"PubMed ORCID 오류 — {groups[best][0][1]['이름']}의 ORCID가 함께 붙음 (자동 무시)",
+                              "ORCID": o, "PMID": ", ".join(pm), "판정": "같은 사람", "판정자": "자동",
+                              "메모": "판정 불필요 — 기록용"})
     orc = lambda pmid, a: "" if (pmid, str(a.get("순서", ""))) in bad else a.get("ORCID", "")
     for nk, lst in groups.items():
         insts = {}                                      # ORCID → 그 사람이 쓴 기관들
         for pmid, a in lst:
             if orc(pmid, a):
-                insts.setdefault(orc(pmid, a), set()).update({a["기관"]} if a.get("기관") else set())
+                insts.setdefault(orc(pmid, a), set()).update({inst_family(a["기관"])} if a.get("기관") else set())
         clusters = []                                   # [(ORCID 들, 기관들)] — 기관이 겹치면 합친다
         for o, s in insts.items():
             hit = [c for c in clusters if c[1] & s]
@@ -507,17 +633,22 @@ def _assign_keys(shown, fixes):
                 clusters.remove(c)
             clusters.append(({o}.union(*[c[0] for c in hit]), set(s).union(*[c[1] for c in hit])))
         manual = any((pmid, nk) in by_pn for pmid, _ in lst) or nk in by_n
-        if len(insts) >= 2 and not manual:
+        if nk in split:                                 # 사람이 '다른 사람'으로 판정 → ORCID 하나하나를 따로
+            clusters = [({o}, s) for o, s in insts.items()]
+        if len(insts) >= 2 and not manual and nk not in split:
             notes.append(f"{lst[0][1]['이름']}: ORCID {len(insts)}개 → "
                          + ("기관이 겹쳐 한 사람으로 둠" if len(clusters) == 1 else f"{len(clusters)}명으로 나눔"))
+        fams = {inst_family(a["기관"]) for _, a in lst if a.get("기관")}
         for pmid, a in lst:
             k = by_pn.get((pmid, nk)) or by_n.get(nk)
             if not k and len(clusters) >= 2:
                 c = next((c for c in clusters if orc(pmid, a) in c[0]), None)
                 if c is None and a.get("기관"):
-                    same = [c for c in clusters if a["기관"] in c[1]]
+                    same = [c for c in clusters if inst_family(a["기관"]) in c[1]]
                     c = same[0] if len(same) == 1 else None
                 k = f"{nk}-{sorted(c[0])[0][-4:].lower()}" if c else ""
+            elif not k and nk in split and not insts and len(fams) >= 2 and a.get("기관"):
+                k = f"{nk}-{slug(inst_family(a['기관']))}"   # ORCID 없이 '다른 사람' → 기관 계열별로
             keys[(pmid, str(a.get("순서", "")))] = k or nk
     # 이니셜만 있는 이름(H J Kim)이 같은 약칭·같은 기관의 전체 이름(Hee Jin Kim)과 겹치면 같은 사람일 수 있다 → 확인 목록
     full = {}
@@ -538,7 +669,34 @@ def _assign_keys(shown, fixes):
                 cand = [v for v in full.values() if v[1] == a.get("약칭") and inst and any(i and (i in inst or inst in i) for i in v[2])]
                 if len(cand) == 1:
                     notes.append(f"이니셜 이름 {a['이름']}({inst}, PMID {pmid})이 {cand[0][0]}과 같은 사람일 수 있음")
-    return keys, notes, bad
+                    tk = next(kk for kk, v in full.items() if v is cand[0])
+                    cases.append({"확인ID": f"이니셜:{k}:{pmid}", "연구자키": k, "이름": a["이름"],
+                                  "사유": f"이니셜 이름 — {cand[0][0]}과 약칭·기관이 겹침", "기관": inst,
+                                  "PMID": pmid, "대상 연구자키": tk})
+    # 연구자 단위 확인 대상: ORCID 2개 이상 / 기관 계열 2곳 이상인데 ORCID 없음
+    per = {}
+    for nk, lst in groups.items():
+        for pmid, a in lst:
+            k = keys[(pmid, str(a.get("순서", "")))]
+            p = per.setdefault(k, {"이름": a["이름"], "pm": [], "orc": set(), "inst": set(), "fam": set()})
+            if pmid not in p["pm"]:
+                p["pm"].append(pmid)
+            if orc(pmid, a):
+                p["orc"].add(orc(pmid, a))
+            if a.get("기관"):
+                p["inst"].add(a["기관"])
+                p["fam"].add(inst_family(a["기관"]))
+    for k, p in per.items():
+        nk = _rkey(p["이름"])
+        if nk in by_n or any((pm, nk) in by_pn for pm in p["pm"]):
+            continue                                    # 보정 시트로 이미 사람이 정함
+        base = {"연구자키": k, "이름": p["이름"], "논문수": len(p["pm"]), "기관": " · ".join(sorted(p["inst"])),
+                "ORCID": ", ".join(sorted(p["orc"])), "PMID": ", ".join(p["pm"])}
+        if len(p["orc"]) >= 2:
+            cases.append({**base, "확인ID": f"ORCID여러개:{k}", "사유": f"ORCID {len(p['orc'])}개 — 기관 계열이 겹쳐 한 사람으로 묶음"})
+        elif not p["orc"] and len(p["fam"]) >= 2:
+            cases.append({**base, "확인ID": f"기관여러곳:{k}", "사유": f"ORCID 없음 · 기관 계열 {len(p['fam'])}곳 ({' / '.join(sorted(p['fam']))})"})
+    return keys, notes, bad, cases
 
 
 def load_for_build(dataset_ids, show_status, max_items):
@@ -562,9 +720,16 @@ def load_for_build(dataset_ids, show_status, max_items):
     def authors_of(r):
         return sorted(r.get("_authors", []), key=lambda a: int(a.get("순서") or 0))
 
-    keys, notes, bad_orcid = _assign_keys(shown, load_fixes())
-    for n in notes:
-        print(f"[연구자 확인] {n} — 다르면 논문DB.xlsx '연구자보정' 시트에 적는다")
+    checks = load_checks()
+    keys, notes, bad_orcid, cases = _assign_keys(shown, load_fixes(), checks)
+    pending = [c for c in cases if not (checks.get(c["확인ID"], {}).get("판정") or c.get("판정"))]
+    new = [c for c in cases if c["확인ID"] not in checks]
+    if pending:
+        print(f"[연구자 확인] 판정 대기 {len(pending)}명 — 논문DB.xlsx '연구자확인' 시트 '판정' 칸에 같은 사람 / 다른 사람")
+        for c in pending:
+            print(f"    · {c['이름']}: {c['사유']}")
+    if new:
+        print(f"[연구자 확인] 시트에 없는 새 확인 대상 {len(new)}건 — python paper_db.py check 로 시트를 갱신하세요")
     akey = lambda r, a: keys.get((r["PMID"], str(a.get("순서", "")))) or _rkey(a.get("이름", ""))
 
     def item(r):
@@ -625,11 +790,13 @@ def load_for_build(dataset_ids, show_status, max_items):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    if not args or args[0] not in ("fetch", "pending", "review", "stats", "nosummary", "summary"):
+    if not args or args[0] not in ("fetch", "pending", "review", "stats", "nosummary", "summary", "check"):
         print(__doc__)
         sys.exit(1)
     if args[0] == "fetch":
         cmd_fetch()
+    elif args[0] == "check":
+        cmd_check()
     elif args[0] == "pending":
         cmd_pending(args[1] if len(args) > 1 else None)
     elif args[0] == "review":
