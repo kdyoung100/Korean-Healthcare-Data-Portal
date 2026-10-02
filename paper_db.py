@@ -572,17 +572,16 @@ def _rkey(name):
 
 
 def _assign_keys(shown, fixes, checks=None):
-    """저자 한 명(PMID, 순서) → 연구자키. 동명이인 처리:
-    1) '연구자보정' 시트가 최우선 (PMID+이름, 또는 이름만) — 연구자ID 가 같으면 한 사람
-    2) 같은 이름에 ORCID 가 여럿이면 기관이 겹치는 ORCID 끼리 한 사람으로 묶고(ORCID 중복 등록이 흔하다),
-       기관이 안 겹치는 무리가 2개 이상일 때만 나눈다 (키 = 이름키-ORCID끝4자리).
-       ORCID 없는 논문은 그 기관이 한 무리에만 있으면 거기 붙이고, 아니면 이름키 그대로
-    3) 나머지는 이름키 (영문 소문자·한글만)
-    4) '연구자확인' 시트 판정: 다른 사람 → ORCID(없으면 기관 계열)별로 나눔 · 이니셜 이름에 같은 사람 → 대상과 합침
-    → (keys, notes, bad, cases)  notes = 확인할 만한 사례 문장, cases = '연구자확인' 시트에 쓸 확인 대상"""
+    """저자 한 명(PMID, 순서) → 연구자키. 동명이인 처리 — '근거가 있을 때만 같은 사람':
+    1) 사람 판정이 최우선: '연구자보정' 시트(PMID+이름 또는 이름만 → 연구자ID), '연구자확인' 시트의 판정
+    2) 이름 표기마다 따로 시작해서, 근거가 있을 때만 합친다
+         ① 같은 ORCID  ② 같은 표기(한쪽이 ORCID 없음)  ③ 같은 기관 계열(inst_family)
+       서로 다른 ORCID 가 한 사람 안에 들어가는 합치기는 하지 않는다 (같은 사람이면 사람이 '같은 사람' 판정)
+    3) 같은 이름키가 2명 이상으로 나뉘면 키 = 이름키-ORCID끝4자리 (ORCID 없으면 이름키-기관계열)
+    4) ORCID 오류(같은 ORCID가 다른 이름에) 는 많이 붙은 쪽만 믿는다
+    → (keys, notes, bad, cases)  notes = 빌드 때 출력할 문장, cases = '연구자확인' 시트에 쓸 확인 대상"""
     checks = checks or {}
-    split = {c["연구자키"] for c in checks.values() if c.get("판정") == "다른 사람" and not c["확인ID"].startswith("이니셜")}
-    split_var = {c["연구자키"] for c in checks.values() if c.get("판정") == "다른 사람" and c["확인ID"].startswith("표기근거없음")}
+    split = {c["연구자키"] for c in checks.values() if c.get("판정") == "다른 사람" and c["확인ID"].startswith("기관여러곳")}
     joins = {(c["PMID"].split(",")[0].strip(), _rkey(c["이름"])): c["대상 연구자키"] for c in checks.values()
              if c.get("판정") == "같은 사람" and c["확인ID"].startswith("이니셜") and c.get("대상 연구자키")}
     slug = lambda s: re.sub(r"[^a-z0-9가-힣-]", "", s.lower())
@@ -622,35 +621,96 @@ def _assign_keys(shown, fixes, checks=None):
                               "ORCID": o, "PMID": ", ".join(pm), "판정": "같은 사람", "판정자": "자동",
                               "메모": "판정 불필요 — 기록용"})
     orc = lambda pmid, a: "" if (pmid, str(a.get("순서", ""))) in bad else a.get("ORCID", "")
+    # 근거 기반 묶기 (이름키가 같아도 바로 합치지 않는다)
+    #   단위 = (이름 표기, ORCID) — ORCID 없는 저자는 (표기, "")
+    #   합치는 근거: ① 같은 ORCID  ② 같은 표기 (ORCID 없는 쪽이 있을 때)  ③ 같은 기관 계열
+    #   단, 서로 다른 ORCID 가 한 사람 안에 들어가게 되는 합치기는 하지 않는다 (ORCID = 사람 고유번호)
+    #   사람이 '같은 사람'으로 판정하면 그 이름키의 무리를 모두 합친다
+    same_all = {c["연구자키"] for c in checks.values() if c.get("판정") == "같은 사람" and c["확인ID"].startswith("나뉨:")}
+    splits = {}                                         # 이름키 → 나뉜 무리 설명 (확인 대상)
+    ambig = {}                                          # 이름키 → 어느 쪽인지 애매한 ORCID 없는 표기
     for nk, lst in groups.items():
-        insts = {}                                      # ORCID → 그 사람이 쓴 기관들
+        units = {}
         for pmid, a in lst:
-            if orc(pmid, a):
-                insts.setdefault(orc(pmid, a), set()).update({inst_family(a["기관"])} if a.get("기관") else set())
-        clusters = []                                   # [(ORCID 들, 기관들)] — 기관이 겹치면 합친다
-        for o, s in insts.items():
-            hit = [c for c in clusters if c[1] & s]
-            for c in hit:
-                clusters.remove(c)
-            clusters.append(({o}.union(*[c[0] for c in hit]), set(s).union(*[c[1] for c in hit])))
+            uid = (a["이름"], orc(pmid, a))
+            u = units.setdefault(uid, {"orc": {uid[1]} - {""}, "fam": set(), "inst": set(), "pm": set()})
+            u["pm"].add(pmid)
+            if a.get("기관"):
+                u["fam"].add(inst_family(a["기관"]))
+                u["inst"].add(a["기관"])
+        par = {u: u for u in units}
+
+        def find(u):
+            while par[u] != u:
+                par[u] = par[par[u]]
+                u = par[u]
+            return u
+
+        def comp_orc(r):
+            return set().union(*[units[u]["orc"] for u in units if find(u) == r])
+
+        def join(x, y, force=False):
+            rx, ry = find(x), find(y)
+            if rx == ry:
+                return True
+            ox, oy = comp_orc(rx), comp_orc(ry)
+            if ox and oy and not (ox & oy) and not force:
+                return False                            # ORCID 가 서로 다르면 합치지 않는다
+            par[ry] = rx
+            return True
+
+        ul = list(units)
+        pairs = [(x, y) for i, x in enumerate(ul) for y in ul[i + 1:]]
+        for x, y in pairs:                              # ① 같은 ORCID
+            if units[x]["orc"] & units[y]["orc"]:
+                join(x, y)
+        for x, y in pairs:                              # ② 같은 표기 (한쪽이 ORCID 없음)
+            if x[0] == y[0] and (not x[1] or not y[1]):
+                join(x, y)
+        blocked = []
+        for x, y in pairs:                              # ③ 같은 기관 계열
+            if units[x]["fam"] & units[y]["fam"] and not join(x, y):
+                blocked.append((x, y))
         manual = any((pmid, nk) in by_pn for pmid, _ in lst) or nk in by_n
-        if nk in split:                                 # 사람이 '다른 사람'으로 판정 → ORCID 하나하나를 따로
-            clusters = [({o}, s) for o, s in insts.items()]
-        if len(insts) >= 2 and not manual and nk not in split:
-            notes.append(f"{lst[0][1]['이름']}: ORCID {len(insts)}개 → "
-                         + ("기관이 겹쳐 한 사람으로 둠" if len(clusters) == 1 else f"{len(clusters)}명으로 나눔"))
+        if nk in same_all:
+            for x, y in pairs:
+                join(x, y, force=True)
+        roots = sorted({find(u) for u in units}, key=lambda r: -sum(len(units[u]["pm"]) for u in units if find(u) == r))
+        if len(roots) >= 2 and not manual and nk not in same_all:
+            desc = []
+            for r in roots:
+                mem = [u for u in units if find(u) == r]
+                o = comp_orc(r)
+                desc.append(" + ".join(sorted({m[0] for m in mem})) + "("
+                            + (", ".join("…" + x[-4:] for x in sorted(o)) or "ORCID 없음") + " · "
+                            + (" · ".join(sorted(set().union(*[units[m]["inst"] for m in mem]))) or "기관 없음") + ")")
+            why = "ORCID가 서로 다름 (기관 계열은 같음)" if blocked else "ORCID·기관 계열이 안 겹침"
+            splits[nk] = [len(roots), why, " / ".join(desc), lst[0][1]["이름"]]
+            notes.append(f"{lst[0][1]['이름']}: 근거가 없어 {len(roots)}명으로 나눔 — {why}")
+        # ORCID 없는 표기가 서로 다른 ORCID 무리 둘 이상과 기관 계열이 겹치면 어느 쪽인지 애매하다
+        for u in units:
+            if not u[1] and not any(v[0] == u[0] and v[1] for v in units):   # 같은 표기의 ORCID 가 없을 때만
+                hits = {find(v) for v in units if units[v]["orc"] and units[u]["fam"] & units[v]["fam"]}
+                if len(hits) > 1:
+                    ambig.setdefault(nk, []).append((u[0], find(u)))
+        rkey = {}
+        for r in roots:
+            o = sorted(comp_orc(r))
+            mem = [u for u in units if find(u) == r]
+            fam = sorted(set().union(*[units[m]["fam"] for m in mem]))
+            rkey[r] = nk if len(roots) == 1 else (f"{nk}-{o[0][-4:].lower()}" if o else
+                                                  f"{nk}-{slug(fam[0])}" if fam else f"{nk}-{slug(mem[0][0])}")
         fams = {inst_family(a["기관"]) for _, a in lst if a.get("기관")}
         for pmid, a in lst:
             k = by_pn.get((pmid, nk)) or by_n.get(nk)
-            if not k and len(clusters) >= 2:
-                c = next((c for c in clusters if orc(pmid, a) in c[0]), None)
-                if c is None and a.get("기관"):
-                    same = [c for c in clusters if inst_family(a["기관"]) in c[1]]
-                    c = same[0] if len(same) == 1 else None
-                k = f"{nk}-{sorted(c[0])[0][-4:].lower()}" if c else ""
-            elif not k and nk in split and (not insts or nk in split_var) and len(fams) >= 2 and a.get("기관"):
-                k = f"{nk}-{slug(inst_family(a['기관']))}"   # ORCID 없이 '다른 사람' → 기관 계열별로
-            keys[(pmid, str(a.get("순서", "")))] = k or nk
+            if not k:
+                r = find((a["이름"], orc(pmid, a)))
+                k = rkey[r]
+                if nk in split and not comp_orc(r) and len(fams) >= 2 and a.get("기관"):
+                    k = f"{k}-{slug(inst_family(a['기관']))}"   # ORCID 없이 '다른 사람' → 기관 계열별로
+            keys[(pmid, str(a.get("순서", "")))] = k
+        if nk in splits and nk in ambig:
+            splits[nk][2] += " · 애매: " + ", ".join(f"{n}(ORCID 없음)은 어느 쪽인지 불확실 — 지금은 {rkey[r]} 쪽" for n, r in ambig[nk])
     # 이니셜만 있는 이름(H J Kim)이 같은 약칭·같은 기관의 전체 이름(Hee Jin Kim)과 겹치면 같은 사람일 수 있다 → 확인 목록
     full = {}
     for nk, lst in groups.items():
@@ -687,41 +747,19 @@ def _assign_keys(shown, fixes, checks=None):
             if a.get("기관"):
                 p["inst"].add(a["기관"])
                 p["fam"].add(inst_family(a["기관"]))
-    # 표기 차이로 합친 경우(Ji Yeon Lee / Jiyeon Lee): 표기마다 다른 표기와 ORCID나 기관 계열이 하나라도 겹쳐야 근거가 있다
-    var = {}
-    for nk, lst in groups.items():
-        for pmid, a in lst:
-            k = keys[(pmid, str(a.get("순서", "")))]
-            v = var.setdefault(k, {}).setdefault(a["이름"], {"pm": set(), "orc": set(), "fam": set(), "inst": set()})
-            v["pm"].add(pmid)
-            if orc(pmid, a):
-                v["orc"].add(orc(pmid, a))
-            if a.get("기관"):
-                v["fam"].add(inst_family(a["기관"]))
-                v["inst"].add(a["기관"])
-    variant_flag = {}
-    for k, vs in var.items():
-        if len(vs) < 2:
-            continue
-        lone = [n for n, v in vs.items()
-                if not any((v["orc"] & w["orc"]) or (v["fam"] & w["fam"]) for m, w in vs.items() if m != n)]
-        if lone:
-            variant_flag[k] = " / ".join(f"{n}({' · '.join(sorted(vs[n]['inst'])) or '기관 없음'})" for n in vs)
+    for nk, (n, why, desc, name) in splits.items():
+        ks = sorted({k for (pmid, o), k in keys.items() if any(pm == pmid for pm, _ in groups[nk]) and k.startswith(nk)})
+        cases.append({"확인ID": f"나뉨:{nk}", "연구자키": nk, "이름": name, "논문수": len({pm for pm, _ in groups[nk]}),
+                      "사유": f"이름이 비슷하지만 근거가 없어 {n}명으로 나눔 — {why}: {desc}",
+                      "ORCID": ", ".join(sorted({orc(pm, a) for pm, a in groups[nk] if orc(pm, a)})),
+                      "PMID": ", ".join(sorted({pm for pm, _ in groups[nk]})), "대상 연구자키": ", ".join(ks)})
     for k, p in per.items():
         nk = _rkey(p["이름"])
         if nk in by_n or any((pm, nk) in by_pn for pm in p["pm"]):
             continue                                    # 보정 시트로 이미 사람이 정함
         base = {"연구자키": k, "이름": p["이름"], "논문수": len(p["pm"]), "기관": " · ".join(sorted(p["inst"])),
                 "ORCID": ", ".join(sorted(p["orc"])), "PMID": ", ".join(p["pm"])}
-        if len(p["orc"]) >= 2:
-            det = ""
-            if len(var.get(k, {})) > 1:                 # 표기마다 어떤 ORCID가 붙었는지 함께 보여 준다
-                det = " — " + " / ".join(f"{n}({', '.join('…' + o[-4:] for o in sorted(v['orc'])) or 'ORCID 없음'})"
-                                        for n, v in var[k].items())
-            cases.append({**base, "확인ID": f"ORCID여러개:{k}", "사유": f"ORCID {len(p['orc'])}개 — 기관 계열이 겹쳐 한 사람으로 묶음{det}"})
-        elif k in variant_flag:
-            cases.append({**base, "확인ID": f"표기근거없음:{k}", "사유": f"표기 차이로 합쳤지만 ORCID·기관 계열이 안 겹침 — {variant_flag[k]}"})
-        elif not p["orc"] and len(p["fam"]) >= 2:
+        if not p["orc"] and len(p["fam"]) >= 2:
             cases.append({**base, "확인ID": f"기관여러곳:{k}", "사유": f"ORCID 없음 · 기관 계열 {len(p['fam'])}곳 ({' / '.join(sorted(p['fam']))})"})
     return keys, notes, bad, cases
 
