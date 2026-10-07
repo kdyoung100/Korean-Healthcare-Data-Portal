@@ -360,22 +360,28 @@ def fill_period(rec):
 # ── PubMed 논문 연결 ───────────────────────────────────────────────
 # 논문은 논문DB.xlsx 에서 읽는다(paper_db.py fetch 로 모으고, 검수 후 커밋).
 # 빌드는 PubMed 를 부르지 않는다 — 검수 안 된 논문이 CI 에서 몰래 늘어나지 않게.
-PUBMED_MAX = 200                    # 데이터셋당 data.json 에 넣을 논문 수 (연구자 검색에 전부 필요)
+PUBMED_MAX = None                   # 데이터셋당 data.json 에 넣을 논문 수 (None = 전부. 논문은 paperItems 에 한 번만 담겨 늘어도 크기 부담이 작다)
 SHOW_STATUS = {"확인"}             # 사이트에 보일 검수상태. 검수 전 논문까지 보이려면 {"확인", "미검수"}
 NEED_APPROVAL = True               # 담당자승인 '승인'인 논문만 (에이전트 검수만으로는 안 올라감)
 
 
 def build_papers(dataset_ids):
-    """→ (papers, researchers). 논문DB.xlsx 가 없으면 둘 다 빈 값"""
+    """→ (papers, researchers, paper_items). 논문DB.xlsx 가 없으면 모두 빈 값
+    같은 논문이 여러 데이터셋(국민건강영양조사 19개 ID 등)에 붙으므로, 논문 본문은 paper_items {PMID: 논문} 에
+    한 번만 담고 데이터셋에는 PMID 목록(ids)만 둔다. index.html 이 읽을 때 items 를 다시 채운다."""
     if not (BASE / "논문DB.xlsx").exists():
-        return {}, {}
+        return {}, {}, {}
     from paper_db import load_for_build
     papers, researchers = load_for_build(dataset_ids, SHOW_STATUS, PUBMED_MAX, NEED_APPROVAL)
+    paper_items = {}
+    for v in papers.values():
+        items = v.pop("items")
+        v["ids"] = [it["pmid"] for it in items]
+        for it in items:
+            paper_items[it["pmid"]] = it
     if papers:
-        print(f"[논문] 논문DB 연결 {len(papers)}개 데이터셋: "
-              + ", ".join(f"{k} {v['total']}편(검수 {v['verified']})" for k, v in papers.items())
-              + f" / 연구자 {len(researchers)}명")
-    return papers, researchers
+        print(f"[논문] 논문DB 연결 {len(papers)}개 데이터셋 · 논문 {len(paper_items)}편 · 연구자 {len(researchers)}명")
+    return papers, researchers, paper_items
 
 
 def main():
@@ -431,14 +437,15 @@ def main():
     if period_filled:
         print(f"[안내] 데이터 수집기간이 비어 있어 시작·종료연도로 채운 데이터셋 {len(period_filled)}개")
 
-    papers, researchers = build_papers(seen_ids)
+    papers, researchers, paper_items = build_papers(seen_ids)
     payload = {
         "generatedAt": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "source": src.name,
         "count": len(datasets),
         "datasets": datasets,
         "guides": bodies,               # {자료집ID: markdown 본문}
-        "papers": papers,               # {데이터셋ID: PubMed 논문} (논문DB.xlsx)
+        "papers": papers,               # {데이터셋ID: {query,total,verified,updatedAt,ids:[PMID…]}} (논문DB.xlsx)
+        "paperItems": paper_items,      # {PMID: 논문 한 편} — 여러 데이터셋에 붙은 논문도 한 번만
         "researchers": researchers,     # {연구자키: 이름·기관·논문PMID·데이터셋} (논문DB.xlsx 저자 시트)
     }
     with open(OUT, "w", encoding="utf-8") as f:

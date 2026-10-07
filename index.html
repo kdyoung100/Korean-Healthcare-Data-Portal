@@ -1744,7 +1744,7 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 /* ══════════ 데이터 (엑셀 → 내장) ══════════ */
 let DATASETS = [];  // data.json 에서 자동 로드됩니다
 let RESEARCHERS = {};  // {연구자키: {name,short,insts,pmids,datasets,first,last}} — 논문DB 저자 시트에서 build.py 가 만든 색인
-let PAPERS = {};    // {데이터셋ID: {query,total,updatedAt,items}} — build.py 가 PubMed 에서 모은 논문
+let PAPERS = {};    // {데이터셋ID: {query,total,updatedAt,ids,items}} — build.py 가 논문DB 에서 만든 논문 (items 는 읽을 때 paperItems 로 채운다)
 
 /* ── 신청 창구 매핑 ──
    DS-###   (결합) → 보건의료 빅데이터 통합 플랫폼
@@ -3961,6 +3961,9 @@ document.addEventListener("DOMContentLoaded", function(){
       // 상세를 열 때 guides/*.md 를 따로 받지 않는다. (없으면 예전처럼 fetch)
       if(json && json.guides) Object.assign(GUIDE_CACHE, json.guides);
       PAPERS = (json && json.papers) || {};
+      // 논문 본문은 paperItems 에 한 번만 들어 있다 → 데이터셋별 items 를 PMID 목록(ids)으로 다시 채운다
+      const PI = (json && json.paperItems) || {};
+      Object.values(PAPERS).forEach(v=>{ if(!v.items && v.ids) v.items = v.ids.map(id=>PI[id]).filter(Boolean); });
       RESEARCHERS = (json && json.researchers) || {};
       CURRENT_RESULTS = DATASETS.slice();
       buildOrgPlatform();
