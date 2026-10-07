@@ -3047,9 +3047,9 @@ try {
   EV_VID = localStorage.getItem('evVid') || '';
   if(!EV_VID){ EV_VID = Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem('evVid', EV_VID); }
 } catch(e){}
-function track(e, t, q){
+function track(e, t, q, from){
   if(EV_OFF || FB_IS_ADMIN() || NAV_RESTORING) return;
-  const body=JSON.stringify({ e, t:t||'', q:q||'', p:FB_PAGE, v:EV_VID, m:matchMedia('(pointer:coarse)').matches });
+  const body=JSON.stringify({ e, t:t||'', q:q||'', p:from||FB_PAGE, v:EV_VID, m:matchMedia('(pointer:coarse)').matches });
   try {
     if(navigator.sendBeacon && navigator.sendBeacon(EVENT_URL, body)) return;
     fetch(EVENT_URL, { method:'POST', body, keepalive:true }).catch(()=>{});
@@ -3492,7 +3492,7 @@ let EV_DAYS = 30;
 /* 기록 한 줄의 '대상'을 사람이 읽는 말로: 화면 이름 · 데이터 이름 · 연구자 이름 · PMID · AI 질문 종류 */
 function evTarget(r){
   const t=r.target||'';
-  if(r.ev==='page') return '→ '+(FB_PAGE_LABEL[t]||t);
+  if(r.ev==='page') return (r.page?(FB_PAGE_LABEL[r.page]||r.page)+' ':'')+'→ '+(FB_PAGE_LABEL[t]||t);
   if(['detail','guide','apply'].includes(r.ev)){ const d=DATASETS.find(x=>x.id===t); return d?`${d.name} (${t})`:t; }
   if(r.ev==='researcher'){ const p=RESEARCHERS[t]; return p?p.name:t; }
   if(r.ev==='paper') return t==='pubmed_search'?'PubMed 검색 결과':'PMID '+t;
@@ -3576,9 +3576,9 @@ function loadEvStats(box){
           <div><b>${detailN.toLocaleString()}</b><span>데이터 상세 조회</span></div>
           <div><b>${n?Math.round((T.mobile||0)/n*100):0}%</b><span>모바일 비율</span></div>
         </div>
-        <div class="ev-sec">기능별 클릭 수<small>횟수 / 쓴 사람 수 · 화면 이동은 어느 화면으로 갔는지 나눠서</small></div>
+        <div class="ev-sec">기능별 클릭 수<small>횟수 / 쓴 사람 수 · 화면 이동은 '출발 화면 → 도착 화면'으로 나눠서</small></div>
         ${evBars([...byEvent.filter(r=>r.ev!=='page'), ...(j.byPage||[]).map(r=>({...r, ev:'page'}))].sort((a,b)=>b.n-a.n),
-                 r=>r.ev==='page' ? '화면 이동 '+evTarget(r) : (EV_LABEL[r.ev]||r.ev))}
+                 r=>r.ev==='page' ? '화면 이동 · '+evTarget(r) : (EV_LABEL[r.ev]||r.ev))}
         <div class="ev-sec">일별 추이<small>막대에 마우스를 올리면 숫자가 보입니다</small></div>
         <div class="ev-days">${days.map(d=>`<i style="height:${(d.n/dmax*100).toFixed(1)}%" title="${d.day} · ${d.n}건 · ${d.visitors}명"></i>`).join('')}</div>
         <div class="ev-days__axis"><span>${days[0].day}</span><span>하루 최고 ${dmax}건</span><span>${days[days.length-1].day}</span></div>
@@ -3775,8 +3775,10 @@ function goPage(name) {
   document.querySelectorAll('.nav__tab[data-page], .menu-panel__item[data-page], .tool-dock__item[data-page]').forEach(l => l.classList.remove('on'));
   const navKey = (name === 'search' || name === 'dataset') ? 'main' : name;
   document.querySelectorAll('.nav__tab[data-page="' + navKey + '"], .menu-panel__item[data-page="' + navKey + '"], .tool-dock__item[data-page="' + navKey + '"]').forEach(l => l.classList.add('on'));
+  const fromPage = FB_PAGE;   // 어느 화면에서 왔는지 (fbOnView 가 FB_PAGE 를 새 화면으로 바꾸기 전에)
   fbOnView(name);   // 수정요청 핀을 이 화면 기준으로 다시 불러온다
-  if(name!=='search' && name!=='dataset') track('page', name);
+  // 화면 이동 기록: p = 출발 화면, t = 도착 화면 (검색결과·상세는 search/detail 로 따로 센다, 같은 화면 다시 누름은 안 셈)
+  if(name!=='search' && name!=='dataset' && name!==fromPage) track('page', name, '', fromPage);
   navPush(name);    // 브라우저 뒤로 가기용 기록
 }
 
