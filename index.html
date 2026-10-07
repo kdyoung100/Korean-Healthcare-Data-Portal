@@ -905,6 +905,31 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 .fb-admin-list__filters{display:flex;gap:6px;margin:6px 0 12px;flex-wrap:wrap}
 .fb-admin-list__filters button{border:1.5px solid var(--g20);background:var(--white);border-radius:16px;padding:4px 12px;font:inherit;font-size:12px;cursor:pointer;color:var(--g70)}
 .fb-admin-list__filters button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+/* 관리자 '통계' 탭 */
+.ev-sum{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:4px 0 14px}
+.ev-sum div{background:#F6F8FA;border-radius:10px;padding:10px 12px}
+.ev-sum b{display:block;font-size:20px;color:var(--navy)}
+.ev-sum span{font-size:11.5px;color:var(--g50)}
+.ev-sec{margin:16px 0 6px;font-size:13px;font-weight:700;color:var(--g90)}
+.ev-sec small{font-weight:400;color:var(--g50);margin-left:6px}
+.ev-bar{display:grid;grid-template-columns:150px 1fr 76px;gap:8px;align-items:center;font-size:12.5px;padding:3px 0}
+.ev-bar__name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--g80)}
+.ev-bar__name--go{cursor:pointer;color:var(--sky)}.ev-bar__name--go:hover{text-decoration:underline}
+.ev-bar__track{background:var(--g10);border-radius:4px;height:12px;overflow:hidden}
+.ev-bar__fill{display:block;background:var(--teal);height:100%;border-radius:4px}
+.ev-bar__n{text-align:right;color:var(--g70);font-variant-numeric:tabular-nums}
+.ev-bar__n small{color:var(--g50)}
+.ev-days{display:flex;align-items:flex-end;gap:2px;height:110px;border-bottom:1px solid var(--g20);padding-top:6px}
+.ev-days i{flex:1;background:var(--sky);border-radius:3px 3px 0 0;min-height:1px;opacity:.85}
+.ev-days i:hover{opacity:1;background:var(--navy)}
+.ev-days__axis{display:flex;justify-content:space-between;font-size:11px;color:var(--g50);margin-top:3px}
+.ev-tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.ev-tbl th,.ev-tbl td{padding:6px;border-bottom:1px solid var(--g10);text-align:right}
+.ev-tbl th{color:var(--g50);font-weight:600;font-size:11.5px}
+.ev-tbl th:first-child,.ev-tbl td:first-child{text-align:left}
+.ev-tbl .hot{color:#B42318;font-weight:700}
+.ev-empty{color:var(--g50);font-size:12.5px}
+@media (max-width:640px){ .ev-sum{grid-template-columns:repeat(2,1fr)} .ev-bar{grid-template-columns:100px 1fr 60px} }
 .fb-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9100;background:var(--navy);color:#fff;padding:10px 12px 10px 18px;border-radius:22px;font-size:13px;box-shadow:var(--sh-md);display:flex;gap:12px;align-items:center;max-width:calc(100vw - 32px)}
 .fb-toast[hidden]{display:none}
 .fb-toast button{background:none;border:none;color:#9FC4E8;cursor:pointer;font:inherit;font-size:12.5px;white-space:nowrap}
@@ -2066,7 +2091,7 @@ function applyFacetFilters(list){
 }
 
 /* 체크박스 클릭·기간 검색 버튼에서 호출: 마지막 검색어로 다시 검색해 필터를 반영한다. */
-function applyFiltersAndRerun(){ runSearch(LAST_QUERY); }
+function applyFiltersAndRerun(){ track('filter', '', LAST_QUERY); runSearch(LAST_QUERY, true); }
 
 function resetFilters(){
   document.querySelectorAll('.filter-panel .filter-item.checked').forEach(function(el){ el.classList.remove('checked'); });
@@ -2111,8 +2136,9 @@ function removeFilterChip(bodyId, label){
 
 /* 공백으로 끊어 모든 토큰이 들어있는 데이터셋만 남긴다(AND 검색) + 왼쪽 필터 패널 반영 */
 let LAST_QUERY = '';
-function runSearch(q){
+function runSearch(q, rerun){
   q=(q||'').trim().replace(/^#/,'');
+  if(!rerun) track('search', '', q);
   NAV_SEARCH={ q:q, m:'normal' };
   LAST_QUERY = q;
   const toks=q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -2222,6 +2248,7 @@ function researcherChipsHtml(list, n){
 /* 연구자 카드(모달): 소속, 논문 수, 쓴 데이터, 논문 전체, PubMed 저자 검색 */
 function openResearcher(k){
   const r=RESEARCHERS[k]; if(!r) return;
+  track('researcher', k);
   const ps=papersOf(r);
   const ds=r.datasets.map(dsById).filter(Boolean);
   const parts=r.name.split(/\s+/), last=parts.pop();
@@ -2712,6 +2739,7 @@ function runAISearch(q){
   }
 
   const R = aiResolve(q, 8), picks = R.picks, intent = R.intent, people = R.people;
+  track('ai_search', intent, q);
   document.getElementById('resultCount').textContent = intent==='researcher' ? people.length : picks.length;
   document.getElementById('resultUnit').textContent = intent==='researcher' ? '명' : '건';
 
@@ -2827,6 +2855,7 @@ let CURRENT_DS=null;
 function openDetail(id){
   const d=DATASETS.find(x=>x.id===id); if(!d) return;
   CURRENT_DS=d;
+  track('detail', d.id);
   document.getElementById('dsType').textContent=typeLabel(d.type);
   document.getElementById('dsType').style.background='rgba(255,255,255,.15)';
   const PF=platformOf(d);
@@ -2852,8 +2881,8 @@ function openDetail(id){
   const applyBtn=document.getElementById('dsApplyBtn');
   if(applyBtn){
     if(PF && PF.url){ applyBtn.disabled=false; applyBtn.textContent='📋 '+PF.name+'에서 신청하기';
-      applyBtn.onclick=()=>window.open(PF.url,'_blank','noopener'); }
-    else { applyBtn.disabled=false; applyBtn.textContent='📋 이용 신청하기'; applyBtn.onclick=null; }
+      applyBtn.onclick=()=>{ track('apply', d.id); window.open(PF.url,'_blank','noopener'); }; }
+    else { applyBtn.disabled=false; applyBtn.textContent='📋 이용 신청하기'; applyBtn.onclick=()=>track('apply', d.id); }
   }
   document.getElementById('dsApplyProcess').innerHTML=
     (PF? (PF.url
@@ -3005,6 +3034,34 @@ function fbCheck(r){
   if(!r.ok) throw new Error('HTTP '+r.status);
   return r;
 }
+
+/* ══ 이용 통계 ══
+   기능을 쓸 때마다 Worker(/ev)에 한 줄 보낸다 → D1 events 테이블. 관리자 창의 '📊 통계' 탭에서 본다.
+   개인정보는 보내지 않는다: 방문자 구분은 이 브라우저에서 만든 무작위 번호(localStorage 'evVid')뿐.
+   관리자 키로 들어온 탭, 내 PC(localhost·발표 모드), 뒤로 가기로 화면을 되살릴 때는 세지 않는다. */
+const EVENT_URL = WEB_SEARCH_PROXY_URL + 'ev';
+const EV_OFF = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || location.protocol==='file:';
+let EV_VID = '';
+try {
+  EV_VID = localStorage.getItem('evVid') || '';
+  if(!EV_VID){ EV_VID = Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem('evVid', EV_VID); }
+} catch(e){}
+function track(e, t, q){
+  if(EV_OFF || FB_IS_ADMIN() || NAV_RESTORING) return;
+  const body=JSON.stringify({ e, t:t||'', q:q||'', p:FB_PAGE, v:EV_VID, m:matchMedia('(pointer:coarse)').matches });
+  try {
+    if(navigator.sendBeacon && navigator.sendBeacon(EVENT_URL, body)) return;
+    fetch(EVENT_URL, { method:'POST', body, keepalive:true }).catch(()=>{});
+  } catch(err){}
+}
+// 방문: 탭(세션)마다 한 번
+try { if(!sessionStorage.getItem('evVisit')){ sessionStorage.setItem('evVisit','1'); setTimeout(()=>track('visit'), 0); } } catch(e){}
+// 논문(PubMed) 링크 클릭 — 카드가 클릭을 막아도(stopPropagation) 잡히도록 capture 단계에서
+document.addEventListener('click', ev=>{
+  const a=ev.target.closest && ev.target.closest('a[href^="https://pubmed.ncbi.nlm.nih.gov/"]'); if(!a) return;
+  const m=a.getAttribute('href').match(/pubmed\.ncbi\.nlm\.nih\.gov\/(\d+)/);
+  track('paper', m ? m[1] : 'pubmed_search');
+}, true);
 
 function fbScope(){ return (FB_PAGE==='dataset' && CURRENT_DS) ? CURRENT_DS.id : 'page:'+FB_PAGE; }
 function fbScopeLabel(scope){
@@ -3282,6 +3339,7 @@ function openFbForm(target){
   const modal=document.getElementById('fbModal');
   if(!modal.hidden && FB_TARGET && FB_TARGET.anchor===target.anchor) return;   // 길게 누르기 + contextmenu가 겹쳐도 한 번만
   FB_TARGET={ scope:target.scope, anchor:target.anchor, label:target.label, snippet:target.snippet };
+  track('feedback_form', target.scope);
   document.getElementById('fbTarget').textContent=`${fbScopeLabel(target.scope)} · ${target.label}`;
   const cur=document.getElementById('fbCurrent');
   if(target.snippet){ cur.hidden=false; cur.innerHTML='<b>선택한 내용</b>'+esc(target.snippet); }
@@ -3388,6 +3446,7 @@ function loadFbAdminList(){
   document.querySelectorAll('#fbAdminFilters button').forEach(b=>b.classList.toggle('on', b.dataset.f===FB_ADMIN_FILTER));
   box.innerHTML='<div style="color:var(--g50);font-size:13px">불러오는 중…</div>';
   if(FB_ADMIN_FILTER==='log'){ loadFbAdminLog(box); return; }
+  if(FB_ADMIN_FILTER==='stats'){ loadEvStats(box); return; }
   const q=FB_ADMIN_FILTER==='all'?'':'?status='+FB_ADMIN_FILTER;
   fetch(FEEDBACK_URL+'/admin'+q, { headers: fbAdminHeaders() })
     .then(fbCheck).then(r=>r.json())
@@ -3422,6 +3481,90 @@ function loadFbAdminLog(box){
           </div>`).join('');
     })
     .catch(e=>{ box.innerHTML='<div style="color:#c62828;font-size:13px">기록을 불러오지 못했습니다: '+esc(e.message)+'<br>Worker를 새 코드로 다시 배포했는지 확인하세요.</div>'; });
+}
+/* 관리자: 이용 통계 (Worker /ev/admin/stats — D1 events 와 feedback 을 데이터셋 번호로 엮는다) */
+const EV_LABEL = { visit:'방문(탭 열기)', page:'메뉴 화면 이동', search:'키워드 검색', filter:'검색 필터', ai_search:'AI 검색',
+  detail:'데이터 상세 보기', guide:'상세 안내서 보기', apply:'이용 신청 버튼', researcher:'연구자 카드', paper:'논문(PubMed) 링크',
+  chat_open:'챗봇 열기', chat:'챗봇 질문', feedback_form:'수정 요청 창 열기' };
+const EV_INTENT = { dataset:'데이터 질문', paper:'논문 질문', researcher:'연구자 질문' };
+let EV_DAYS = 30;
+function setEvDays(n){ EV_DAYS=n; loadEvStats(document.getElementById('fbAdminList')); }
+/* 표 전체를 CSV 파일로 내려받는다 (엑셀에서 바로 열림) */
+function evExport(table){
+  fetch(EVENT_URL+'/admin/export?table='+table, { headers: fbAdminHeaders() })
+    .then(fbCheck).then(r=>r.blob())
+    .then(b=>{
+      const a=document.createElement('a'); a.href=URL.createObjectURL(b);
+      a.download=`${table}_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+    })
+    .catch(e=>alert('내려받지 못했습니다: '+e.message));
+}
+/* 가로 막대 목록: rows=[{n, visitors?}], label(r)=이름, go(r)=누르면 실행할 코드(선택) */
+function evBars(rows, label, go){
+  if(!rows || !rows.length) return '<div class="ev-empty">아직 기록이 없습니다.</div>';
+  const max=Math.max(...rows.map(r=>r.n))||1;
+  return rows.map(r=>`<div class="ev-bar">
+      <span class="ev-bar__name${go?' ev-bar__name--go':''}"${go?` onclick="${go(r)}"`:''} title="${esc(label(r))}">${esc(label(r))}</span>
+      <span class="ev-bar__track"><span class="ev-bar__fill" style="width:${(r.n/max*100).toFixed(1)}%"></span></span>
+      <span class="ev-bar__n">${r.n.toLocaleString()}${r.visitors!=null?` <small>/ ${r.visitors}명</small>`:''}</span>
+    </div>`).join('');
+}
+function loadEvStats(box){
+  const dsName=id=>{ const d=DATASETS.find(x=>x.id===id); return d?d.name:id; };
+  const go=id=>`closeFbAdminList();openDetail('${String(id).replace(/[^\w-]/g,'')}')`;
+  fetch(EVENT_URL+'/admin/stats?days='+EV_DAYS, { headers: fbAdminHeaders() })
+    .then(fbCheck).then(r=>r.json())
+    .then(j=>{
+      const T=j.total||{}, n=T.n||0, byEvent=j.byEvent||[];
+      const periods=[[7,'최근 7일'],[30,'최근 30일'],[90,'최근 90일'],[3650,'전체']]
+        .map(([d,l])=>`<button type="button" class="${EV_DAYS===d?'on':''}" onclick="setEvDays(${d})">${l}</button>`).join('');
+      // 일별 막대: 기록 없는 날도 0으로 채운다 ('전체'는 첫 기록 날부터)
+      const dayMap={}; (j.byDay||[]).forEach(r=>{ dayMap[r.day]=r; });
+      const today=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+      const start=(EV_DAYS>=3650 && j.byDay && j.byDay.length) ? j.byDay[0].day : j.from;
+      const days=[];
+      for(let t=new Date(start+'T00:00:00Z'); days.length<800; t=new Date(t.getTime()+86400000)){
+        const k=t.toISOString().slice(0,10); days.push(dayMap[k]||{ day:k, n:0, visitors:0 }); if(k>=today) break;
+      }
+      const dmax=Math.max(1,...days.map(d=>d.n));
+      const fb=j.dsFeedback||[];
+      const detailN=(byEvent.find(r=>r.ev==='detail')||{ n:0 }).n;
+      box.innerHTML = `
+        <div class="fb-admin-list__filters" style="margin-top:0">${periods}</div>
+        <div class="fb-admin-list__filters" style="margin-top:-4px">
+          <button type="button" onclick="evExport('events')">⬇ 클릭 기록 CSV</button>
+          <button type="button" onclick="evExport('feedback')">⬇ 수정 요청 CSV</button>
+          <button type="button" onclick="evExport('feedback_log')">⬇ 수정 요청 기록 CSV</button>
+        </div>
+        <div class="ev-sum">
+          <div><b>${(T.visitors||0).toLocaleString()}</b><span>방문자 (브라우저 수)</span></div>
+          <div><b>${n.toLocaleString()}</b><span>전체 클릭 기록</span></div>
+          <div><b>${detailN.toLocaleString()}</b><span>데이터 상세 조회</span></div>
+          <div><b>${n?Math.round((T.mobile||0)/n*100):0}%</b><span>모바일 비율</span></div>
+        </div>
+        <div class="ev-sec">기능별 클릭 수<small>횟수 / 쓴 사람 수</small></div>
+        ${evBars(byEvent, r=>EV_LABEL[r.ev]||r.ev)}
+        <div class="ev-sec">일별 추이<small>막대에 마우스를 올리면 숫자가 보입니다</small></div>
+        <div class="ev-days">${days.map(d=>`<i style="height:${(d.n/dmax*100).toFixed(1)}%" title="${d.day} · ${d.n}건 · ${d.visitors}명"></i>`).join('')}</div>
+        <div class="ev-days__axis"><span>${days[0].day}</span><span>하루 최고 ${dmax}건</span><span>${days[days.length-1].day}</span></div>
+        <div class="ev-sec">많이 본 데이터 TOP 10<small>이름을 누르면 상세 화면으로</small></div>
+        ${evBars(j.topDatasets, r=>dsName(r.target), r=>go(r.target))}
+        <div class="ev-sec">많이 찾은 검색어</div>
+        ${evBars(j.topQueries, r=>`${r.q} · ${r.ev==='search'?'키워드':r.ev==='chat'?'챗봇':'AI'}`)}
+        <div class="ev-sec">AI 검색 질문 종류</div>
+        ${evBars(j.aiIntent, r=>EV_INTENT[r.target]||r.target||'기타')}
+        <div class="ev-sec">메뉴 화면 조회</div>
+        ${evBars(j.byPage, r=>FB_PAGE_LABEL[r.target]||r.target)}
+        <div class="ev-sec">데이터별 조회수 대비 수정 요청<small>조회는 선택 기간, 수정 요청은 전체 기간 · 요청 많은 순</small></div>
+        ${fb.length ? `<table class="ev-tbl"><tr><th>데이터</th><th>상세 조회</th><th>수정 요청</th><th>미처리</th><th>조회 100회당 요청</th></tr>
+          ${fb.map(r=>`<tr><td><span class="ev-bar__name ev-bar__name--go" onclick="${go(r.ds)}">${esc(r.name||dsName(r.ds))}</span></td>
+            <td>${r.views}</td><td>${r.requests}</td><td class="${r.pending?'hot':''}">${r.pending}</td>
+            <td>${r.views?(r.requests/r.views*100).toFixed(1):'–'}</td></tr>`).join('')}</table>`
+          : '<div class="ev-empty">아직 기록이 없습니다.</div>'}
+        <div style="margin-top:14px;font-size:11.5px;color:var(--g50);line-height:1.6">· 관리자 키로 들어온 탭과 내 PC(localhost·발표 모드)에서 누른 것은 세지 않습니다.<br>· 방문자 수는 브라우저 기준이라, 한 사람이 PC와 휴대폰으로 오면 2명으로 셉니다.</div>`;
+    })
+    .catch(e=>{ box.innerHTML='<div style="color:#c62828;font-size:13px">통계를 불러오지 못했습니다: '+esc(e.message)+'<br>Worker를 새 코드로 다시 배포했는지 확인하세요.</div>'; });
 }
 /* 관리자 목록에서 누르면 그 화면으로 가서 해당 핀을 열어준다 */
 function fbAdminGo(id){
@@ -3497,6 +3640,7 @@ function renderRelated(d){
 /* 상세페이지 보기: 정보표 숨기고 md로 전환 (지연 로딩) */
 function showGuide(){
   const d=CURRENT_DS; if(!d||!d.guideFile) return;
+  track('guide', d.id);
   document.getElementById('dsInfoCard').style.display='none';
   document.getElementById('dsGuideView').style.display='block';
   const gc=document.getElementById('dsGuide');
@@ -3591,6 +3735,7 @@ function goPage(name) {
   const navKey = (name === 'search' || name === 'dataset') ? 'main' : name;
   document.querySelectorAll('.nav__tab[data-page="' + navKey + '"], .menu-panel__item[data-page="' + navKey + '"], .tool-dock__item[data-page="' + navKey + '"]').forEach(l => l.classList.add('on'));
   fbOnView(name);   // 수정요청 핀을 이 화면 기준으로 다시 불러온다
+  if(name!=='search' && name!=='dataset') track('page', name);
   navPush(name);    // 브라우저 뒤로 가기용 기록
 }
 
@@ -3874,7 +4019,7 @@ function toggleChat(force){
   const panel = document.getElementById('chatPanel');
   const open = typeof force === 'boolean' ? force : !panel.classList.contains('open');
   panel.classList.toggle('open', open);
-  if(open) document.getElementById('chatInput').focus();
+  if(open){ document.getElementById('chatInput').focus(); track('chat_open'); }
 }
 
 /* 기관명 줄임말 대응(질병청→질병관리청, 심평원→건강보험심사평가원 등).
@@ -4229,6 +4374,7 @@ function sendChat(){
   if(!q) return;
   input.value = '';
   appendChatMsg(q, 'chat-msg--user');
+  track('chat', '', q);
 
   // 사이트 자체 검색은 AI 응답과 무관하게 먼저 보여준다(느리거나 실패해도 결과는 바로 나옴).
   const R = aiResolve(q), picks = R.picks;
@@ -4309,13 +4455,14 @@ function sendChat(){
 <div class="fb-modal" id="fbAdminModal" hidden onclick="if(event.target===this)closeFbAdminList()">
   <div class="fb-modal__box fb-modal__box--wide" role="dialog" aria-modal="true" aria-labelledby="fbAdminTitle">
     <button class="fb-modal__x" type="button" onclick="closeFbAdminList()" aria-label="닫기">×</button>
-    <div class="fb-modal__title" id="fbAdminTitle">수정 요청 관리</div>
+    <div class="fb-modal__title" id="fbAdminTitle">수정 요청 관리 · 이용 통계</div>
     <div class="fb-admin-list__filters" id="fbAdminFilters">
       <button type="button" data-f="open" onclick="setFbAdminFilter('open')">접수</button>
       <button type="button" data-f="review" onclick="setFbAdminFilter('review')">검토중</button>
       <button type="button" data-f="done" onclick="setFbAdminFilter('done')">반영완료</button>
       <button type="button" data-f="all" onclick="setFbAdminFilter('all')">전체</button>
       <button type="button" data-f="log" onclick="setFbAdminFilter('log')">📜 기록</button>
+      <button type="button" data-f="stats" onclick="setFbAdminFilter('stats')">📊 통계</button>
     </div>
     <div id="fbAdminList"></div>
   </div>
