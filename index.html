@@ -927,6 +927,7 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 .ev-tbl th,.ev-tbl td{padding:6px;border-bottom:1px solid var(--g10);text-align:right}
 .ev-tbl th{color:var(--g50);font-weight:600;font-size:11.5px}
 .ev-tbl th:first-child,.ev-tbl td:first-child{text-align:left}
+.ev-tbl--log th,.ev-tbl--log td{text-align:left!important}
 .ev-tbl .hot{color:#B42318;font-weight:700}
 .ev-empty{color:var(--g50);font-size:12.5px}
 @media (max-width:640px){ .ev-sum{grid-template-columns:repeat(2,1fr)} .ev-bar{grid-template-columns:100px 1fr 60px} }
@@ -3483,11 +3484,43 @@ function loadFbAdminLog(box){
     .catch(e=>{ box.innerHTML='<div style="color:#c62828;font-size:13px">기록을 불러오지 못했습니다: '+esc(e.message)+'<br>Worker를 새 코드로 다시 배포했는지 확인하세요.</div>'; });
 }
 /* 관리자: 이용 통계 (Worker /ev/admin/stats — D1 events 와 feedback 을 데이터셋 번호로 엮는다) */
-const EV_LABEL = { visit:'방문(탭 열기)', page:'메뉴 화면 이동', search:'키워드 검색', filter:'검색 필터', ai_search:'AI 검색',
+const EV_LABEL = { visit:'방문(탭 열기)', page:'화면 이동', search:'키워드 검색', filter:'검색 필터', ai_search:'AI 검색',
   detail:'데이터 상세 보기', guide:'상세 안내서 보기', apply:'이용 신청 버튼', researcher:'연구자 카드', paper:'논문(PubMed) 링크',
   chat_open:'챗봇 열기', chat:'챗봇 질문', feedback_form:'수정 요청 창 열기' };
 const EV_INTENT = { dataset:'데이터 질문', paper:'논문 질문', researcher:'연구자 질문' };
 let EV_DAYS = 30;
+/* 기록 한 줄의 '대상'을 사람이 읽는 말로: 화면 이름 · 데이터 이름 · 연구자 이름 · PMID · AI 질문 종류 */
+function evTarget(r){
+  const t=r.target||'';
+  if(r.ev==='page') return '→ '+(FB_PAGE_LABEL[t]||t);
+  if(['detail','guide','apply'].includes(r.ev)){ const d=DATASETS.find(x=>x.id===t); return d?`${d.name} (${t})`:t; }
+  if(r.ev==='researcher'){ const p=RESEARCHERS[t]; return p?p.name:t; }
+  if(r.ev==='paper') return t==='pubmed_search'?'PubMed 검색 결과':'PMID '+t;
+  if(r.ev==='ai_search') return EV_INTENT[t]||t;
+  if(r.ev==='feedback_form') return t.startsWith('page:')?(FB_PAGE_LABEL[t.slice(5)]||t):(DATASETS.find(x=>x.id===t)||{}).name||t;
+  return t;
+}
+/* 최근 활동 표 — 기능으로 거르기, 방문자 번호를 누르면 그 방문자의 흐름만 */
+let EV_RECENT=[], EV_WHO='';
+function evRenderRecent(){
+  const box=document.getElementById('evRecent'); if(!box) return;
+  const f=(document.getElementById('evRecentEv')||{}).value||'';
+  const L=EV_RECENT.filter(r=>(!f||r.ev===f)&&(!EV_WHO||r.vid===EV_WHO));
+  const who=document.getElementById('evRecentWho');
+  if(who){ who.hidden=!EV_WHO; who.textContent=`방문자 #${EV_WHO.slice(-4)} 만 보는 중 · 전체 보기`; }
+  box.innerHTML = !L.length ? '<div class="ev-empty">해당하는 기록이 없습니다.</div>'
+    : `<table class="ev-tbl ev-tbl--log"><tr><th>시각</th><th>방문자</th><th>기능</th><th>대상</th><th>검색어</th><th>누른 화면</th></tr>${L.map(r=>`<tr>
+        <td style="white-space:nowrap">${evTime(r.at)}</td>
+        <td style="white-space:nowrap"><span class="ev-bar__name ev-bar__name--go" onclick="EV_WHO='${esc(r.vid||'')}';evRenderRecent()">#${esc((r.vid||'----').slice(-4))}</span>${r.mobile?' 📱':''}</td>
+        <td style="white-space:nowrap">${esc(EV_LABEL[r.ev]||r.ev)}</td>
+        <td>${esc(evTarget(r))}</td><td>${esc(r.q||'')}</td>
+        <td style="white-space:nowrap">${esc(FB_PAGE_LABEL[r.page]||r.page||'')}</td></tr>`).join('')}</table>`;
+}
+function evTime(iso){
+  const d=new Date(iso); if(isNaN(d)) return '';
+  const p=n=>String(n).padStart(2,'0');
+  return `${p(d.getMonth()+1)}.${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 function setEvDays(n){ EV_DAYS=n; loadEvStats(document.getElementById('fbAdminList')); }
 /* 표 전체를 CSV 파일로 내려받는다 (엑셀에서 바로 열림) */
 function evExport(table){
@@ -3543,8 +3576,9 @@ function loadEvStats(box){
           <div><b>${detailN.toLocaleString()}</b><span>데이터 상세 조회</span></div>
           <div><b>${n?Math.round((T.mobile||0)/n*100):0}%</b><span>모바일 비율</span></div>
         </div>
-        <div class="ev-sec">기능별 클릭 수<small>횟수 / 쓴 사람 수</small></div>
-        ${evBars(byEvent, r=>EV_LABEL[r.ev]||r.ev)}
+        <div class="ev-sec">기능별 클릭 수<small>횟수 / 쓴 사람 수 · 화면 이동은 어느 화면으로 갔는지 나눠서</small></div>
+        ${evBars([...byEvent.filter(r=>r.ev!=='page'), ...(j.byPage||[]).map(r=>({...r, ev:'page'}))].sort((a,b)=>b.n-a.n),
+                 r=>r.ev==='page' ? '화면 이동 '+evTarget(r) : (EV_LABEL[r.ev]||r.ev))}
         <div class="ev-sec">일별 추이<small>막대에 마우스를 올리면 숫자가 보입니다</small></div>
         <div class="ev-days">${days.map(d=>`<i style="height:${(d.n/dmax*100).toFixed(1)}%" title="${d.day} · ${d.n}건 · ${d.visitors}명"></i>`).join('')}</div>
         <div class="ev-days__axis"><span>${days[0].day}</span><span>하루 최고 ${dmax}건</span><span>${days[days.length-1].day}</span></div>
@@ -3554,8 +3588,14 @@ function loadEvStats(box){
         ${evBars(j.topQueries, r=>`${r.q} · ${r.ev==='search'?'키워드':r.ev==='chat'?'챗봇':'AI'}`)}
         <div class="ev-sec">AI 검색 질문 종류</div>
         ${evBars(j.aiIntent, r=>EV_INTENT[r.target]||r.target||'기타')}
-        <div class="ev-sec">메뉴 화면 조회</div>
-        ${evBars(j.byPage, r=>FB_PAGE_LABEL[r.target]||r.target)}
+        <div class="ev-sec">최근 활동<small>최근 ${(j.recent||[]).length}건 · 방문자 번호를 누르면 그 사람이 한 일만</small></div>
+        <div class="fb-admin-list__filters" style="margin:0 0 6px">
+          <select id="evRecentEv" aria-label="기능으로 거르기" onchange="evRenderRecent()" style="font:inherit;font-size:12px;padding:4px 8px;border-radius:8px;border:1.5px solid var(--g20)">
+            <option value="">모든 기능</option>${Object.entries(EV_LABEL).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}
+          </select>
+          <button type="button" id="evRecentWho" hidden onclick="EV_WHO='';evRenderRecent()"></button>
+        </div>
+        <div id="evRecent" style="overflow-x:auto"></div>
         <div class="ev-sec">데이터별 조회수 대비 수정 요청<small>조회는 선택 기간, 수정 요청은 전체 기간 · 요청 많은 순</small></div>
         ${fb.length ? `<table class="ev-tbl"><tr><th>데이터</th><th>상세 조회</th><th>수정 요청</th><th>미처리</th><th>조회 100회당 요청</th></tr>
           ${fb.map(r=>`<tr><td><span class="ev-bar__name ev-bar__name--go" onclick="${go(r.ds)}">${esc(r.name||dsName(r.ds))}</span></td>
@@ -3563,6 +3603,7 @@ function loadEvStats(box){
             <td>${r.views?(r.requests/r.views*100).toFixed(1):'–'}</td></tr>`).join('')}</table>`
           : '<div class="ev-empty">아직 기록이 없습니다.</div>'}
         <div style="margin-top:14px;font-size:11.5px;color:var(--g50);line-height:1.6">· 관리자 키로 들어온 탭과 내 PC(localhost·발표 모드)에서 누른 것은 세지 않습니다.<br>· 방문자 수는 브라우저 기준이라, 한 사람이 PC와 휴대폰으로 오면 2명으로 셉니다.</div>`;
+      EV_RECENT=j.recent||[]; EV_WHO=''; evRenderRecent();
     })
     .catch(e=>{ box.innerHTML='<div style="color:#c62828;font-size:13px">통계를 불러오지 못했습니다: '+esc(e.message)+'<br>Worker를 새 코드로 다시 배포했는지 확인하세요.</div>'; });
 }
