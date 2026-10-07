@@ -14,8 +14,9 @@
     python paper_db.py approve CD003 12345678 # 담당자 OK — 데이터셋ID(그 데이터의 '확인' 논문 전부) 또는 PMID
     python paper_db.py reject 12345678       # 담당자 반려 — 사이트에 안 나온다
 
-  사이트에 나오는 조건 = 검수상태 '확인'(AI·사람 검수) **그리고** 담당자승인 '승인'(담당자 OK).
-  검수 에이전트가 '확인'을 해도 담당자가 승인하기 전에는 사이트에 나오지 않는다.
+  사이트에 나오는 조건 = 그 데이터셋에 대해 데이터셋판정 '확인'(AI·사람 검수) **그리고** 승인데이터셋에 그 데이터셋(담당자 OK).
+  판정·승인은 논문 × 데이터셋 단위다 — 이미 승인된 논문에 fetch 가 새 데이터셋ID를 붙이면 그 데이터셋은
+  다시 '미검수'(pending 에 나옴)이고, 검수·승인 전에는 그 데이터셋 화면에 나오지 않는다.
 
   검색식 : pubmed_queries.json  (데이터셋ID → PubMed 검색식)
   DB     : 논문DB.xlsx          (한 행 = 논문 1편. 커밋할 것 — CI 는 PubMed 를 부르지 않고 이 파일만 읽는다)
@@ -46,11 +47,11 @@ PUBMED = "https://pubmed.ncbi.nlm.nih.gov/"
 
 STATUSES = ["미검수", "확인", "제외", "보류"]
 APPROVALS = ["승인", "반려"]       # 담당자승인 칸 — 비어 있으면 '승인 대기'. 사람(담당자)만 정한다
-REVIEW_COLS = ["검수상태", "담당자승인", "승인일", "검수근거", "한줄요약", "검수자", "검수일", "메모"]     # fetch 가 건드리지 않는 칸
-COLS = ["PMID", "데이터셋ID", "검수상태", "담당자승인", "승인일", "검수근거", "한줄요약", "검수자", "검수일",
+REVIEW_COLS = ["검수상태", "데이터셋판정", "담당자승인", "승인데이터셋", "승인일", "검수근거", "한줄요약", "검수자", "검수일", "메모"]     # fetch 가 건드리지 않는 칸
+COLS = ["PMID", "데이터셋ID", "검수상태", "데이터셋판정", "담당자승인", "승인데이터셋", "승인일", "검수근거", "한줄요약", "검수자", "검수일",
         "제목", "저자", "저자수", "저널", "발행연도", "발행일", "DOI",
         "초록", "수집일", "메모"]
-WIDTH = {"PMID": 11, "데이터셋ID": 14, "검수상태": 9, "담당자승인": 10, "승인일": 11, "검수근거": 40, "한줄요약": 50, "검수자": 11, "검수일": 11,
+WIDTH = {"PMID": 11, "데이터셋ID": 14, "검수상태": 9, "데이터셋판정": 22, "담당자승인": 10, "승인데이터셋": 16, "승인일": 11, "검수근거": 40, "한줄요약": 50, "검수자": 11, "검수일": 11,
          "제목": 60, "저자": 30, "저자수": 7, "저널": 22, "발행연도": 8, "발행일": 12, "DOI": 24,
          "초록": 60, "수집일": 11, "메모": 24}
 Q_COLS = ["데이터셋ID", "검색식", "PubMed 전체건수", "조회일"]
@@ -146,15 +147,42 @@ INST_FAMILY = {
 }
 
 
+# 같은 기관의 다른 표기·부속병원 → 계열 (동명이인 판정이 표기 차이로 '기관 2곳'이 되지 않게)
+FAMILY_ALIAS = {
+    "Bongseng Memorial Hospital": "Bong Seng Memorial Hospital", "Dongkuk University": "Dongguk University",
+    "SMG-SNU Boramae Medical Center": "서울대학교", "SMG-SNU Boramae Medical Centre": "서울대학교",
+    "Ewha Woman's University": "이화여자대학교", "Ewha Women's University": "이화여자대학교",
+    "Kangnam Sacred Heart Hospital": "한림대학교", "Gangnam Severance Hospital": "연세대학교",
+    "Severance Children's Hospital": "연세대학교", "Severance Cardiovascular Hospital": "연세대학교",
+    "Renji Hospital": "Shanghai Jiao Tong University", "Busan Paik Hospital": "인제대학교",
+    "National Emergency Medical Center of National Medical Center": "국립중앙의료원",
+    "Kyung Hee University Hospital at Gangdong": "경희대학교",
+    "Catholic University": "가톨릭대학교", "Soon Chun Hyang University": "순천향대학교",
+    "National Health Insurance Services": "국민건강보험공단", "National Health Insurance Service Ilsan Hospital": "국민건강보험공단",
+    "Kangbuk Samsung Hospital": "성균관대학교", "Samsung Kangbuk Hospital": "성균관대학교",
+    "Uijeongbu Eulji Medical Center": "Eulji University", "Unity Health Toronto": "St Michael's Hospital",
+}
+# 기관을 못 뽑고 부서·연구실 이름만 남은 것 — 동명이인 판정에서 '모름'으로 본다
+_FAMILY_UNKNOWN = r"^(Department|Division|Section|Laboratory) of [^,]*$|^(University|Artificial Intelligence and Big Data Research Center|Mental Health Research Institute|Public Health and Medical Service Office)$"
+_UNIV_KO = sorted(((k, v) for k, v in INST_KO.items() if k.endswith("University")), key=lambda t: -len(t[0]))
+
+
 def inst_family(name):
-    n = (name or "").strip()
+    n = re.sub(r"\s*\([^)]*\)$", "", (name or "").strip())        # "… (KIDS)" 같은 끝 약칭은 떼고 본다
+    n = FAMILY_ALIAS.get(n, n)
     if n in INST_FAMILY:
         return INST_FAMILY[n]
     m = re.match(r"^(\S+대학교)(병원|의료원|\s.*)?$", n)
     if m:
         return m.group(1)
-    m = re.match(r"^(.*?University)\b", n)
-    return m.group(1) if m else n
+    for k, v in _UNIV_KO:                  # "Department of Surgery Yonsei University" → 연세대학교
+        if k in n:
+            return INST_FAMILY.get(v, v)
+    if re.match(_FAMILY_UNKNOWN, n, re.I):
+        return ""
+    m = re.match(r"^(University of [A-Z][\w-]*(?: [A-Z][\w-]*)*|.*?University)\b", n)
+    f = m.group(1) if m else n
+    return FAMILY_ALIAS.get(f, f)
 # 한글 소속("질병관리청 감염병정책국 결핵정책과")은 첫 기관 단위까지만
 _KO_ORG = r"^(\S*?(청|본부|대학교|대학|병원|공단|연구원|협회|의료원|센터|연구소))(\s|$)"
 
@@ -408,7 +436,9 @@ def save_db(rows, queries, checks=None):
         "",
         "검수상태: 미검수 = 수집만 됨 / 확인 = 이 데이터를 실제로 썼음 / 제외 = 관련 없음 / 보류 = 초록만으로 판단 불가",
         "사이트에는 '확인'이면서 담당자승인이 '승인'인 논문만 나온다(build.py 의 SHOW_STATUS·NEED_APPROVAL). 미검수·제외·보류는 숨긴다.",
-        "담당자승인(주황 머리글): 검수 에이전트는 이 칸을 건드리지 않는다. 담당자가 '승인' 또는 '반려'를 고른다. 비어 있으면 승인 대기(사이트에 안 나옴).",
+        "판정·승인은 논문 × 데이터셋 단위: 데이터셋판정(예 CD023:확인, CD006:제외)과 승인데이터셋(예 CD023)에 둘 다 있어야 그 데이터 화면에 나온다.",
+        "  이미 승인된 논문에 새 데이터셋ID가 붙으면 그 데이터셋만 다시 미검수 → 검수 → 승인을 거친다.",
+        "담당자승인·승인데이터셋(주황 머리글): 검수 에이전트는 건드리지 않는다. 비어 있으면 승인 대기(사이트에 안 나옴). '반려'면 어디에도 안 나옴.",
         "  한꺼번에: python paper_db.py approve <데이터셋ID>  — 그 데이터의 '확인' 논문 중 대기인 것을 모두 승인.",
         "검수상태·검수근거·검수자·검수일·메모 칸은 사람이 고쳐도 된다. 다시 수집해도 덮어쓰지 않는다.",
         "제목·저자·초록 등 나머지 칸은 다음 수집 때 PubMed 값으로 다시 채워진다(고쳐도 소용없음).",
@@ -476,13 +506,58 @@ def cmd_fetch():
     cmd_stats(rows)
 
 
+def _ids(r):
+    return [x.strip() for x in r.get("데이터셋ID", "").split(",") if x.strip()]
+
+
+def _verdicts(r):
+    """{데이터셋ID: 확인|제외|보류} — 데이터셋판정 칸. 비어 있는 옛 행은 검수상태를 모든 데이터셋에 적용"""
+    v = {}
+    for part in r.get("데이터셋판정", "").split(","):
+        if ":" in part:
+            d, st = part.split(":", 1)
+            v[d.strip()] = st.strip()
+    if not v and (r.get("검수상태") or "미검수") != "미검수":
+        v = {d: r["검수상태"] for d in _ids(r)}
+    return v
+
+
+def _set_verdicts(r, v):
+    r["데이터셋판정"] = ", ".join(f"{d}:{v[d]}" for d in _ids(r) if d in v)
+    sts = set(v.values())
+    r["검수상태"] = "확인" if "확인" in sts else "보류" if "보류" in sts else "제외" if sts else "미검수"
+
+
+def _approved(r):
+    """담당자가 승인한 데이터셋 집합 — 승인데이터셋 칸. 비어 있는 옛 '승인' 행은 확인된 데이터셋 전부"""
+    a = {x.strip() for x in r.get("승인데이터셋", "").split(",") if x.strip()}
+    if not a and r.get("담당자승인") == "승인":
+        a = {d for d, st in _verdicts(r).items() if st == "확인"}
+    return a
+
+
+def _unreviewed(r):
+    v = _verdicts(r)
+    return [d for d in _ids(r) if d not in v]
+
+
+def _waiting(r):
+    """확인됐지만 담당자 승인 전인 데이터셋 (반려된 논문은 제외)"""
+    if r.get("담당자승인") == "반려":
+        return []
+    ok = _approved(r)
+    return [d for d, st in _verdicts(r).items() if st == "확인" and d not in ok]
+
+
 def cmd_pending(out=None):
     rows, queries = load_db()
     conf = json.load(open(QUERIES, encoding="utf-8")) if QUERIES.exists() else {}
-    items = [{"pmid": r["PMID"], "datasets": r.get("데이터셋ID", ""), "title": r.get("제목", ""),
+    # 판정이 없는 데이터셋이 하나라도 있는 논문. check_datasets = 이번에 판정할 데이터셋, judged = 이미 판정된 것
+    items = [{"pmid": r["PMID"], "datasets": r.get("데이터셋ID", ""), "check_datasets": ", ".join(_unreviewed(r)),
+              "judged": r.get("데이터셋판정", ""), "title": r.get("제목", ""),
               "journal": r.get("저널", ""), "year": r.get("발행연도", ""), "authors": r.get("저자", ""),
               "abstract": r.get("초록", "")}
-             for r in sorted(rows.values(), key=_sort_key, reverse=True) if r.get("검수상태", "미검수") in ("", "미검수")]
+             for r in sorted(rows.values(), key=_sort_key, reverse=True) if _unreviewed(r)]
     payload = {"datasets": {d: {"query": q.get("검색식", ""), "note": conf.get(d, {}).get("note", "")}
                             for d, q in queries.items()},
                "count": len(items), "items": items}
@@ -505,10 +580,21 @@ def cmd_review(path):
         if pmid not in rows or st not in STATUSES[1:]:
             bad.append(pmid or "?")
             continue
-        rows[pmid].update(검수상태=st, 검수근거=str(d.get("reason", "")).strip(),
-                          검수자=d.get("reviewer", "AI 검수"), 검수일=today)
-        if str(d.get("summary", "")).strip():
-            rows[pmid]["한줄요약"] = str(d["summary"]).strip()
+        r = rows[pmid]
+        v = _verdicts(r)
+        # 판정이 적용될 데이터셋: "datasets" 를 적었으면 그것, 아니면 아직 판정 안 된 것(없으면 전부)
+        targets = [x for x in (d.get("datasets") or _unreviewed(r) or _ids(r)) if x in _ids(r)]
+        reason = str(d.get("reason", "")).strip()
+        if v and any(x not in v for x in targets):      # 이미 검수된 논문에 새 데이터셋 → 근거를 덧붙인다
+            r["검수근거"] = (r.get("검수근거", "") + f" / [{', '.join(targets)}] {reason}").strip(" /")
+        else:
+            r["검수근거"] = reason
+        for x in targets:
+            v[x] = st
+        _set_verdicts(r, v)
+        r.update(검수자=d.get("reviewer", "AI 검수"), 검수일=today)
+        if str(d.get("summary", "")).strip() and not r.get("한줄요약"):
+            r["한줄요약"] = str(d["summary"]).strip()
         done += 1
     save_db(rows, queries)
     print(f"[검수 반영] {done}편" + (f" / 건너뜀 {len(bad)}건(없는 PMID 또는 잘못된 상태): {', '.join(bad[:10])}" if bad else ""))
@@ -582,32 +668,29 @@ def cmd_stats(rows=None):
     for r in rows.values():
         cnt[r.get("검수상태") or "미검수"] = cnt.get(r.get("검수상태") or "미검수", 0) + 1
     ok = [r for r in rows.values() if r.get("검수상태") == "확인"]
+    part = sum(1 for r in rows.values() if (r.get("검수상태") or "미검수") != "미검수" and _unreviewed(r))
     print("       " + " / ".join(f"{k} {v}" for k, v in cnt.items())
-          + f"  ·  확인 중 담당자 승인 {sum(r.get('담당자승인') == '승인' for r in ok)}"
-          + f" / 승인 대기 {sum(not r.get('담당자승인') for r in ok)} / 반려 {sum(r.get('담당자승인') == '반려' for r in ok)}")
-
-
-def _ids(r):
-    return [x.strip() for x in r.get("데이터셋ID", "").split(",") if x.strip()]
+          + (f" (+ 새 데이터셋이 붙어 일부 미검수 {part})" if part else "")
+          + f"  ·  확인 중 담당자 승인 {sum(bool(_approved(r)) for r in ok)}"
+          + f" / 승인 대기 {sum(bool(_waiting(r)) for r in ok)} / 반려 {sum(r.get('담당자승인') == '반려' for r in ok)}")
 
 
 def cmd_waiting():
     """담당자 승인을 기다리는 논문: 검수상태 '확인'인데 담당자승인이 빈 것"""
     rows, _ = load_db()
-    wait = [r for r in sorted(rows.values(), key=_sort_key, reverse=True)
-            if r.get("검수상태") == "확인" and not r.get("담당자승인")]
+    wait = [r for r in sorted(rows.values(), key=_sort_key, reverse=True) if _waiting(r)]
     hold = [r for r in rows.values() if r.get("검수상태") == "보류"]
     todo = [r for r in rows.values() if (r.get("검수상태") or "미검수") == "미검수"]
     by = {}
     for r in wait:
-        for d in _ids(r):
+        for d in _waiting(r):
             by[d] = by.get(d, 0) + 1
     print(f"[승인 대기] {len(wait)}편 (AI 검수 '확인', 담당자 OK 전 — 사이트에 안 나옴)"
           + (f" / 참고: 보류 {len(hold)}편 · 미검수 {len(todo)}편" if hold or todo else ""))
     for d, n in sorted(by.items(), key=lambda t: -t[1]):
         print(f"    · {d}: {n}편")
     for r in wait[:200]:
-        print(f"    {r['PMID']}  [{r.get('데이터셋ID', '')}]  {r.get('발행연도', '')}  {r.get('제목', '')[:90]}")
+        print(f"    {r['PMID']}  [{', '.join(_waiting(r))}]  {r.get('발행연도', '')}  {r.get('제목', '')[:90]}")
         if r.get("한줄요약"):
             print(f"        └ {r['한줄요약']}")
     if wait:
@@ -615,21 +698,28 @@ def cmd_waiting():
 
 
 def cmd_approve(targets, value):
-    """담당자 승인/반려. 데이터셋ID 를 주면 그 데이터의 '확인' 논문 중 아직 정하지 않은 것 전부, PMID 를 주면 그 논문."""
+    """담당자 승인/반려 (논문 × 데이터셋 단위).
+    승인: 데이터셋ID → 그 데이터셋에 '확인'인데 아직 승인 안 된 논문 전부 / PMID → 그 논문의 승인 대기 데이터셋 전부.
+    반려: PMID 만 — 그 논문은 어느 데이터셋에도 안 나온다."""
     rows, queries = load_db()
     today = datetime.now().strftime("%Y-%m-%d")
     done, skip = 0, []
     for t in targets:
-        if t in rows:
-            hit = [rows[t]] if rows[t].get("검수상태") == "확인" or value == "반려" else []
-            if not hit:
-                skip.append(f"{t}(검수상태 {rows[t].get('검수상태') or '미검수'} — '확인'만 승인 가능)")
-        else:
-            hit = [r for r in rows.values() if t in _ids(r) and r.get("검수상태") == "확인" and not r.get("담당자승인")]
-            if not hit:
-                skip.append(f"{t}(승인 대기 논문 없음)")
-        for r in hit:
-            r.update(담당자승인=value, 승인일=today)
+        if value == "반려":
+            if t in rows:
+                rows[t].update(담당자승인="반려", 승인일=today)
+                done += 1
+            else:
+                skip.append(f"{t}(반려는 PMID 로만)")
+            continue
+        hits = [(rows[t], _waiting(rows[t]))] if t in rows else \
+               [(r, [t]) for r in rows.values() if t in _waiting(r)]
+        hits = [(r, ds) for r, ds in hits if ds]
+        if not hits:
+            skip.append(f"{t}(승인 대기 없음)")
+        for r, ds in hits:
+            r["승인데이터셋"] = ", ".join(x for x in _ids(r) if x in _approved(r) | set(ds))
+            r.update(담당자승인="승인", 승인일=today)
             done += 1
     save_db(rows, queries)
     print(f"[담당자 {value}] {done}편" + (f" / 건너뜀: {', '.join(skip)}" if skip else ""))
@@ -706,7 +796,8 @@ def _assign_keys(shown, fixes, checks=None):
             u = units.setdefault(uid, {"orc": {uid[1]} - {""}, "fam": set(), "inst": set(), "pm": set()})
             u["pm"].add(pmid)
             if a.get("기관"):
-                u["fam"].add(inst_family(a["기관"]))
+                if inst_family(a["기관"]):
+                    u["fam"].add(inst_family(a["기관"]))
                 u["inst"].add(a["기관"])
         par = {u: u for u in units}
 
@@ -770,17 +861,28 @@ def _assign_keys(shown, fixes, checks=None):
             fam = sorted(set().union(*[units[m]["fam"] for m in mem]))
             rkey[r] = nk if len(roots) == 1 else (f"{nk}-{o[0][-4:].lower()}" if o else
                                                   f"{nk}-{slug(fam[0])}" if fam else f"{nk}-{slug(mem[0][0])}")
-        fams = {inst_family(a["기관"]) for _, a in lst if a.get("기관")}
+        fams = {inst_family(a["기관"]) for _, a in lst if a.get("기관")} - {""}
         for pmid, a in lst:
             k = by_pn.get((pmid, nk)) or by_n.get(nk)
             if not k:
                 r = find((a["이름"], orc(pmid, a)))
                 k = rkey[r]
-                if nk in split and not comp_orc(r) and len(fams) >= 2 and a.get("기관"):
+                if nk in split and not comp_orc(r) and len(fams) >= 2 and inst_family(a.get("기관")):
                     k = f"{k}-{slug(inst_family(a['기관']))}"   # ORCID 없이 '다른 사람' → 기관 계열별로
             keys[(pmid, str(a.get("순서", "")))] = k
         if nk in splits and nk in ambig:
             splits[nk][2] += " · 애매: " + ", ".join(f"{n}(ORCID 없음)은 어느 쪽인지 불확실 — 지금은 {rkey[r]} 쪽" for n, r in ambig[nk])
+    # 이니셜 '같은 사람' 판정의 대상(curieahn)이 기관 계열별로 나뉘었으면(curieahn-서울대학교 …), 이니셜의 기관 계열 쪽에 붙인다
+    jpos = {(pm, str(a.get("순서", ""))) for (pmid, nk) in joins for pm, a in groups.get(nk, []) if pm == pmid}
+    final = {k for pos, k in keys.items() if pos not in jpos}
+    for (pmid, nk), tgt in joins.items():
+        if tgt in final:
+            continue
+        for pm, a in groups.get(nk, []):
+            o = str(a.get("순서", ""))
+            alt = f"{tgt}-{slug(inst_family(a.get('기관', '')))}"
+            if pm == pmid and keys.get((pm, o)) == tgt and alt in final:
+                keys[(pm, o)] = alt
     # 이니셜만 있는 이름(H J Kim)이 같은 약칭·같은 기관의 전체 이름(Hee Jin Kim)과 겹치면 같은 사람일 수 있다 → 확인 목록
     full = {}
     for nk, lst in groups.items():
@@ -816,7 +918,8 @@ def _assign_keys(shown, fixes, checks=None):
                 p["orc"].add(orc(pmid, a))
             if a.get("기관"):
                 p["inst"].add(a["기관"])
-                p["fam"].add(inst_family(a["기관"]))
+                if inst_family(a["기관"]):
+                    p["fam"].add(inst_family(a["기관"]))
     for nk, (n, why, desc, name) in splits.items():
         ks = sorted({k for (pmid, o), k in keys.items() if any(pm == pmid for pm, _ in groups[nk]) and k.startswith(nk)})
         cases.append({"확인ID": f"나뉨:{nk}", "연구자키": nk, "이름": name, "논문수": len({pm for pm, _ in groups[nk]}),
@@ -843,10 +946,12 @@ def load_for_build(dataset_ids, show_status, max_items, need_approval=True):
     for r in sorted(rows.values(), key=_sort_key, reverse=True):
         if (r.get("검수상태") or "미검수") not in show_status:
             continue
-        if need_approval and r.get("담당자승인") != "승인":
-            waiting += not r.get("담당자승인")
+        waiting += bool(_waiting(r))
+        if need_approval and r.get("담당자승인") == "반려":
             continue
-        all_ids = [x.strip() for x in r.get("데이터셋ID", "").split(",") if x.strip()]
+        # 논문 × 데이터셋 단위: 그 데이터셋에 대한 판정이 show_status 이고 (승인 필요하면) 승인된 데이터셋만
+        v, ok = _verdicts(r), _approved(r)
+        all_ids = [x for x in _ids(r) if v.get(x) in show_status and (not need_approval or x in ok)]
         for x in all_ids:
             if x not in dataset_ids:
                 print(f"[경고] 논문DB의 데이터셋ID가 목록에 없음 → 건너뜀: {x}")
