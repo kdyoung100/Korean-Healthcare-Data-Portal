@@ -10,6 +10,12 @@
     python paper_db.py nosummary [파일.json]  # '확인' 인데 한줄요약이 빈 논문을 뽑는다 (초록 포함)
     python paper_db.py summary 요약.json      # 한줄요약을 반영한다  [{"pmid": "...", "summary": "..."}]
     python paper_db.py check                 # 동명이인 확인 대상을 '연구자확인' 시트에 채운다 (판정 칸은 보존)
+    python paper_db.py waiting               # 담당자 승인을 기다리는 논문 (데이터셋별 건수 + 목록)
+    python paper_db.py approve CD003 12345678 # 담당자 OK — 데이터셋ID(그 데이터의 '확인' 논문 전부) 또는 PMID
+    python paper_db.py reject 12345678       # 담당자 반려 — 사이트에 안 나온다
+
+  사이트에 나오는 조건 = 검수상태 '확인'(AI·사람 검수) **그리고** 담당자승인 '승인'(담당자 OK).
+  검수 에이전트가 '확인'을 해도 담당자가 승인하기 전에는 사이트에 나오지 않는다.
 
   검색식 : pubmed_queries.json  (데이터셋ID → PubMed 검색식)
   DB     : 논문DB.xlsx          (한 행 = 논문 1편. 커밋할 것 — CI 는 PubMed 를 부르지 않고 이 파일만 읽는다)
@@ -39,11 +45,12 @@ EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 PUBMED = "https://pubmed.ncbi.nlm.nih.gov/"
 
 STATUSES = ["미검수", "확인", "제외", "보류"]
-REVIEW_COLS = ["검수상태", "검수근거", "한줄요약", "검수자", "검수일", "메모"]     # fetch 가 건드리지 않는 칸
-COLS = ["PMID", "데이터셋ID", "검수상태", "검수근거", "한줄요약", "검수자", "검수일",
+APPROVALS = ["승인", "반려"]       # 담당자승인 칸 — 비어 있으면 '승인 대기'. 사람(담당자)만 정한다
+REVIEW_COLS = ["검수상태", "담당자승인", "승인일", "검수근거", "한줄요약", "검수자", "검수일", "메모"]     # fetch 가 건드리지 않는 칸
+COLS = ["PMID", "데이터셋ID", "검수상태", "담당자승인", "승인일", "검수근거", "한줄요약", "검수자", "검수일",
         "제목", "저자", "저자수", "저널", "발행연도", "발행일", "DOI",
         "초록", "수집일", "메모"]
-WIDTH = {"PMID": 11, "데이터셋ID": 14, "검수상태": 9, "검수근거": 40, "한줄요약": 50, "검수자": 11, "검수일": 11,
+WIDTH = {"PMID": 11, "데이터셋ID": 14, "검수상태": 9, "담당자승인": 10, "승인일": 11, "검수근거": 40, "한줄요약": 50, "검수자": 11, "검수일": 11,
          "제목": 60, "저자": 30, "저자수": 7, "저널": 22, "발행연도": 8, "발행일": 12, "DOI": 24,
          "초록": 60, "수집일": 11, "메모": 24}
 Q_COLS = ["데이터셋ID", "검색식", "PubMed 전체건수", "조회일"]
@@ -53,6 +60,7 @@ CHK_COLS = ["확인ID", "연구자키", "이름", "사유", "논문수", "기관
 CHK_KEEP = ["판정", "판정자", "판정일", "메모"]      # '연구자확인' 시트에서 사람이 적는 칸 — check 가 덮어쓰지 않는다
 JUDGE = ["같은 사람", "다른 사람"]
 FILL = {"확인": "E3F4E5", "제외": "F4E3E3", "보류": "FFF4D6"}
+APPROVE_FILL = {"승인": "C8E6C9", "반려": "F4E3E3", "": "FFE0B2"}    # 빈칸(확인인데 승인 대기)은 주황
 
 
 # ── PubMed 호출 ────────────────────────────────────────────────────
@@ -330,9 +338,17 @@ def save_db(rows, queries, checks=None):
         st = ws.cell(row, ci["검수상태"])
         if st.value in FILL:
             st.fill = PatternFill("solid", fgColor=FILL[st.value])
+        ap = ws.cell(row, ci["담당자승인"])
+        if st.value == "확인" or ap.value:
+            ap.fill = PatternFill("solid", fgColor=APPROVE_FILL.get(ap.value or "", "FFFFFF"))
     dv = DataValidation(type="list", formula1='"' + ",".join(STATUSES) + '"', allow_blank=False)
     ws.add_data_validation(dv)
     dv.add(f"{ws.cell(2, ci['검수상태']).column_letter}2:{ws.cell(2, ci['검수상태']).column_letter}5000")
+    av = DataValidation(type="list", formula1='"' + ",".join(APPROVALS) + '"', allow_blank=True)
+    ws.add_data_validation(av)
+    al = ws.cell(2, ci["담당자승인"]).column_letter
+    av.add(f"{al}2:{al}5000")
+    ws.cell(1, ci["담당자승인"]).fill = PatternFill("solid", fgColor="B45309")
     ws.freeze_panes = "C2"
     ws.auto_filter.ref = ws.dimensions
 
@@ -391,7 +407,9 @@ def save_db(rows, queries, checks=None):
         "논문DB — 데이터셋별 PubMed 논문 (paper_db.py 가 만든다)",
         "",
         "검수상태: 미검수 = 수집만 됨 / 확인 = 이 데이터를 실제로 썼음 / 제외 = 관련 없음 / 보류 = 초록만으로 판단 불가",
-        "사이트에는 '확인'만 나온다(build.py 의 SHOW_STATUS). 미검수·제외·보류는 숨긴다.",
+        "사이트에는 '확인'이면서 담당자승인이 '승인'인 논문만 나온다(build.py 의 SHOW_STATUS·NEED_APPROVAL). 미검수·제외·보류는 숨긴다.",
+        "담당자승인(주황 머리글): 검수 에이전트는 이 칸을 건드리지 않는다. 담당자가 '승인' 또는 '반려'를 고른다. 비어 있으면 승인 대기(사이트에 안 나옴).",
+        "  한꺼번에: python paper_db.py approve <데이터셋ID>  — 그 데이터의 '확인' 논문 중 대기인 것을 모두 승인.",
         "검수상태·검수근거·검수자·검수일·메모 칸은 사람이 고쳐도 된다. 다시 수집해도 덮어쓰지 않는다.",
         "제목·저자·초록 등 나머지 칸은 다음 수집 때 PubMed 값으로 다시 채워진다(고쳐도 소용없음).",
         "행을 지우지 말 것 — 지우면 다음 수집 때 '미검수'로 다시 들어온다. 빼려면 '제외'로 바꾼다.",
@@ -563,7 +581,59 @@ def cmd_stats(rows=None):
     cnt = {s: 0 for s in STATUSES}
     for r in rows.values():
         cnt[r.get("검수상태") or "미검수"] = cnt.get(r.get("검수상태") or "미검수", 0) + 1
-    print("       " + " / ".join(f"{k} {v}" for k, v in cnt.items()))
+    ok = [r for r in rows.values() if r.get("검수상태") == "확인"]
+    print("       " + " / ".join(f"{k} {v}" for k, v in cnt.items())
+          + f"  ·  확인 중 담당자 승인 {sum(r.get('담당자승인') == '승인' for r in ok)}"
+          + f" / 승인 대기 {sum(not r.get('담당자승인') for r in ok)} / 반려 {sum(r.get('담당자승인') == '반려' for r in ok)}")
+
+
+def _ids(r):
+    return [x.strip() for x in r.get("데이터셋ID", "").split(",") if x.strip()]
+
+
+def cmd_waiting():
+    """담당자 승인을 기다리는 논문: 검수상태 '확인'인데 담당자승인이 빈 것"""
+    rows, _ = load_db()
+    wait = [r for r in sorted(rows.values(), key=_sort_key, reverse=True)
+            if r.get("검수상태") == "확인" and not r.get("담당자승인")]
+    hold = [r for r in rows.values() if r.get("검수상태") == "보류"]
+    todo = [r for r in rows.values() if (r.get("검수상태") or "미검수") == "미검수"]
+    by = {}
+    for r in wait:
+        for d in _ids(r):
+            by[d] = by.get(d, 0) + 1
+    print(f"[승인 대기] {len(wait)}편 (AI 검수 '확인', 담당자 OK 전 — 사이트에 안 나옴)"
+          + (f" / 참고: 보류 {len(hold)}편 · 미검수 {len(todo)}편" if hold or todo else ""))
+    for d, n in sorted(by.items(), key=lambda t: -t[1]):
+        print(f"    · {d}: {n}편")
+    for r in wait[:200]:
+        print(f"    {r['PMID']}  [{r.get('데이터셋ID', '')}]  {r.get('발행연도', '')}  {r.get('제목', '')[:90]}")
+        if r.get("한줄요약"):
+            print(f"        └ {r['한줄요약']}")
+    if wait:
+        print("  OK 면: python paper_db.py approve <데이터셋ID 또는 PMID ...>   ·   빼려면: python paper_db.py reject <PMID ...>")
+
+
+def cmd_approve(targets, value):
+    """담당자 승인/반려. 데이터셋ID 를 주면 그 데이터의 '확인' 논문 중 아직 정하지 않은 것 전부, PMID 를 주면 그 논문."""
+    rows, queries = load_db()
+    today = datetime.now().strftime("%Y-%m-%d")
+    done, skip = 0, []
+    for t in targets:
+        if t in rows:
+            hit = [rows[t]] if rows[t].get("검수상태") == "확인" or value == "반려" else []
+            if not hit:
+                skip.append(f"{t}(검수상태 {rows[t].get('검수상태') or '미검수'} — '확인'만 승인 가능)")
+        else:
+            hit = [r for r in rows.values() if t in _ids(r) and r.get("검수상태") == "확인" and not r.get("담당자승인")]
+            if not hit:
+                skip.append(f"{t}(승인 대기 논문 없음)")
+        for r in hit:
+            r.update(담당자승인=value, 승인일=today)
+            done += 1
+    save_db(rows, queries)
+    print(f"[담당자 {value}] {done}편" + (f" / 건너뜀: {', '.join(skip)}" if skip else ""))
+    cmd_stats(rows)
 
 
 # ── build.py 용 ────────────────────────────────────────────────────
@@ -764,12 +834,17 @@ def _assign_keys(shown, fixes, checks=None):
     return keys, notes, bad, cases
 
 
-def load_for_build(dataset_ids, show_status, max_items):
-    """논문DB.xlsx → data.json 의 papers {데이터셋ID: {...}} 와 researchers {연구자키: {...}}"""
+def load_for_build(dataset_ids, show_status, max_items, need_approval=True):
+    """논문DB.xlsx → data.json 의 papers {데이터셋ID: {...}} 와 researchers {연구자키: {...}}
+    need_approval: 담당자승인 '승인'인 논문만 (검수 에이전트의 '확인'만으로는 사이트에 안 나온다)"""
     rows, queries = load_db()
     groups, shown = {}, []
+    waiting = 0
     for r in sorted(rows.values(), key=_sort_key, reverse=True):
         if (r.get("검수상태") or "미검수") not in show_status:
+            continue
+        if need_approval and r.get("담당자승인") != "승인":
+            waiting += not r.get("담당자승인")
             continue
         all_ids = [x.strip() for x in r.get("데이터셋ID", "").split(",") if x.strip()]
         for x in all_ids:
@@ -785,6 +860,8 @@ def load_for_build(dataset_ids, show_status, max_items):
     def authors_of(r):
         return sorted(r.get("_authors", []), key=lambda a: int(a.get("순서") or 0))
 
+    if waiting:
+        print(f"[논문] 담당자 승인 대기 {waiting}편 — 사이트에 안 나옴 (python paper_db.py waiting 으로 확인)")
     checks = load_checks()
     keys, notes, bad_orcid, cases = _assign_keys(shown, load_fixes(), checks)
     pending = [c for c in cases if not (checks.get(c["확인ID"], {}).get("판정") or c.get("판정"))]
@@ -855,13 +932,21 @@ def load_for_build(dataset_ids, show_status, max_items):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    if not args or args[0] not in ("fetch", "pending", "review", "stats", "nosummary", "summary", "check"):
+    if not args or args[0] not in ("fetch", "pending", "review", "stats", "nosummary", "summary", "check",
+                                   "waiting", "approve", "reject"):
         print(__doc__)
         sys.exit(1)
     if args[0] == "fetch":
         cmd_fetch()
     elif args[0] == "check":
         cmd_check()
+    elif args[0] == "waiting":
+        cmd_waiting()
+    elif args[0] in ("approve", "reject"):
+        if len(args) < 2:
+            print(f"사용법: python paper_db.py {args[0]} <데이터셋ID 또는 PMID> ...")
+            sys.exit(1)
+        cmd_approve(args[1:], "승인" if args[0] == "approve" else "반려")
     elif args[0] == "pending":
         cmd_pending(args[1] if len(args) > 1 else None)
     elif args[0] == "review":

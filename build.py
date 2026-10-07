@@ -362,6 +362,7 @@ def fill_period(rec):
 # 빌드는 PubMed 를 부르지 않는다 — 검수 안 된 논문이 CI 에서 몰래 늘어나지 않게.
 PUBMED_MAX = 200                    # 데이터셋당 data.json 에 넣을 논문 수 (연구자 검색에 전부 필요)
 SHOW_STATUS = {"확인"}             # 사이트에 보일 검수상태. 검수 전 논문까지 보이려면 {"확인", "미검수"}
+NEED_APPROVAL = True               # 담당자승인 '승인'인 논문만 (에이전트 검수만으로는 안 올라감)
 
 
 def build_papers(dataset_ids):
@@ -369,7 +370,7 @@ def build_papers(dataset_ids):
     if not (BASE / "논문DB.xlsx").exists():
         return {}, {}
     from paper_db import load_for_build
-    papers, researchers = load_for_build(dataset_ids, SHOW_STATUS, PUBMED_MAX)
+    papers, researchers = load_for_build(dataset_ids, SHOW_STATUS, PUBMED_MAX, NEED_APPROVAL)
     if papers:
         print(f"[논문] 논문DB 연결 {len(papers)}개 데이터셋: "
               + ", ".join(f"{k} {v['total']}편(검수 {v['verified']})" for k, v in papers.items())
