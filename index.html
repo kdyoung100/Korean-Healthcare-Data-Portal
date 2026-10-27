@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>보건의료 AI 데이터 허브</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Cdefs%3E%3ClinearGradient id="b" x1="0" y1="0" x2="1" y2="1"%3E%3Cstop offset="0" stop-color="%235fd0ff"/%3E%3Cstop offset=".55" stop-color="%232f8bff"/%3E%3Cstop offset="1" stop-color="%233b62f6"/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width="64" height="64" rx="15" fill="url%28%23b%29"/%3E%3Cg fill="%23fff" transform="translate%289.6 9.2%29 scale%28.7%29"%3E%3Cpath d="M32 5.2 C25 12.6 15.4 19.4 6.4 21.5 A2.1 2.1 0 0 0 7.1 25.6 C17.4 24.8 26.6 18.8 32 13.2 C37.4 18.8 46.6 24.8 56.9 25.6 A2.1 2.1 0 0 0 57.6 21.5 C48.6 19.4 39 12.6 32 5.2 Z"/%3E%3Crect x="15.75" y="20" width="5" height="40" rx="2.5"/%3E%3Crect x="43.25" y="20" width="5" height="40" rx="2.5"/%3E%3Cpath d="M8.2 31.2 C10.6 33.6 13.6 34.5 18 34.5 H46 C50.4 34.5 53.4 33.6 55.8 31.2 A1.9 1.9 0 0 1 58.9 33 C57.6 37.1 53 39.5 46 39.5 H18 C11 39.5 6.4 37.1 5.1 33 A1.9 1.9 0 0 1 8.2 31.2 Z"/%3E%3C/g%3E%3C/svg%3E">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap');
 
@@ -52,8 +53,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 ───────────────────────────────────── */
 .nav{position:sticky;top:0;z-index:400;background:var(--navy-dk);height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid rgba(255,255,255,.06)}
 .nav__logo{display:flex;align-items:center;gap:11px;flex-shrink:0;cursor:pointer}
-.nav__logo-icon{width:36px;height:36px;background:var(--teal);border-radius:7px;display:flex;align-items:center;justify-content:center}
-.nav__logo-icon svg{width:20px;height:20px}
+.nav__logo-icon{width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+.nav__logo-icon svg{width:38px;height:38px}
 .nav__logo-ko{font-size:14px;font-weight:700;color:var(--white);letter-spacing:-.3px}
 .nav__logo-en{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:.8px;text-transform:uppercase}
 .nav__tabs{display:flex;align-items:stretch;height:var(--nav-h);overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;flex:1;min-width:0;margin:0 12px}
@@ -943,7 +944,8 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 <header class="nav">
   <div class="nav__logo" onclick="goPage('main')">
     <div class="nav__logo-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 10h10M4 14h13M4 18h8"/></svg>
+      <!-- 로고: ㅅ 처마(숭례문 지붕) + H 기둥. 원본 시안은 산출물/디자인시안_2026-10-27/로고_숭례문H.html -->
+      <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="logoGrad" gradientUnits="userSpaceOnUse" x1="8" y1="6" x2="56" y2="60"><stop offset="0" stop-color="#6fd6ff"/><stop offset=".5" stop-color="#3f9bff"/><stop offset="1" stop-color="#5b86ff"/></linearGradient></defs><g fill="url(#logoGrad)"><path d="M32 5.2 C25 12.6 15.4 19.4 6.4 21.5 A2.1 2.1 0 0 0 7.1 25.6 C17.4 24.8 26.6 18.8 32 13.2 C37.4 18.8 46.6 24.8 56.9 25.6 A2.1 2.1 0 0 0 57.6 21.5 C48.6 19.4 39 12.6 32 5.2 Z"/><rect x="15.75" y="20" width="5" height="40" rx="2.5"/><rect x="43.25" y="20" width="5" height="40" rx="2.5"/><path d="M8.2 31.2 C10.6 33.6 13.6 34.5 18 34.5 H46 C50.4 34.5 53.4 33.6 55.8 31.2 A1.9 1.9 0 0 1 58.9 33 C57.6 37.1 53 39.5 46 39.5 H18 C11 39.5 6.4 37.1 5.1 33 A1.9 1.9 0 0 1 8.2 31.2 Z"/></g></svg>
     </div>
     <div>
       <div class="nav__logo-ko">보건의료 AI 데이터 허브</div>
