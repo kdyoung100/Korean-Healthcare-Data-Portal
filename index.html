@@ -1078,6 +1078,9 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
 .about-toc__item{color:var(--ink-2);background:rgba(255,255,255,.75);border:1px solid #fff;box-shadow:0 1px 2px rgba(11,60,120,.05)}
 .about-toc__item:hover{background:#fff;color:var(--brand-2);border-color:rgba(47,139,255,.35)}
 .about-mission{background:linear-gradient(120deg,#0b2a4a,#123d6b)}
+/* 메뉴 가운데 정렬: 넓은 화면에서 로고·오른쪽 영역 폭을 같게 해 탭이 화면 정가운데 */
+@media(min-width:1280px){.nav__logo,.nav__right{flex:1 1 0;min-width:0}.nav__right{justify-content:flex-end}.nav__tabs{flex:0 0 auto;justify-content:center;margin:0 24px}}
+@media(max-width:1279px){.nav__tabs{justify-content:center}}
 /* 메인 히어로 배치 (시안 메인_스카이) */
 .hero--sky{padding:88px 48px 44px}
 .hero--sky .hero__inner{gap:60px}
