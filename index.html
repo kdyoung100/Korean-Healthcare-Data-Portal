@@ -1021,7 +1021,7 @@ body{background:var(--page-bg)}
 .res-grid{background:transparent;border:none;padding:0}
 .res-card::after{background:var(--brand-grad)}
 .res-card:hover{border-color:rgba(47,139,255,.4);box-shadow:0 0 0 4px rgba(47,139,255,.08),var(--sh-md)}
-.res-icon{background:linear-gradient(150deg,#eaf6ff,#dceaff)!important;border-radius:13px}
+.res-icon{width:48px;height:48px;border-radius:14px}
 .res-count{color:var(--ink)}
 .browse{background:transparent;border-color:var(--line)}
 .topic-item{background:var(--g05);border:1px solid var(--g10)}
@@ -1078,6 +1078,44 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
 .about-toc__item{color:var(--ink-2);background:rgba(255,255,255,.75);border:1px solid #fff;box-shadow:0 1px 2px rgba(11,60,120,.05)}
 .about-toc__item:hover{background:#fff;color:var(--brand-2);border-color:rgba(47,139,255,.35)}
 .about-mission{background:linear-gradient(120deg,#0b2a4a,#123d6b)}
+/* 메인 히어로 배치 (시안 메인_스카이) */
+.hero--sky{padding:88px 48px 44px}
+.hero--sky .hero__inner{gap:60px}
+.hero__center{max-width:1000px;width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;text-align:center}
+.hero--sky .hero__eyebrow{padding:7px 14px;font-size:13px;font-weight:600;margin-bottom:22px}
+.hero--sky .hero__title{font-size:52px;line-height:1.2;font-weight:800;letter-spacing:-.04em;margin-bottom:14px}
+.hero--sky .hero__desc{font-size:17px;margin-bottom:0}
+.hero__search-card{width:100%;margin-top:40px;padding:8px 10px 12px;border-radius:24px;text-align:left;background:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.9);-webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);box-shadow:var(--sh-md)}
+.hero--sky .hero__tabs{display:flex;background:none;border:none;box-shadow:none;padding:6px;margin:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+.hero--sky .hero__tab{padding:8px 15px;border-radius:11px;font-size:14px;font-weight:600}
+.hero--sky .hero__bar{margin:6px 6px 0;border-radius:16px;padding:9px 9px 9px 22px;align-items:center;box-shadow:none}
+.hero--sky .hero__input{padding:12px 0;font-size:17px}
+.hero--sky .hero__sbtn{width:52px;height:52px;border-radius:14px;padding:0;justify-content:center;flex-shrink:0;box-shadow:0 10px 22px -10px rgba(30,140,240,.9)}
+.hero--sky .hero__chips{justify-content:center;align-items:center;margin-top:22px;gap:8px}
+.hero--sky .hero__chips-label{font-size:14px;font-weight:700;color:var(--ink-2);margin-right:6px}
+.hero--sky .hero__chip{font-size:14px;padding:7px 14px;font-weight:600}
+.hero__tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;width:100%;max-width:calc(var(--max) - 96px);margin:0 auto}
+.hero-tile{display:flex;align-items:center;gap:12px;padding:16px;border-radius:18px;background:#fff;border:1px solid var(--line);box-shadow:var(--sh);color:var(--ink);text-decoration:none;min-width:0}
+.hero-tile small{display:block;font-size:12.5px;color:var(--ink-3);font-weight:600;white-space:nowrap}
+.hero-tile strong{display:block;font-size:23px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
+.hero-tile strong span{font-size:12px;font-weight:600;color:var(--ink-3);margin-left:2px}
+.hero-tile--link{font-weight:700;font-size:13.5px;line-height:1.35;word-break:keep-all;transition:border-color var(--ease),transform var(--ease)}
+.hero-tile--link small{font-weight:500;font-size:11.5px;margin-top:2px;white-space:normal}
+.hero-tile--link:hover{border-color:rgba(47,139,255,.4);transform:translateY(-2px)}
+/* 아이콘 타일: 하늘색 → 파랑 → 연한 남청 한 계열 */
+.tile-ico{width:44px;height:44px;flex:none;border-radius:13px;display:grid;place-items:center;background:var(--tile);box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 18px -10px var(--tile-shadow)}
+.t1{--tile:linear-gradient(150deg,#67d3fb,#0ea5e9);--tile-shadow:#0ea5e9}
+.t2{--tile:linear-gradient(150deg,#74b4ff,#3b8cff);--tile-shadow:#3b8cff}
+.t3{--tile:linear-gradient(150deg,#9db1ff,#6d8dff);--tile-shadow:#6d8dff}
+.res-card{padding:24px;gap:0}
+.res-title{font-size:16.5px;margin:18px 0 6px}
+.res-desc{font-size:13.5px;color:var(--ink-2);line-height:1.55}
+.res-count{font-size:28px;font-weight:800;letter-spacing:-.03em;margin-top:18px}
+.res-count span{font-size:14px;font-weight:600;color:var(--ink-3)}
+.feed-card__title{font-size:17px}
+@media(max-width:1100px){.hero__tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:640px){.hero--sky{padding:56px 20px 32px}.hero--sky .hero__title{font-size:30px}.hero--sky .hero__desc{font-size:14.5px}.hero__tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.hero--sky .hero__chips-label{display:none}}
+
 
 </style>
 </head>
@@ -1148,63 +1186,46 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
 ══════════════════════════════════════════ -->
 <div id="page-main" class="page active">
 
-<!-- HERO (메인페이지 B 배치: 좌측 검색 + 우측 연계 서비스 / 하단 공지·행사 2분할 / 슬림 지표 바) -->
-<section class="hero">
+<!-- HERO (시안 메인_스카이: 가운데 제목 + 유리 검색 카드 + 통계·바로가기 6칸)
+     hinput / hero__tab / setHeroTab / stat-dataset-count / stat-org-count 는 스크립트가 쓰므로 이름 유지 -->
+<section class="hero hero--sky">
   <div class="hero__inner">
-    <div class="hero__top">
-      <!-- 좌측: 검색 -->
-      <div class="hero__main">
-        <div class="hero__eyebrow"><span class="hero__dot"></span>DCAT 2.0 · 국가 보건의료 AI 데이터 허브 · v1 Prototype</div>
-        <h1 class="hero__title">보건의료데이터를<br><em>쉽게 찾고, 안전하게</em> 활용하세요</h1>
-        <p class="hero__desc">표준 메타데이터 기반으로 데이터를 탐색하고, 신청·심의·활용까지 하나의 포털에서 처리합니다.</p>
-        <div class="hero__search-wrap">
-          <div class="hero__tabs">
-            <button class="hero__tab on" data-mode="ai" onclick="setHeroTab(this,'예: 결핵 데이터 찾아줘 (자연어로 물어보세요)')">대화형 AI 검색</button>
-            <button class="hero__tab" onclick="setHeroTab(this,'데이터셋 기반 검색 (예: 건강검진, 암 등록...)')">데이터셋</button>
-            <button class="hero__tab" onclick="setHeroTab(this,'항목명·표준코드로 검색 (예: 혈압, ICD-10...)')">항목 검색</button>
-            <button class="hero__tab" onclick="setHeroTab(this,'코호트 조건 입력 (예: 65세 이상 당뇨병 환자...)')">코호트</button>
-            <button class="hero__tab" onclick="setHeroTab(this,'프로젝트·논문 검색...')">연구정보</button>
-          </div>
-          <div class="hero__bar">
-            <input id="hinput" class="hero__input" type="text" placeholder="예: 결핵 데이터 찾아줘 (자연어로 물어보세요)" onkeydown="if(event.key==='Enter')doSearch()">
-            <button class="hero__sbtn" onclick="doSearch()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>검색
-            </button>
-          </div>
-          <div class="hero__chips">
-            <span class="hero__chips-label" style="font-size:11.5px;align-self:center">인기 :</span>
-            <span class="hero__chip" onclick="searchChip('#질병관리청')">#질병관리청</span>
-            <span class="hero__chip" onclick="searchChip('#국민건강영양조사')">#국민건강영양조사</span>
-            <span class="hero__chip" onclick="searchChip('#건강보험공단')">#건강보험공단</span>
-            <span class="hero__chip" onclick="searchChip('#응급의료')">#응급의료</span>
-            <span class="hero__chip" onclick="searchChip('#사망원인')">#사망원인</span>
-            <span class="hero__chip" onclick="searchChip('#결핵')">#결핵</span>
-          </div>
+    <div class="hero__center">
+      <div class="hero__eyebrow"><span class="hero__dot"></span>DCAT 2.0 표준 기반 국가 보건의료데이터 연계 허브</div>
+      <h1 class="hero__title">보건의료데이터를 <em>쉽게 찾고, 안전하게</em><br>AI와 함께 활용하세요</h1>
+      <p class="hero__desc">표준 메타데이터 기반으로 데이터를 탐색하고, 신청·심의·활용까지 하나의 허브에서 처리합니다.</p>
+      <div class="hero__search-card">
+        <div class="hero__tabs">
+          <button class="hero__tab on" data-mode="ai" onclick="setHeroTab(this,'예: 결핵 데이터 찾아줘 (자연어로 물어보세요)')">대화형 AI 검색</button>
+          <button class="hero__tab" onclick="setHeroTab(this,'데이터셋 기반 검색 (예: 건강검진, 암 등록...)')">데이터셋</button>
+          <button class="hero__tab" onclick="setHeroTab(this,'항목명·표준코드로 검색 (예: 혈압, ICD-10...)')">항목 검색</button>
+          <button class="hero__tab" onclick="setHeroTab(this,'코호트 조건 입력 (예: 65세 이상 당뇨병 환자...)')">코호트</button>
+          <button class="hero__tab" onclick="setHeroTab(this,'프로젝트·논문 검색...')">연구정보</button>
+        </div>
+        <div class="hero__bar">
+          <input id="hinput" class="hero__input" type="text" placeholder="예: 결핵 데이터 찾아줘 (자연어로 물어보세요)" onkeydown="if(event.key==='Enter')doSearch()">
+          <button class="hero__sbtn" onclick="doSearch()" aria-label="검색"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg></button>
         </div>
       </div>
-
-      <!-- 우측: 연계 서비스(실제 신청 창구 3곳). 주소는 PLATFORMS(신청 창구 판별)와 같은 값을 쓴다. -->
-      <aside class="hero__links">
-        <div class="hero__links-head">
-          <span class="hero__links-title">🔗 연계 서비스</span>
-          <span class="hero__links-sub">원클릭 외부 연계</span>
-        </div>
-        <p class="hero__links-desc">보건의료데이터 활용을 위한 주요 연계 플랫폼</p>
-        <div class="hero__links-list">
-          <a class="hero__link" href="https://k-cure.mohw.go.kr/" target="_blank" rel="noopener"><span class="hero__link-body"><span class="hero__link-name">K-CURE</span><span class="hero__link-desc">암 공공·임상 라이브러리</span></span><span class="hero__link-arrow" aria-hidden="true">↗</span></a>
-          <a class="hero__link" href="https://hcdl.mohw.go.kr/" target="_blank" rel="noopener"><span class="hero__link-body"><span class="hero__link-name">보건의료 빅데이터 통합 플랫폼</span><span class="hero__link-desc">공공기관 데이터 결합·신청</span></span><span class="hero__link-arrow" aria-hidden="true">↗</span></a>
-          <a class="hero__link" href="https://k-cure.mohw.go.kr/portal/pfm/kif/dat/viewPfmKifDat.do" target="_blank" rel="noopener"><span class="hero__link-body"><span class="hero__link-name">의료데이터 중심병원</span><span class="hero__link-desc">병원 임상데이터 카탈로그</span></span><span class="hero__link-arrow" aria-hidden="true">↗</span></a>
-        </div>
-      </aside>
+      <div class="hero__chips">
+        <span class="hero__chips-label">인기 검색어</span>
+        <span class="hero__chip" onclick="searchChip('#질병관리청')">#질병관리청</span>
+        <span class="hero__chip" onclick="searchChip('#국민건강영양조사')">#국민건강영양조사</span>
+        <span class="hero__chip" onclick="searchChip('#건강보험공단')">#건강보험공단</span>
+        <span class="hero__chip" onclick="searchChip('#응급의료')">#응급의료</span>
+        <span class="hero__chip" onclick="searchChip('#사망원인')">#사망원인</span>
+        <span class="hero__chip" onclick="searchChip('#결핵')">#결핵</span>
+      </div>
     </div>
 
-    <!-- 하단: 슬림 지표 바 (등록 데이터셋·참여 기관 수는 data.json 로드 후 자동 갱신) -->
-    <div class="hero__stats">
-      <div><div class="hero__stat-label">등록 데이터셋</div><div class="hero__stat-num" id="stat-dataset-count">35<span class="hero__stat-unit">건</span></div></div>
-      <span class="hero__stat-sep" aria-hidden="true"></span>
-      <div><div class="hero__stat-label">참여 공급 기관</div><div class="hero__stat-num" id="stat-org-count">15<span class="hero__stat-unit">개</span></div></div>
-      <span class="hero__stat-sep" aria-hidden="true"></span>
-      <div><div class="hero__stat-label">누적 데이터 신청</div><div class="hero__stat-num hero__stat-num--accent">4,892<span class="hero__stat-unit">건</span></div></div>
+    <!-- 통계 3칸(데이터셋·기관 수는 data.json 로드 후 자동 갱신) + 연계 서비스 3칸(주소는 PLATFORMS 와 같은 값) -->
+    <div class="hero__tiles">
+      <div class="hero-tile"><span class="tile-ico t1"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg></span><div><small>등록 데이터셋</small><strong id="stat-dataset-count">35<span>건</span></strong></div></div>
+      <div class="hero-tile"><span class="tile-ico t2"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><div><small>참여 공급 기관</small><strong id="stat-org-count">15<span>개</span></strong></div></div>
+      <div class="hero-tile"><span class="tile-ico t3"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><div><small>누적 데이터 신청</small><strong>4,892<span>건</span></strong></div></div>
+      <a class="hero-tile hero-tile--link" href="https://k-cure.mohw.go.kr/" target="_blank" rel="noopener"><span class="tile-ico t1"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8 9.5 8z"/></svg></span><span>K-CURE<small>암 공공·임상 라이브러리</small></span></a>
+      <a class="hero-tile hero-tile--link" href="https://k-cure.mohw.go.kr/portal/pfm/kif/dat/viewPfmKifDat.do" target="_blank" rel="noopener"><span class="tile-ico t2"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg></span><span>의료데이터<br>중심병원</span></a>
+      <a class="hero-tile hero-tile--link" href="https://hcdl.mohw.go.kr/" target="_blank" rel="noopener"><span class="tile-ico t3"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span><span>보건의료 빅데이터<br>통합 플랫폼</span></a>
     </div>
   </div>
 </section>
@@ -1213,14 +1234,14 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
 <section class="feeds">
   <div class="wrap feeds__grid">
     <div class="feed-card">
-      <div class="feed-card__head"><span class="feed-card__title">📌 공지사항</span><span class="feed-card__more" onclick="goPage('notice')">더보기 →</span></div>
+      <div class="feed-card__head"><span class="feed-card__title">공지사항</span><span class="feed-card__more" onclick="goPage('notice')">더보기 →</span></div>
       <ul class="feed-card__list">
           <li onclick="goPage('notice')"><span class="feed-card__cat">공지</span><span class="feed-card__txt">「보건의료 AI 데이터 허브」 1차 서비스 오픈 안내 (2026년 12월)</span><span class="feed-card__date">12.01</span></li>
           <li onclick="goPage('notice')"><span class="feed-card__cat">데이터</span><span class="feed-card__txt">DCAT 2.0 기반 데이터 카탈로그 등록 기준 안내</span><span class="feed-card__date">11.20</span></li>
         </ul>
     </div>
     <div class="feed-card feed-card--event">
-      <div class="feed-card__head"><span class="feed-card__title">🎓 교육·행사 안내</span><span class="feed-card__more" onclick="goPage('notice')">더보기 →</span></div>
+      <div class="feed-card__head"><span class="feed-card__title">교육·행사 안내</span><span class="feed-card__more" onclick="goPage('notice')">더보기 →</span></div>
       <ul class="feed-card__list">
           <li onclick="goPage('notice')"><span class="feed-card__cat">교육</span><span class="feed-card__txt">2026년 4분기 수요자 온라인 교육 수강 신청 안내</span><span class="feed-card__date">11.10</span></li>
           <li onclick="goPage('notice')"><span class="feed-card__cat">이벤트</span><span class="feed-card__txt">코호트 디스커버리 기능 시연회 참가 신청 (12월 중 개최 예정)</span><span class="feed-card__date">11.05</span></li>
@@ -1238,51 +1259,6 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
       <span class="sec-more" onclick="goPage('search')">전체 검색 →</span>
     </div>
     <div class="res-grid" id="resGrid"></div>
-  </div>
-</section>
-
-<!-- SUBJECT BROWSE (Type C: 임상/공공 듀얼 스플릿) -->
-<section class="browse">
-  <div class="wrap">
-    <div class="sec-head"><div class="sec-title">주제별 데이터 탐색<small>임상데이터와 공공데이터를 질환·분야 주제별로 바로 찾아볼 수 있습니다.</small></div></div>
-    <div class="topic-split">
-      <div class="topic-track topic-track--clinical">
-        <div class="topic-track__head"><span class="topic-track__head-lbl">임상데이터</span><span class="topic-track__count" id="topicClinicalCount">0건</span></div>
-        <div class="topic-grid" id="topicClinicalGrid"></div>
-        <button class="topic-track__more" onclick="exploreResource('clinical')">임상데이터 전체보기 →</button>
-      </div>
-      <div class="topic-track topic-track--public">
-        <div class="topic-track__head"><span class="topic-track__head-lbl">공공데이터</span><span class="topic-track__count" id="topicPublicCount">0건</span></div>
-        <div class="topic-grid" id="topicPublicGrid"></div>
-        <button class="topic-track__more" onclick="exploreResource('public')">공공데이터 전체보기 →</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- FEATURED (Type A: 탭 전환형 — 인기/최신 데이터셋)
-     '인기 데이터' 조회수는 아직 방문 통계가 없어 실제 값이 아니라
-     데이터셋 ID 기반으로 고정 생성한 표시용 숫자다(새로고침해도 안 바뀜).
-     실제 조회 로그가 생기면 fakeViewCount()만 실제 집계로 바꿔치면 된다. -->
-<section class="featured">
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="sec-title">주목 데이터셋<small>인기 있는 데이터셋과 최근 갱신된 데이터셋을 확인하세요.</small></div>
-      <span class="sec-more" onclick="goPage('search')">전체 데이터셋 →</span>
-    </div>
-    <div class="feat-split">
-      <div class="feat-panel">
-        <div class="feat-panel__head">주요 공급기관<span class="feat-panel__sub">등록 데이터셋 순</span></div>
-        <ul class="feat-list" id="featuredOrgList"></ul>
-      </div>
-      <div class="feat-panel">
-        <div class="feat-tabs">
-          <button class="feat-tab on" onclick="switchFeaturedTab('popular', this)">인기 데이터</button>
-          <button class="feat-tab" onclick="switchFeaturedTab('recent', this)">최신 데이터</button>
-        </div>
-        <ul class="feat-list" id="featuredList"></ul>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -2024,14 +2000,14 @@ function parseLastUpdate(s){
 /* 리소스 탐색(4×2 고정 그리드): 카드 8장, 건수는 전부 DATASETS에서 실제 집계. */
 function isRegistryOrCohort(d){ return /코호트|레지스트리|registry|cohort/i.test((d.name||'')+' '+(d.keywords||'')); }
 const RESOURCE_CARDS=[
-  {kind:'all',      cc:'#1565C0', bg:'#E3EDF9', icon:'🗄️', title:'전체 데이터셋', desc:'등록된 모든 임상·공공 보건의료 데이터셋을 한 곳에서 탐색하세요.', unit:'건'},
-  {kind:'clinical', cc:'#00897B', bg:'#E0F2F0', icon:'🏥', title:'임상데이터', desc:'병원 EMR·CDW 등 의료기관이 직접 보유·제공하는 데이터입니다.', unit:'건'},
-  {kind:'public',   cc:'#4527A0', bg:'#EDE7F6', icon:'🏛️', title:'공공데이터', desc:'질병관리청·건강보험공단 등 공공기관이 보유한 데이터입니다.', unit:'건'},
-  {kind:'combined', cc:'#E65100', bg:'#FFF3E0', icon:'🔗', title:'결합데이터', desc:'여러 기관의 자료를 연계·결합해 제공하는 데이터셋입니다.', unit:'건'},
-  {kind:'solo',     cc:'#2E7D32', bg:'#E8F5E9', icon:'📄', title:'단독(공통) 데이터', desc:'제공기관이 단독으로 보유·제공하는 데이터셋입니다.', unit:'건'},
-  {kind:'registry', cc:'#00838F', bg:'#E0F7FA', icon:'📊', title:'코호트·레지스트리', desc:'대상자를 장기 추적하거나 질환별로 등록·관리하는 데이터셋입니다.', unit:'건'},
-  {kind:'guide',    cc:'#6A1B9A', bg:'#F3E5F5', icon:'📘', title:'상세 안내 제공', desc:'범위·분석환경·신청 방법을 정리한 상세페이지가 있는 데이터셋입니다.', unit:'건'},
-  {kind:'orgs',     cc:'#AD1457', bg:'#FCE4EC', icon:'🏢', title:'참여 공급기관', desc:'데이터를 제공하는 의료기관·공공기관 목록을 확인하세요.', unit:'개'}
+  {kind:'all',      cc:'#1565C0', bg:'#E3EDF9', icon:'<circle cx="11" cy="11" r="6"/><path d="m20 20-4-4"/>', title:'전체 데이터셋', desc:'등록된 모든 임상·공공 보건의료 데이터셋을 한 곳에서 탐색하세요.', unit:'건'},
+  {kind:'clinical', cc:'#00897B', bg:'#E0F2F0', icon:'<path d="M12 6v12M6 12h12"/>', title:'임상데이터', desc:'병원 EMR·CDW 등 의료기관이 직접 보유·제공하는 데이터입니다.', unit:'건'},
+  {kind:'public',   cc:'#4527A0', bg:'#EDE7F6', icon:'<path d="M12 3a9 9 0 1 0 9 9h-9z"/>', title:'공공데이터', desc:'질병관리청·건강보험공단 등 공공기관이 보유한 데이터입니다.', unit:'건'},
+  {kind:'combined', cc:'#E65100', bg:'#FFF3E0', icon:'<path d="M5 19V11M12 19V5M19 19v-5"/>', title:'결합데이터', desc:'여러 기관의 자료를 연계·결합해 제공하는 데이터셋입니다.', unit:'건'},
+  {kind:'solo',     cc:'#2E7D32', bg:'#E8F5E9', icon:'<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 10h16M8 15h5"/>', title:'단독(공통) 데이터', desc:'제공기관이 단독으로 보유·제공하는 데이터셋입니다.', unit:'건'},
+  {kind:'registry', cc:'#00838F', bg:'#E0F7FA', icon:'<path d="M3 12h4l2-5 4 10 2-5h6"/>', title:'코호트·레지스트리', desc:'대상자를 장기 추적하거나 질환별로 등록·관리하는 데이터셋입니다.', unit:'건'},
+  {kind:'guide',    cc:'#6A1B9A', bg:'#F3E5F5', icon:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h5"/>', title:'상세 안내 제공', desc:'범위·분석환경·신청 방법을 정리한 상세페이지가 있는 데이터셋입니다.', unit:'건'},
+  {kind:'orgs',     cc:'#AD1457', bg:'#FCE4EC', icon:'<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="m9 12 2 2 4-4"/>', title:'참여 공급기관', desc:'데이터를 제공하는 의료기관·공공기관 목록을 확인하세요.', unit:'개'}
 ];
 function renderResourceCards(){
   const grid=document.getElementById('resGrid');
@@ -2047,10 +2023,10 @@ function renderResourceCards(){
     guide: DATASETS.filter(function(d){ return !!d.guideFile; }).length,
     orgs: Object.keys(orgSet).length
   };
-  grid.innerHTML=RESOURCE_CARDS.map(function(c){
+  grid.innerHTML=RESOURCE_CARDS.map(function(c,i){
     const onclick=c.kind==='orgs' ? "goPage('search')" : ("exploreResource('"+c.kind+"')");
     return '<div class="res-card" style="--cc:'+c.cc+'" onclick="'+onclick+'">'+
-      '<div class="res-icon" style="background:'+c.bg+'">'+c.icon+'</div>'+
+      '<div class="res-icon tile-ico t'+(i%3+1)+'"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+c.icon+'</svg></div>'+
       '<div class="res-title">'+esc(c.title)+'</div>'+
       '<div class="res-desc">'+esc(c.desc)+'</div>'+
       '<div class="res-count">'+counts[c.kind].toLocaleString()+'<span>'+c.unit+'</span></div>'+
