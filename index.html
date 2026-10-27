@@ -1103,7 +1103,7 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
 .hero--sky .hero__chips{justify-content:center;align-items:center;margin-top:22px;gap:8px}
 .hero--sky .hero__chips-label{font-size:14px;font-weight:700;color:var(--ink-2);margin-right:6px}
 .hero--sky .hero__chip{font-size:14px;padding:7px 14px;font-weight:600}
-.hero__tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;width:100%;max-width:calc(var(--max) - 96px);margin:0 auto}
+.hero__tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:100%;max-width:calc(var(--max) - 96px);margin:0 auto}
 .hero-tile{display:flex;align-items:center;gap:12px;padding:16px;border-radius:18px;background:#fff;border:1px solid var(--line);box-shadow:var(--sh);color:var(--ink);text-decoration:none;min-width:0}
 .hero-tile small{display:block;font-size:12.5px;color:var(--ink-3);font-weight:600;white-space:nowrap}
 .hero-tile strong{display:block;font-size:23px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
@@ -1122,8 +1122,20 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
 .res-count{font-size:28px;font-weight:800;letter-spacing:-.03em;margin-top:18px}
 .res-count span{font-size:14px;font-weight:600;color:var(--ink-3)}
 .feed-card__title{font-size:17px}
-@media(max-width:1100px){.hero__tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:640px){.hero--sky{padding:56px 20px 32px}.hero--sky .hero__title{font-size:30px}.hero--sky .hero__desc{font-size:14.5px}.hero__tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.hero--sky .hero__chips-label{display:none}}
+/* 가운데 검색 영역 + 오른쪽 연계 서비스 패널 */
+.hero__main{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:44px;align-items:center;width:100%;max-width:calc(var(--max) - 96px);margin:0 auto}
+.hero--sky .hero__center{max-width:none}
+.hero--sky .hero__links{padding:20px 22px 10px;border-radius:22px;text-align:left}
+.hero--sky .hero__links-title{font-size:15px}
+.hero--sky .hero__links-sub{font-size:11.5px;font-weight:600}
+.hero--sky .hero__links-desc{font-size:12.5px;margin-top:6px}
+.hero--sky .hero__link{justify-content:flex-start;padding:13px 12px}
+.hero--sky .hero__link-body{flex:1}
+.hero--sky .hero__link .tile-ico{width:40px;height:40px;border-radius:12px}
+.hero--sky .hero__link-name{font-size:14.5px}
+.hero--sky .hero__link-desc{font-size:12px}
+@media(max-width:1100px){.hero__main{grid-template-columns:1fr;gap:28px}.hero--sky .hero__links{max-width:640px;width:100%;margin:0 auto}}
+@media(max-width:640px){.hero--sky{padding:56px 20px 32px}.hero--sky .hero__title{font-size:30px}.hero--sky .hero__desc{font-size:14.5px}.hero__tiles{grid-template-columns:1fr}.hero--sky .hero__chips-label{display:none}}
 
 
 </style>
@@ -1195,10 +1207,11 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
 ══════════════════════════════════════════ -->
 <div id="page-main" class="page active">
 
-<!-- HERO (시안 메인_스카이: 가운데 제목 + 유리 검색 카드 + 통계·바로가기 6칸)
+<!-- HERO (시안 메인_스카이: 제목 + 유리 검색 카드, 오른쪽 연계 서비스 패널, 아래 통계 3칸)
      hinput / hero__tab / setHeroTab / stat-dataset-count / stat-org-count 는 스크립트가 쓰므로 이름 유지 -->
 <section class="hero hero--sky">
   <div class="hero__inner">
+    <div class="hero__main">
     <div class="hero__center">
       <div class="hero__eyebrow"><span class="hero__dot"></span>DCAT 2.0 표준 기반 국가 보건의료데이터 연계 허브</div>
       <h1 class="hero__title">보건의료데이터를 <em>쉽게 찾고, 안전하게</em><br>AI와 함께 활용하세요</h1>
@@ -1226,15 +1239,23 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
         <span class="hero__chip" onclick="searchChip('#결핵')">#결핵</span>
       </div>
     </div>
+    <!-- 연계 서비스 (주소는 PLATFORMS 와 같은 값) -->
+    <aside class="hero__links">
+      <div class="hero__links-head"><span class="hero__links-title">연계 서비스</span><span class="hero__links-sub">외부 사이트</span></div>
+      <p class="hero__links-desc">함께 이용하는 국가 보건의료데이터 플랫폼</p>
+      <div class="hero__links-list">
+        <a class="hero__link" href="https://k-cure.mohw.go.kr/" target="_blank" rel="noopener"><span class="tile-ico t1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8 9.5 8z"/></svg></span><span class="hero__link-body"><span class="hero__link-name">K-CURE</span><span class="hero__link-desc">암 공공·임상 라이브러리</span></span><span class="hero__link-arrow">↗</span></a>
+        <a class="hero__link" href="https://k-cure.mohw.go.kr/portal/pfm/kif/dat/viewPfmKifDat.do" target="_blank" rel="noopener"><span class="tile-ico t2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg></span><span class="hero__link-body"><span class="hero__link-name">의료데이터 중심병원</span><span class="hero__link-desc">병원 임상데이터 연구 활용</span></span><span class="hero__link-arrow">↗</span></a>
+        <a class="hero__link" href="https://hcdl.mohw.go.kr/" target="_blank" rel="noopener"><span class="tile-ico t3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span><span class="hero__link-body"><span class="hero__link-name">보건의료 빅데이터 통합 플랫폼</span><span class="hero__link-desc">공공기관 데이터 결합·분석</span></span><span class="hero__link-arrow">↗</span></a>
+      </div>
+    </aside>
+    </div>
 
-    <!-- 통계 3칸(데이터셋·기관 수는 data.json 로드 후 자동 갱신) + 연계 서비스 3칸(주소는 PLATFORMS 와 같은 값) -->
+    <!-- 통계 3칸(데이터셋·기관 수는 data.json 로드 후 자동 갱신) -->
     <div class="hero__tiles">
       <div class="hero-tile"><span class="tile-ico t1"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></svg></span><div><small>등록 데이터셋</small><strong id="stat-dataset-count">35<span>건</span></strong></div></div>
       <div class="hero-tile"><span class="tile-ico t2"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5l8-3 8 3v16M9 21v-5h6v5"/></svg></span><div><small>참여 공급 기관</small><strong id="stat-org-count">15<span>개</span></strong></div></div>
       <div class="hero-tile"><span class="tile-ico t3"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><div><small>누적 데이터 신청</small><strong>4,892<span>건</span></strong></div></div>
-      <a class="hero-tile hero-tile--link" href="https://k-cure.mohw.go.kr/" target="_blank" rel="noopener"><span class="tile-ico t1"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8 9.5 8z"/></svg></span><span>K-CURE<small>암 공공·임상 라이브러리</small></span></a>
-      <a class="hero-tile hero-tile--link" href="https://k-cure.mohw.go.kr/portal/pfm/kif/dat/viewPfmKifDat.do" target="_blank" rel="noopener"><span class="tile-ico t2"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg></span><span>의료데이터<br>중심병원</span></a>
-      <a class="hero-tile hero-tile--link" href="https://hcdl.mohw.go.kr/" target="_blank" rel="noopener"><span class="tile-ico t3"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span><span>보건의료 빅데이터<br>통합 플랫폼</span></a>
     </div>
   </div>
 </section>
