@@ -1079,6 +1079,14 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
 /* 메뉴 가운데 정렬: 넓은 화면에서 로고·오른쪽 영역 폭을 같게 해 탭이 화면 정가운데 */
 @media(min-width:1280px){.nav__logo,.nav__right{flex:1 1 0;min-width:0}.nav__right{justify-content:flex-end}.nav__tabs{flex:0 0 auto;justify-content:center;margin:0 24px}}
 @media(max-width:1279px){.nav__tabs{justify-content:center}}
+
+/* 준비 중 탭 · 연구정보 결과의 '사용 데이터' 줄 */
+.hero__tab.is-soon,.sbtab.is-soon{opacity:.5;cursor:not-allowed}
+.hero__tab.is-soon:hover,.sbtab.is-soon:hover{color:var(--ink-3)}
+.soon{display:inline-block;margin-left:5px;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;background:var(--g10);color:var(--ink-3);vertical-align:1px}
+.pp-ds{font-size:12px;color:var(--g50);margin-top:4px}
+.pp-ds a{color:var(--brand-2);font-weight:600;text-decoration:none}
+.pp-ds a:hover{text-decoration:underline}
 /* 메인 히어로 배치 (시안 메인_스카이) */
 .hero--sky{padding:88px 48px 44px}
 .hero--sky .hero__inner{gap:60px}
@@ -1198,10 +1206,10 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
       <div class="hero__search-card">
         <div class="hero__tabs">
           <button class="hero__tab on" data-mode="ai" onclick="setHeroTab(this,'예: 결핵 데이터 찾아줘 (자연어로 물어보세요)')">대화형 AI 검색</button>
-          <button class="hero__tab" onclick="setHeroTab(this,'데이터셋 기반 검색 (예: 건강검진, 암 등록...)')">데이터셋</button>
-          <button class="hero__tab" onclick="setHeroTab(this,'항목명·표준코드로 검색 (예: 혈압, ICD-10...)')">항목 검색</button>
-          <button class="hero__tab" onclick="setHeroTab(this,'코호트 조건 입력 (예: 65세 이상 당뇨병 환자...)')">코호트</button>
-          <button class="hero__tab" onclick="setHeroTab(this,'프로젝트·논문 검색...')">연구정보</button>
+          <button class="hero__tab" data-mode="normal" onclick="setHeroTab(this,'데이터셋 기반 검색 (예: 건강검진, 암 등록...)')">데이터셋</button>
+          <button class="hero__tab is-soon" disabled title="준비 중인 기능입니다">항목 검색<span class="soon">준비 중</span></button>
+          <button class="hero__tab is-soon" disabled title="준비 중인 기능입니다">코호트<span class="soon">준비 중</span></button>
+          <button class="hero__tab" data-mode="research" onclick="setHeroTab(this,'논문 제목·연구자 이름·소속 기관으로 검색 (예: tuberculosis, Kang, 연세대학교)')">연구정보</button>
         </div>
         <div class="hero__bar">
           <input id="hinput" class="hero__input" type="text" placeholder="예: 결핵 데이터 찾아줘 (자연어로 물어보세요)" onkeydown="if(event.key==='Enter')doSearch()">
@@ -1668,10 +1676,10 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
   <div class="search-bar__inner">
     <div class="search-bar__tabs">
       <button class="sbtab on" data-mode="ai" onclick="setSbtab(this)">대화형 AI 검색</button>
-      <button class="sbtab" onclick="setSbtab(this)">데이터셋</button>
-      <button class="sbtab" onclick="setSbtab(this)">항목 검색</button>
-      <button class="sbtab" onclick="setSbtab(this)">코호트</button>
-      <button class="sbtab" onclick="setSbtab(this)">연구정보</button>
+      <button class="sbtab" data-mode="normal" onclick="setSbtab(this)">데이터셋</button>
+      <button class="sbtab is-soon" disabled title="준비 중인 기능입니다">항목 검색<span class="soon">준비 중</span></button>
+      <button class="sbtab is-soon" disabled title="준비 중인 기능입니다">코호트<span class="soon">준비 중</span></button>
+      <button class="sbtab" data-mode="research" onclick="setSbtab(this)">연구정보</button>
     </div>
     <div class="search-bar__row">
       <input class="search-bar__input" id="searchInput" type="text" placeholder="예: 결핵 데이터 찾아줘 (자연어로 물어보세요)" onkeydown="if(event.key==='Enter')doSearchFromResult()">
@@ -2830,6 +2838,76 @@ function setAiLayout(on){
   if(pg) pg.classList.toggle('ai-mode', !!on);
   if(!on){ const u=document.getElementById('resultUnit'); if(u) u.textContent='건'; }
 }
+/* ══ 연구정보 검색 (연구정보 탭) ══
+   논문(제목·한 줄 요약·학술지·저자·소속·쓴 데이터 이름)과 연구자(이름·소속)를 글자로 찾는다.
+   검색어를 띄어 쓴 낱말이 모두 들어 있어야 맞음. AI 는 부르지 않는다.
+   사이트에 있는 논문은 검수·담당자 승인을 거친 것뿐이라 그 범위 안에서만 찾는다. */
+const RS_PAPER_PAGE_SIZE=10;
+let RS_PAPERS=[];
+function rsPaperHay(e){
+  if(e._hay) return e._hay;
+  const p=e.p;
+  const au=(p.au||[]).map(function(a){ return a[0]+' '+(a[1]||''); }).join(' ');
+  const ds=e.dids.map(function(id){ const d=dsById(id); return d?d.name+' '+d.org:''; }).join(' ');
+  e._hay=[p.title,p.sum,p.journal,p.year,p.pmid,(p.authors||[]).join(' '),au,ds].filter(Boolean).join(' ').toLowerCase();
+  return e._hay;
+}
+function rsPersonHay(r){
+  const t=(r.name+' '+(r.short||'')+' '+(r.insts||[]).join(' ')).toLowerCase();
+  return t+' '+r.name.toLowerCase().replace(/[\s-]+/g,'');
+}
+function runResearchSearch(q, rerun){
+  setAiLayout(true);   // 왼쪽 데이터셋 필터·정렬은 쓰지 않는다
+  q=(q||'').trim().replace(/^#/,'');
+  if(!rerun) track('search', 'research', q);
+  NAV_SEARCH={ q:q, m:'research' };
+  if(document.getElementById('page-search').classList.contains('active')) navPush('search');
+  document.getElementById('resultQuery').textContent = q || '전체';
+  const wrap=document.getElementById('resultList');
+  const pagi=document.getElementById('pagination'); if(pagi) pagi.style.display='none';
+  const af=document.getElementById('activeFilters'); if(af) af.style.display='none';
+  document.getElementById('resultUnit').textContent='편';
+  if(!q){
+    document.getElementById('resultCount').textContent=0;
+    wrap.innerHTML='<div style="padding:60px 20px;text-align:center;color:var(--g50);font-size:14px">논문 제목·연구자 이름·소속 기관·데이터 이름으로 검색하세요. 예) tuberculosis, Kang, 연세대학교, 결핵</div>';
+    return;
+  }
+  const toks=q.toLowerCase().split(/\s+/).filter(Boolean);
+  const hit=function(h){ return toks.every(function(t){ return h.indexOf(t)>=0; }); };
+  RS_PAPERS=Object.values(paperIndex()).filter(function(e){ return hit(rsPaperHay(e)); })
+    .sort(function(a,b){ return String(b.p.year||'').localeCompare(String(a.p.year||'')); });
+  const people=Object.keys(RESEARCHERS).map(function(k){ return Object.assign({key:k}, RESEARCHERS[k]); })
+    .filter(function(r){ return hit(rsPersonHay(r)); })
+    .sort(function(a,b){ return b.pmids.length-a.pmids.length; });
+  document.getElementById('resultCount').textContent=RS_PAPERS.length.toLocaleString();
+  if(!RS_PAPERS.length && !people.length){
+    wrap.innerHTML='<div class="pm-none" style="padding:40px 4px">맞는 논문·연구자가 없습니다. 논문 제목은 대부분 영문이니 영문 낱말(예: tuberculosis)이나 데이터 이름(예: 결핵)으로도 찾아보세요.</div>';
+    return;
+  }
+  let html='';
+  if(people.length) html+=`<div class="ai-search-sub">👤 연구자 ${people.length.toLocaleString()}명</div>${aiResearcherModeHtml(people)}`;
+  if(RS_PAPERS.length) html+=`<div class="ai-search-sub" style="margin-top:${people.length?'22px':'4px'}">📄 논문 ${RS_PAPERS.length.toLocaleString()}편 <span style="font-weight:500;color:var(--g50)">· 최신순 · 이 포털 데이터로 연구했다고 검수된 논문</span></div><div id="rsPaperWrap">${rsPaperPageHtml(1)}</div>`;
+  wrap.innerHTML=html;
+}
+function rsPaperPageHtml(page){
+  const N=RS_PAPER_PAGE_SIZE, pages=Math.max(1, Math.ceil(RS_PAPERS.length/N));
+  page=Math.min(Math.max(1, page), pages);
+  const from=(page-1)*N;
+  const items=RS_PAPERS.slice(from, from+N).map(function(e){
+    const ds=e.dids.map(dsById).filter(Boolean);
+    return paperBoxHtml(e.p).replace(/<\/div>\s*$/, '')
+      + (ds.length?`<div class="pp-ds">사용 데이터: ${ds.map(d=>`<a href="javascript:void(0)" onclick="openDetail('${d.id}')">${esc(d.name)}</a>`).join(', ')}</div>`:'')
+      + '</div>';
+  }).join('');
+  return `<div class="pp-ai__list">${items}</div>${pages>1?`
+    <div class="pagination rs-pages">${paginationHtml(page, pages, 'rsPaperPage')}</div>
+    <div class="rs-pages__info">${from+1}–${Math.min(from+N, RS_PAPERS.length)}번째 / 전체 ${RS_PAPERS.length.toLocaleString()}편</div>`:''}`;
+}
+function rsPaperPage(n){
+  const w=document.getElementById('rsPaperWrap'); if(!w) return;
+  w.innerHTML=rsPaperPageHtml(n);
+  w.scrollIntoView({behavior:'smooth', block:'start'});
+}
 function runAISearch(q){
   setAiLayout(true);
   q = (q||'').trim();
@@ -3900,7 +3978,7 @@ let NAV_RESTORING = false;
 let NAV_SEARCH = { q:'', m:'normal' };      // 지금 검색결과 화면에 그려져 있는 검색
 function navHash(st){
   if(st.p==='dataset') return '#/dataset/'+encodeURIComponent(st.id||'');
-  if(st.p==='search') return st.q ? '#/search?q='+encodeURIComponent(st.q)+(st.m==='ai'?'&m=ai':'') : '#/search';
+  if(st.p==='search') return st.q ? '#/search?q='+encodeURIComponent(st.q)+(st.m==='ai'||st.m==='research'?'&m='+st.m:'') : '#/search';
   return st.p==='main' ? location.pathname+location.search : '#/'+st.p;
 }
 function navFromHash(){
@@ -3910,7 +3988,7 @@ function navFromHash(){
   const parts=path.split('/').map(decodeURIComponent);
   const prm=new URLSearchParams(qs||'');
   if(parts[0]==='dataset' && parts[1]) return { p:'dataset', id:parts[1] };
-  if(parts[0]==='search') return { p:'search', q:prm.get('q')||'', m:prm.get('m')==='ai'?'ai':'normal' };
+  if(parts[0]==='search') return { p:'search', q:prm.get('q')||'', m:searchModeOf(prm.get('m')) };
   if(PAGES[parts[0]]) return { p:parts[0] };
   return null;
 }
@@ -3938,10 +4016,10 @@ function navRestore(st){
     else if(st.p==='search'){
       // 지금 그려진 결과와 같으면 다시 검색하지 않는다(AI 검색을 또 부르지 않게)
       if(st.q && (st.q!==NAV_SEARCH.q || (st.m||'normal')!==NAV_SEARCH.m)){
-        SEARCH_MODE = st.m==='ai' ? 'ai' : 'normal';
+        SEARCH_MODE = searchModeOf(st.m);
         const inp=document.getElementById('searchInput'); if(inp) inp.value=st.q;
         syncSbtabToSearchMode();
-        if(SEARCH_MODE==='ai') runAISearch(st.q); else runSearch(st.q);
+        runSearchByMode(st.q);
       }
       goPage('search');
     }
@@ -3985,8 +4063,7 @@ function doSearch() {
             document.getElementById('navSearch').value.trim();
   document.getElementById('searchInput').value = q;
   syncSbtabToSearchMode();
-  if(SEARCH_MODE === 'ai') runAISearch(q);
-  else runSearch(q);
+  runSearchByMode(q);
   goPage('search');
 }
 function searchChip(keyword) {
@@ -3997,8 +4074,12 @@ function searchChip(keyword) {
   goPage('search');
 }
 function doSearchFromResult() {
-  const q = document.getElementById('searchInput').value.trim();
+  runSearchByMode(document.getElementById('searchInput').value.trim());
+}
+/* 탭(검색 방식)에 따라 검색 함수를 고른다: AI 검색 / 연구정보(논문·연구자) / 일반 데이터셋 */
+function runSearchByMode(q){
   if(SEARCH_MODE === 'ai') runAISearch(q);
+  else if(SEARCH_MODE === 'research') runResearchSearch(q);
   else runSearch(q);
 }
 
@@ -4007,31 +4088,33 @@ function setHeroTab(el, ph) {
   document.querySelectorAll('.hero__tab').forEach(t => t.classList.remove('on'));
   el.classList.add('on');
   document.getElementById('hinput').placeholder = ph;
-  SEARCH_MODE = el.dataset.mode === 'ai' ? 'ai' : 'normal';
+  SEARCH_MODE = searchModeOf(el.dataset.mode);
 }
 
 /* ══ 검색바 탭 ══ */
-let SEARCH_MODE = 'ai';   // 'normal' | 'ai' (대화형 AI 검색 탭) — 기본값을 AI 검색으로
+let SEARCH_MODE = 'ai';   // 'normal'(데이터셋) | 'ai'(대화형 AI 검색, 기본값) | 'research'(연구정보: 논문·연구자)
+function searchModeOf(m){ return m==='ai' || m==='research' ? m : 'normal'; }
+function searchPlaceholder(){
+  return SEARCH_MODE === 'ai' ? '예: 결핵 데이터 찾아줘 (자연어로 물어보세요)'
+    : SEARCH_MODE === 'research' ? '논문 제목·연구자 이름·소속 기관으로 검색 (예: tuberculosis, Kang, 연세대학교)'
+    : '검색어를 입력하세요';
+}
 /* 검색결과 페이지의 sbtab 표시를 현재 SEARCH_MODE에 맞춰 맞춘다.
    메인 히어로 탭에서 넘어왔을 때도(sbtab을 직접 클릭 안 해도) 탭 표시가 어긋나지 않게. */
 function syncSbtabToSearchMode(){
   document.querySelectorAll('.sbtab').forEach(t => {
-    t.classList.toggle('on', (t.dataset.mode === 'ai') === (SEARCH_MODE === 'ai'));
+    t.classList.toggle('on', t.dataset.mode === SEARCH_MODE);
   });
   const input = document.getElementById('searchInput');
-  if(input) input.placeholder = SEARCH_MODE === 'ai'
-    ? '예: 결핵 데이터 찾아줘 (자연어로 물어보세요)'
-    : '검색어를 입력하세요';
+  if(input) input.placeholder = searchPlaceholder();
 }
 function setSbtab(el) {
   document.querySelectorAll('.sbtab').forEach(t => t.classList.remove('on'));
   el.classList.add('on');
-  SEARCH_MODE = el.dataset.mode === 'ai' ? 'ai' : 'normal';
+  SEARCH_MODE = searchModeOf(el.dataset.mode);
   const input = document.getElementById('searchInput');
   if(input){
-    input.placeholder = SEARCH_MODE === 'ai'
-      ? '예: 결핵 데이터 찾아줘 (자연어로 물어보세요)'
-      : '검색어를 입력하세요';
+    input.placeholder = searchPlaceholder();
     if(input.value.trim()) doSearchFromResult();   // 탭만 바꿔도 같은 검색어로 바로 재검색
   }
 }
