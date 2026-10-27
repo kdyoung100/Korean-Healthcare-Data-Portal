@@ -979,8 +979,7 @@ body{background:var(--page-bg)}
   radial-gradient(45% 60% at 55% 5%,rgba(125,211,252,.26),transparent 70%),
   radial-gradient(50% 70% at 90% 0%,rgba(96,140,255,.22),transparent 70%),
   linear-gradient(180deg,#eaf6ff 0%,var(--page-bg) 100%)}
-.hero::before{background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/56px 56px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/56px 56px;opacity:1;
-  -webkit-mask-image:radial-gradient(ellipse 70% 80% at 40% 0%,#000,transparent 75%);mask-image:radial-gradient(ellipse 70% 80% at 40% 0%,#000,transparent 75%)}
+.hero::before{display:none}
 .hero__eyebrow{background:rgba(255,255,255,.7);border:1px solid #fff;color:var(--ink-2);box-shadow:var(--sh);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .hero__dot{background:var(--brand-2)}
 .hero__title{color:var(--ink)}
@@ -1059,8 +1058,7 @@ footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;back
   radial-gradient(55% 90% at 12% 0%,rgba(56,189,248,.28),transparent 70%),
   radial-gradient(50% 90% at 88% 0%,rgba(96,140,255,.20),transparent 70%),
   linear-gradient(180deg,#eaf6ff 0%,var(--page-bg) 100%);border-bottom:1px solid var(--line)}
-.ds-hero::before,.about-hero::before{background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/56px 56px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/56px 56px;opacity:1;
-  -webkit-mask-image:radial-gradient(ellipse 70% 90% at 30% 0%,#000,transparent 75%);mask-image:radial-gradient(ellipse 70% 90% at 30% 0%,#000,transparent 75%)}
+.ds-hero::before,.about-hero::before{display:none}
 .ds-hero__type{background:#e8f3ff;border-color:rgba(47,139,255,.3);color:#1f6fe0}
 .ds-hero__badge{background:#eef0ff;border-color:rgba(91,95,224,.3);color:#4b5fe0}
 .ds-hero__dcat{background:#e6f7ff;border-color:rgba(14,165,233,.3);color:#0284c7}
