@@ -936,6 +936,149 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
 .fb-toast[hidden]{display:none}
 .fb-toast button{background:none;border:none;color:#9FC4E8;cursor:pointer;font:inherit;font-size:12.5px;white-space:nowrap}
 @media (max-width:640px){.fb-dock{left:12px;bottom:12px}.fb-pop--list{left:12px;bottom:64px}.fb-toast{bottom:84px}}
+
+/* ═══════════════════════════════════════
+   2026-10 스카이 테마 (밝은 하늘색 · 유리 메뉴바 · 은은한 상단 빛)
+   원래 디자인 위에 덮어쓰는 블록 — 이 블록만 지우면 이전 모습으로 돌아간다.
+   시안: 산출물/디자인시안_2026-10-27/메인_스카이.html
+═══════════════════════════════════════ */
+:root{
+  --brand-1:#0ea5e9; --brand-2:#2f8bff; --brand-3:#6d8dff;
+  --brand-grad:linear-gradient(100deg,var(--brand-1),var(--brand-2) 55%,var(--brand-3));
+  --ink:#0b1b33; --ink-2:#46597a; --ink-3:#8797b2; --line:rgba(11,27,51,.08);
+  --page-bg:#f5faff;
+  /* 기존 토큰을 하늘색 계열로: 청록(teal) 강조색이 쓰이던 모든 곳이 파랑으로 바뀐다 */
+  --teal:#2f8bff; --teal-dk:#1f6fe0; --teal-lt:#e8f3ff;
+  --sky:#2f8bff; --sky-lt:#e8f3ff;
+  --navy:#0b1b33; --navy-dk:#0b2a4a;
+  --g05:#f4f8fd; --g10:#e9f0f8; --g20:#dbe5f1;
+  --sh:0 1px 2px rgba(11,60,120,.04),0 8px 24px -12px rgba(11,80,160,.16);
+  --sh-md:0 2px 4px rgba(11,60,120,.04),0 16px 36px -16px rgba(11,80,160,.24);
+}
+body{background:var(--page-bg)}
+
+/* 메뉴바: 밝은 유리 */
+.nav{background:rgba(255,255,255,.74);-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line);box-shadow:0 6px 20px -16px rgba(11,80,160,.35)}
+.nav__logo-ko{color:var(--ink)}
+.nav__logo-en{color:var(--ink-3)}
+.nav__tab{color:var(--ink-2)}
+.nav__tab:hover,.nav__tab.on{color:var(--brand-2);border-bottom-color:var(--brand-2)}
+.nav__menu-btn{color:var(--ink-2)}
+.nav__search{background:#fff;border:1px solid var(--g20);color:var(--ink)}
+.nav__search::placeholder{color:var(--ink-3)}
+.nav__search:focus{background:#fff;border-color:var(--brand-2)}
+.nav__search-ico{color:var(--ink-3)}
+.nav__btn-out{color:var(--ink-2);border:1px solid var(--g20);background:#fff}
+.nav__btn-out:hover{background:var(--g05);color:var(--ink)}
+.nav__btn-fill{background:var(--brand-grad);color:#fff;box-shadow:0 6px 14px -8px rgba(30,140,240,.8)}
+.nav__btn-fill:hover{filter:brightness(1.05);background:var(--brand-grad)}
+
+/* 히어로: 위쪽에만 은은한 하늘빛 + 희미한 격자 */
+.hero{background:
+  radial-gradient(55% 70% at 15% 0%,rgba(56,189,248,.30),transparent 70%),
+  radial-gradient(45% 60% at 55% 5%,rgba(125,211,252,.26),transparent 70%),
+  radial-gradient(50% 70% at 90% 0%,rgba(96,140,255,.22),transparent 70%),
+  linear-gradient(180deg,#eaf6ff 0%,var(--page-bg) 100%)}
+.hero::before{background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/56px 56px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/56px 56px;opacity:1;
+  -webkit-mask-image:radial-gradient(ellipse 70% 80% at 40% 0%,#000,transparent 75%);mask-image:radial-gradient(ellipse 70% 80% at 40% 0%,#000,transparent 75%)}
+.hero__eyebrow{background:rgba(255,255,255,.7);border:1px solid #fff;color:var(--ink-2);box-shadow:var(--sh);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.hero__dot{background:var(--brand-2)}
+.hero__title{color:var(--ink)}
+.hero__title em{background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__desc{color:var(--ink-2)}
+.hero__tabs{background:rgba(255,255,255,.6);border:1px solid #fff;box-shadow:var(--sh);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.hero__tab{color:var(--ink-3)}
+.hero__tab.on{background:var(--brand-grad);color:#fff;box-shadow:0 6px 14px -8px rgba(30,140,240,.8)}
+.hero__tab:hover:not(.on){color:var(--ink)}
+.hero__bar{background:#fff;border:1px solid var(--g20);box-shadow:var(--sh-md)}
+.hero__bar:focus-within{border-color:var(--brand-2);box-shadow:0 0 0 4px rgba(47,139,255,.12),var(--sh-md)}
+.hero__input{color:var(--ink)}
+.hero__input::placeholder{color:var(--ink-3)}
+.hero__sbtn{background:var(--brand-grad)}
+.hero__sbtn:hover{background:var(--brand-grad);filter:brightness(1.06)}
+.hero__chip{color:var(--ink-2);background:rgba(255,255,255,.7);border:1px solid #fff;box-shadow:0 1px 2px rgba(11,60,120,.05)}
+.hero__chip:hover{color:var(--brand-2);background:#fff}
+.hero__chips-label{color:var(--ink-3)}
+.hero__links{background:rgba(255,255,255,.68);border:1px solid #fff;box-shadow:var(--sh-md);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.hero__links-title{color:var(--ink)}
+.hero__links-sub,.hero__links-desc{color:var(--ink-3)}
+.hero__links-desc{border-bottom-color:var(--line)}
+.hero__link+.hero__link{border-top-color:var(--line)}
+.hero__link:hover{background:#fff}
+.hero__link-name{color:var(--ink)}
+.hero__link:hover .hero__link-name,.hero__link:hover .hero__link-arrow{color:var(--brand-2)}
+.hero__link-desc,.hero__link-arrow{color:var(--ink-3)}
+.hero__stats{border-top-color:var(--line)}
+.hero__stat-sep{background:var(--line)}
+.hero__stat-num{color:var(--ink)}
+.hero__stat-num--accent{background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero__stat-unit,.hero__stat-label{color:var(--ink-3)}
+
+/* 카드: 흰 카드 + 얇은 테두리 + 옅은 그림자 */
+.feed-card,.topic-track,.feat-panel,.roles-mini__item,.res-card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh)}
+.feed-card:hover{border-color:rgba(47,139,255,.35)}
+.feed-card--event .feed-card__cat{background:#eef0ff;color:#4b5fe0}
+.res-grid{background:transparent;border:none;padding:0}
+.res-card::after{background:var(--brand-grad)}
+.res-card:hover{border-color:rgba(47,139,255,.4);box-shadow:0 0 0 4px rgba(47,139,255,.08),var(--sh-md)}
+.res-icon{background:linear-gradient(150deg,#eaf6ff,#dceaff)!important;border-radius:13px}
+.res-count{color:var(--ink)}
+.browse{background:transparent;border-color:var(--line)}
+.topic-item{background:var(--g05);border:1px solid var(--g10)}
+.topic-item:hover{border-color:var(--brand-2);background:#eef6ff}
+.topic-track--public .topic-track__count{background:#eef0ff;color:#4b5fe0}
+.feat-panel{background:#fff}
+.feat-list li{background:var(--g05)}
+.feat-list li:hover{background:#fff;border-color:rgba(47,139,255,.4)}
+.feat-tab.on{background:var(--brand-grad)}
+.feat-rank{background:var(--brand-grad)}
+.roles-mini__icon{background:linear-gradient(150deg,#eaf6ff,#dceaff)!important}
+.roles-mini__item:hover{border-color:rgba(47,139,255,.4)}
+.partners{background:transparent;border-top-color:var(--line)}
+.ptag{background:#fff;border-color:var(--line)}
+
+/* 뉴스레터 띠 · 푸터 */
+.cta{background:radial-gradient(60% 120% at 10% 0%,rgba(255,255,255,.18),transparent 60%),linear-gradient(110deg,#0ea5e9,#2f8bff 55%,#5b7cff)}
+.cta__sub{background:var(--ink)}
+footer{background:var(--navy-dk);position:relative}
+footer::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:var(--brand-grad);opacity:.7}
+/* 검색 페이지 상단 검색 띠 */
+.search-bar{background:rgba(255,255,255,.7);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.sbtab{color:var(--ink-3)}
+.sbtab.on{background:#fff;color:var(--brand-2);border:1px solid rgba(47,139,255,.35);box-shadow:var(--sh)}
+.sbtab:hover:not(.on){color:var(--ink)}
+.search-bar__row{background:#fff;border:1px solid var(--g20);box-shadow:var(--sh)}
+.search-bar__row:focus-within{border-color:var(--brand-2)}
+.search-bar__input{color:var(--ink)}
+.search-bar__input::placeholder{color:var(--ink-3)}
+.search-bar__btn{background:var(--brand-grad)}
+.search-bar__btn:hover{background:var(--brand-grad);filter:brightness(1.06)}
+
+/* 데이터셋 상세 · 포털 소개 상단: 메인 히어로와 같은 밝은 하늘빛 */
+.ds-hero,.about-hero{background:
+  radial-gradient(55% 90% at 12% 0%,rgba(56,189,248,.28),transparent 70%),
+  radial-gradient(50% 90% at 88% 0%,rgba(96,140,255,.20),transparent 70%),
+  linear-gradient(180deg,#eaf6ff 0%,var(--page-bg) 100%);border-bottom:1px solid var(--line)}
+.ds-hero::before,.about-hero::before{background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/56px 56px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/56px 56px;opacity:1;
+  -webkit-mask-image:radial-gradient(ellipse 70% 90% at 30% 0%,#000,transparent 75%);mask-image:radial-gradient(ellipse 70% 90% at 30% 0%,#000,transparent 75%)}
+.ds-hero__type{background:#e8f3ff;border-color:rgba(47,139,255,.3);color:#1f6fe0}
+.ds-hero__badge{background:#eef0ff;border-color:rgba(91,95,224,.3);color:#4b5fe0}
+.ds-hero__dcat{background:#e6f7ff;border-color:rgba(14,165,233,.3);color:#0284c7}
+.ds-hero__title{color:var(--ink)}
+.ds-hero__org{color:var(--ink-2)}
+.ds-hero__stat-num{color:var(--ink)}
+.ds-hero__stat-label{color:var(--ink-3)}
+.ds-hero .breadcrumb,.ds-hero .breadcrumb *{color:var(--ink-3)}
+.ds-hero .breadcrumb a{color:var(--brand-2)}
+.apply-panel__head{background:var(--brand-grad)}
+.about-hero__eyebrow{background:rgba(255,255,255,.7);border:1px solid #fff;color:var(--ink-2);box-shadow:var(--sh)}
+.about-hero__title{color:var(--ink)}
+.about-hero__title em{background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.about-hero__desc{color:var(--ink-2)}
+.about-toc__item{color:var(--ink-2);background:rgba(255,255,255,.75);border:1px solid #fff;box-shadow:0 1px 2px rgba(11,60,120,.05)}
+.about-toc__item:hover{background:#fff;color:var(--brand-2);border-color:rgba(47,139,255,.35)}
+.about-mission{background:linear-gradient(120deg,#0b2a4a,#123d6b)}
+
 </style>
 </head>
 <body>
@@ -945,7 +1088,7 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
   <div class="nav__logo" onclick="goPage('main')">
     <div class="nav__logo-icon">
       <!-- 로고: ㅅ 처마(숭례문 지붕) + H 기둥. 원본 시안은 산출물/디자인시안_2026-10-27/로고_숭례문H.html -->
-      <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="logoGrad" gradientUnits="userSpaceOnUse" x1="8" y1="6" x2="56" y2="60"><stop offset="0" stop-color="#6fd6ff"/><stop offset=".5" stop-color="#3f9bff"/><stop offset="1" stop-color="#5b86ff"/></linearGradient></defs><g fill="url(#logoGrad)"><path d="M32 5.2 C25 12.6 15.4 19.4 6.4 21.5 A2.1 2.1 0 0 0 7.1 25.6 C17.4 24.8 26.6 18.8 32 13.2 C37.4 18.8 46.6 24.8 56.9 25.6 A2.1 2.1 0 0 0 57.6 21.5 C48.6 19.4 39 12.6 32 5.2 Z"/><rect x="15.75" y="20" width="5" height="40" rx="2.5"/><rect x="43.25" y="20" width="5" height="40" rx="2.5"/><path d="M8.2 31.2 C10.6 33.6 13.6 34.5 18 34.5 H46 C50.4 34.5 53.4 33.6 55.8 31.2 A1.9 1.9 0 0 1 58.9 33 C57.6 37.1 53 39.5 46 39.5 H18 C11 39.5 6.4 37.1 5.1 33 A1.9 1.9 0 0 1 8.2 31.2 Z"/></g></svg>
+      <svg viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="logoGrad" gradientUnits="userSpaceOnUse" x1="8" y1="6" x2="56" y2="60"><stop offset="0" stop-color="#4cc6ff"/><stop offset=".5" stop-color="#2f8bff"/><stop offset="1" stop-color="#3a6dff"/></linearGradient></defs><g fill="url(#logoGrad)"><path d="M32 5.2 C25 12.6 15.4 19.4 6.4 21.5 A2.1 2.1 0 0 0 7.1 25.6 C17.4 24.8 26.6 18.8 32 13.2 C37.4 18.8 46.6 24.8 56.9 25.6 A2.1 2.1 0 0 0 57.6 21.5 C48.6 19.4 39 12.6 32 5.2 Z"/><rect x="15.75" y="20" width="5" height="40" rx="2.5"/><rect x="43.25" y="20" width="5" height="40" rx="2.5"/><path d="M8.2 31.2 C10.6 33.6 13.6 34.5 18 34.5 H46 C50.4 34.5 53.4 33.6 55.8 31.2 A1.9 1.9 0 0 1 58.9 33 C57.6 37.1 53 39.5 46 39.5 H18 C11 39.5 6.4 37.1 5.1 33 A1.9 1.9 0 0 1 8.2 31.2 Z"/></g></svg>
     </div>
     <div>
       <div class="nav__logo-ko">보건의료 AI 데이터 허브</div>
@@ -1011,7 +1154,7 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
     <div class="hero__top">
       <!-- 좌측: 검색 -->
       <div class="hero__main">
-        <div class="hero__eyebrow"><span class="hero__dot"></span>DCAT 2.0 · 국가 보건의료데이터 중개 플랫폼 · v1 Prototype</div>
+        <div class="hero__eyebrow"><span class="hero__dot"></span>DCAT 2.0 · 국가 보건의료 AI 데이터 허브 · v1 Prototype</div>
         <h1 class="hero__title">보건의료데이터를<br><em>쉽게 찾고, 안전하게</em> 활용하세요</h1>
         <p class="hero__desc">표준 메타데이터 기반으로 데이터를 탐색하고, 신청·심의·활용까지 하나의 포털에서 처리합니다.</p>
         <div class="hero__search-wrap">
@@ -1029,7 +1172,7 @@ footer{background:var(--navy-dk);padding:40px 0 24px;color:rgba(255,255,255,.45)
             </button>
           </div>
           <div class="hero__chips">
-            <span style="font-size:11.5px;color:rgba(255,255,255,.35);align-self:center">인기 :</span>
+            <span class="hero__chips-label" style="font-size:11.5px;align-self:center">인기 :</span>
             <span class="hero__chip" onclick="searchChip('#질병관리청')">#질병관리청</span>
             <span class="hero__chip" onclick="searchChip('#국민건강영양조사')">#국민건강영양조사</span>
             <span class="hero__chip" onclick="searchChip('#건강보험공단')">#건강보험공단</span>
